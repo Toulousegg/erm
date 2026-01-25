@@ -1,0 +1,14 @@
+form{
+    background-color: rgb(88, 88, 88);
+    opacity: 80%;
+    width: 20%;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #555;
+    border-radius: 8px;
+    box-sizing: border-box;
+    outline: none;
+    border-color: #db0404;
+    margin: auto;
+    margin-bottom: 20px;
+}
