@@ -4,6 +4,7 @@ from users.users_model import User
 from users.users_schemas import UserSchema, UserLoginSchema
 from core.security import bcrypt_context
 from core.dependencies import CreateSession
+from core.security import create_token
 
 def authuser(email: str, password: str, db: Session):
     user = db.query(User).filter(User.email==email).first()
@@ -26,7 +27,14 @@ def authenticate_user(userloginschema: UserLoginSchema, Session: Session = Depen
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     else:
-        return {"message": "User authenticated successfully"}
+        access_token = create_token(user.id)
+        refresh_token = create_token(user.id)
+        
+        print(f"Token created successfully: {access_token}")
+        return {"message": "User authenticated successfully" 
+                , "access_token": access_token
+                , "token_type": "bearer"
+                }
     
     
 @home_router.post("/singup")
@@ -46,4 +54,5 @@ def create_user(userschema: UserSchema, Session: Session = Depends(CreateSession
         Session.add(new_user)
         Session.commit()
         Session.refresh(new_user)
+        print(f"User created successfully: {new_user}")
         return {"message": "User created successfully"}
