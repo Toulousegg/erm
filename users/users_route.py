@@ -5,6 +5,7 @@ from users.users_schemas import UserSchema, UserLoginSchema
 from core.security import bcrypt_context
 from core.dependencies import CreateSession
 from core.security import create_token
+import os
 
 def authuser(email: str, password: str, db: Session):
     user = db.query(User).filter(User.email==email).first()
@@ -15,6 +16,9 @@ def authuser(email: str, password: str, db: Session):
         return None
 
     return user
+
+def createToken(user_id: int, token_duration: dotenv.get("TOKEN):
+    return create_token(user_id, token_duration)
 
 home_router = APIRouter(prefix="/home", tags=["home"])
 
@@ -28,7 +32,7 @@ def authenticate_user(userloginschema: UserLoginSchema, Session: Session = Depen
 
     else:
         access_token = create_token(user.id)
-        refresh_token = create_token(user.id)
+        
         
         print(f"Token created successfully: {access_token}")
         return {"message": "User authenticated successfully" 
