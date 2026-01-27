@@ -6,6 +6,3 @@ def CreateSession():
         yield db
     finally:
         db.close()
-
-def refreshToken():
-    
