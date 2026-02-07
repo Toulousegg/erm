@@ -7,6 +7,7 @@ from core.dependencies import CreateSession
 from core.security import create_token
 import os
 from datetime import timedelta
+from fastapi.security import OAuth2PasswordRequestForm
 
 def authuser(email: str, password: str, db: Session):
     user = db.query(User).filter(User.email==email).first()
@@ -38,6 +39,30 @@ def authenticate_user(userloginschema: UserLoginSchema, Session: Session = Depen
                 , "refresh_token": refresh_token
                 , "token_type": "bearer"
                 }
+
+
+
+@home_router.post("/login-form")
+def login_form(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(CreateSession)
+):
+    user = authuser(form_data.username, form_data.password, session)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
+
+    access_token = create_token(user.id)
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+
 
 @home_router.get("/refresh")
 def refresh_token(user: User = Depends(verify_token)):

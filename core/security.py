@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/home/login")
+oauth2_schema = OAuth2PasswordBearer(tokenUrl="/home/login-form")
 
 def create_token(user_id: int):
 
@@ -26,7 +26,7 @@ def create_token(user_id: int):
     return token
 
 #esta funcion va a intentar verificar el token, si no puede, lanza una excepcion
-def verify_token(token: str = Depends(oauth2_scheme), session: Session = Depends(CreateSession)):
+def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends(CreateSession)):
     try:        
         decode = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM")])
         id_user = decode.get("sub")

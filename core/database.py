@@ -6,12 +6,8 @@ from sqlalchemy.orm import declarative_base
 
 base = declarative_base()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL is not set in environment variables")
-
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True) #pool_pre_ping=True es para evitar errores de conexión inactiva, verifica la conexión antes de usarla y la reestablece si es necesario.
+                                                                      #future=True es para habilitar características futuras de SQLAlchemy y asegurar compatibilidad con versiones futuras.
 
 SessionLocal = sessionmaker(
     autocommit=False,
