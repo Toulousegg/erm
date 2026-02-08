@@ -7,12 +7,15 @@ from core.dependencies import CreateSession
 from core.security import create_token, create_refresh_token
 from fastapi.security import OAuth2PasswordRequestForm
 
-def authuser(email: str, password: str, db: Session):
-    user = db.query(User).filter(User.email==email).first()
+def authuser(identifier: str, password: str, db: Session):
+    """Busca usuario por username O email, y verifica contraseña."""
+    user = db.query(User).filter(
+        (User.username == identifier) | (User.email == identifier)
+    ).first()
     if not user:
         return None
 
-    elif not bcrypt_context.verify(password, user.password):
+    if not bcrypt_context.verify(password, user.password):
         return None
 
     return user

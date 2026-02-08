@@ -18,5 +18,3 @@ class Production(base):
         self.client_name = client_name
         self.project_name = project_name
         self.price = price
-
-base.metadata.create_all(bind=db)

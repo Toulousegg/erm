@@ -6,7 +6,7 @@ db = create_engine(os.getenv('DATABASE_URL'))
 
 base = declarative_base()
 
-class inventory(base):
+class Inventory(base):
     __tablename__ = 'inventory'
 
     id = Column('id', Integer, primary_key=True, index=True, autoincrement=True) 
@@ -18,5 +18,3 @@ class inventory(base):
         self.item_name = item_name
         self.quantity = quantity
         self.price = price
-
-base.metadata.create_all(bind=db)

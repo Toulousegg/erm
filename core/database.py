@@ -1,7 +1,6 @@
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from core.config import DATABASE_URL
+from core.config import DATABASE_URL, SECRET_KEY, ALGORITHM
 from sqlalchemy.orm import declarative_base
 
 base = declarative_base()
@@ -14,5 +13,3 @@ SessionLocal = sessionmaker(
     autoflush=False,
     bind=engine
 )
-
-base.metadata.create_all(bind=engine)
