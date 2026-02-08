@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Signup{% endblock %}
+
+{% block content %}
+  <h1>Crear usuario</h1>
+  <form id="signup-form">
+    <label>Username:<br><input type="text" id="username" required></label><br>
+    <label>Email:<br><input type="email" id="email" required></label><br>
+    <label>Full name:<br><input type="text" id="fullname" required></label><br>
+    <label>Password:<br><input type="password" id="password" required></label><br>
+    <button type="submit">Crear</button>
+  </form>
+
+  <pre id="result" style="background:#f6f6f6;padding:8px;border:1px solid #ccc;">Resultado...</pre>
+
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        fullname: document.getElementById('fullname').value,
+        password: document.getElementById('password').value
+      };
+
+      try {
+        const res = await fetch('/home/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('result').textContent = String(err);
+      }
+    });
+  </script>
+{% endblock %}

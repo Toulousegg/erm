@@ -14,3 +14,5 @@ SessionLocal = sessionmaker(
     autoflush=False,
     bind=engine
 )
+
+base.metadata.create_all(bind=engine)

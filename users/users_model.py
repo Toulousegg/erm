@@ -1,7 +1,6 @@
-from sqlalchemy import Integer, String, ForeignKey, create_engine, Column
-import os
-from core.database import engine as db
+from sqlalchemy import Integer, String, Column, DateTime
 from core.database import base
+from datetime import datetime
 
 class User(base):
     __tablename__ = 'users'
@@ -11,11 +10,5 @@ class User(base):
     email = Column('email', String, unique=True, index=True, nullable=False)
     fullname = Column('fullname', String)
     password = Column('password', String, nullable=False)
-
-    def __init__(self, username, email, password, fullname):
-        self.username = username
-        self.email = email
-        self.password = password
-        self.fullname = fullname 
-
-base.metadata.create_all(bind=db)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

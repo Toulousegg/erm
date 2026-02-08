@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Refresh Token{% endblock %}
+
+{% block content %}
+  <h1>Refresh (usa tu token)</h1>
+  <label>Access/Refresh token:<br>
+    <textarea id="token" cols="80" rows="4"></textarea>
+  </label>
+  <br>
+  <button id="btn">Llamar /home/refresh</button>
+  <pre id="output" style="background:#f6f6f6;padding:8px;border:1px solid #ccc;">Resultado...</pre>
+
+  <script>
+    document.getElementById('btn').addEventListener('click', async () => {
+      const t = document.getElementById('token').value.trim();
+      try {
+        const res = await fetch('/home/refresh', {
+          method: 'GET',
+          headers: { 'Authorization': 'Bearer ' + t }
+        });
+        const data = await res.json();
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent = String(err);
+      }
+    });
+  </script>
+{% endblock %}

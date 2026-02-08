@@ -25,18 +25,32 @@ def create_token(user_id: int):
     token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return token
 
+def create_refresh_token(user_id: int):
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    ALGORITHM = os.getenv("ALGORITHM")
+    REFRESH_TOKEN_EXPIRE_MINUTES = int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES"))
+    expiration = datetime.now(timezone.utc) + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+    to_encode = {
+        "exp": expiration,
+        "sub": str(user_id)
+        }
+    RefreshToken = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return RefreshToken
+
 #esta funcion va a intentar verificar el token, si no puede, lanza una excepcion
-def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends(CreateSession)):
+def verify_token(token: str = Depends(oauth2_schema), session: Session = Depends(CreateSession)) -> User: #el -> sirve para decir que tipo de dato va a retornar la funcion
     try:        
-        decode = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM")])
-        id_user = decode.get("sub")
-        print(f"Decoded token user id: {id_user}")
+        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM")])
+
+        if payload.get("sub") is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token, verify token")
+        
+        id_user = int(payload.get("sub"))
 
     except JWTError as error: #aqui capturo cualquier error de verificacion del token y poder manejarlo
-        print(f"Token verification error: {error}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token, verify token")
     
-    user = session.query(User).filter(User.id == decode.get("sub")).first()
+    user = session.query(User).filter(User.id == id_user).first()
 
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
