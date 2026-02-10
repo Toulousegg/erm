@@ -12,7 +12,7 @@ from production.production_model import Production
 
 app = FastAPI()
 
-base.metadata.create_all(bind=engine)
+#base.metadata.create_all(bind=engine)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 

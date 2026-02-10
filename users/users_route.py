@@ -24,25 +24,7 @@ home_router = APIRouter(prefix="/home", tags=["home"])
 
 
 @home_router.post("/login")
-def authenticate_user(userloginschema: UserLoginSchema, Session: Session = Depends(CreateSession)):
-    user = authuser(userloginschema.username, userloginschema.password, Session)
-
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-
-    else:
-        access_token = create_token(user.id)
-        refresh_token = create_refresh_token(user.id) 
-        
-        return {"message": "User authenticated successfully" 
-                , "access_token": access_token
-                , "refresh_token": refresh_token
-                , "token_type": "bearer"
-                }
-
-
-@home_router.post("/login-form")
-def login_form(
+def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(CreateSession)
 ):
@@ -55,11 +37,13 @@ def login_form(
         )
 
     access_token = create_token(user.id)
+    refresh_token = create_refresh_token(user.id)
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    return {"message": "User authenticated successfully" 
+                , "access_token": access_token
+                , "refresh_token": refresh_token
+                , "token_type": "bearer"
+                }
 
 
 @home_router.get("/refresh")

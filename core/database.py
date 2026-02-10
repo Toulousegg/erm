@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from core.config import DATABASE_URL, SECRET_KEY, ALGORITHM
+from core.config import DATABASE_URL
 from sqlalchemy.orm import declarative_base
 
 base = declarative_base()
