@@ -1,20 +1,15 @@
-from sqlalchemy import Integer, String, ForeignKey, create_engine, Column
-from sqlalchemy.orm import declarative_base
-import os
+from sqlalchemy import Integer, String, Column, DateTime
+from core.database import base
+from datetime import datetime
 
-db = create_engine(os.getenv('DATABASE_URL'))
-
-base = declarative_base()
 
 class Inventory(base):
     __tablename__ = 'inventory'
 
     id = Column('id', Integer, primary_key=True, index=True, autoincrement=True) 
     item_name = Column('item_name', String, unique=True, index=True, nullable=False)
+    description = Column('description', String)
     quantity = Column('quantity', Integer, nullable=False)
-    price = Column('price', Integer, nullable=False)
-
-    def __init__(self, item_name, quantity, price):
-        self.item_name = item_name
-        self.quantity = quantity
-        self.price = price
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    owner_id = Column(Integer, nullable=False)
