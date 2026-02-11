@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 class InventoryBase(BaseModel):
     item_name: str
     quantity: int
-    description: str = Field(..., max_length=50) #descripcion no puede ser mayor a 255 caracteres
+    description: str = Field(..., max_length=255) #descripcion no puede ser mayor a 255 caracteres
 
     class Config:
         from_attributes = True
@@ -15,7 +15,7 @@ class ItemCreate(InventoryBase):
     class Config:
         from_attributes = True
 
-class ItemRead(InventoryBase):
+class ItemRead(BaseModel):
     id: int
 
     class Config:
