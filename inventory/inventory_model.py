@@ -12,4 +12,4 @@ class Inventory(base):
     quantity = Column('quantity', Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False, ondelete="CASCADE")
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
