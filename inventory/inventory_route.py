@@ -19,7 +19,7 @@ def read_inventory(session: Session = Depends(CreateSession)):
 def create_inventory_item(item: ItemCreate, session: Session = Depends(CreateSession)):
 
     new_item = Inventory(
-        item_name=item.name,
+        item_name=item.item_name,
         description=item.description,
         quantity=item.quantity,
         owner_id=item.owner_id

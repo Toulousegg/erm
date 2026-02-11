@@ -1,18 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class InventoryBase(BaseModel):
-    name: str
+    item_name: str
     quantity: int
-    description: str
+    description: str = Field(..., max_length=50) #descripcion no puede ser mayor a 255 caracteres
 
-    class config:
+    class Config:
         from_attributes = True
 
 class ItemCreate(InventoryBase):
-    name: str  
-    quantity: int
-    description: str
     owner_id: int
 
     class Config:
