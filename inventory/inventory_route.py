@@ -5,7 +5,7 @@ from inventory.inventory_model import Inventory
 from inventory.inventory_schema import ItemCreate
 from users.users_model import User
 from core.security import verify_token, create_token
-from inventory.inventory_service import edit_inventory_item
+from inventory.inventory_service import edit_inventory_item, delete_inventory_item
 
 inventory_router = APIRouter(prefix="/inv", tags=["inv"])
 
@@ -61,6 +61,10 @@ def create_inventory_item(itemcreate: ItemCreate, session: Session = Depends(Cre
         "item": new_item,
     }
 
-@inventory_router.put("/edit/{item_id}")
-def update_inventory_item(item_id: int, item_update: ItemCreate, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
-    return edit_inventory_item(item_id, item_update, session, user)
+@inventory_router.put("/edit/{item_name}")
+def update_inventory_item(item_name: str, item_update: ItemCreate, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    return edit_inventory_item(item_name, item_update, session, user)
+
+@inventory_router.delete("/delete/{item_name}")
+def delete_inventory_item_route(item_name: str, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    return delete_inventory_item(item_name, session, user)
