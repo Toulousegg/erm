@@ -2,13 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from core.dependencies import CreateSession
 from inventory.inventory_model import Inventory
-from inventory.inventory_schema import ItemCreate, ItemRead
+from inventory.inventory_schema import ItemCreate
 from users.users_model import User
+from core.security import verify_token, create_token
+from inventory.inventory_service import edit_inventory_item
 
 inventory_router = APIRouter(prefix="/inv", tags=["inv"])
 
 @inventory_router.get("/")
-def read_inventory(session: Session = Depends(CreateSession)):
+def read_inventory(session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    access_token = create_token(user.id)
+
+    if not access_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized, invalid token")
+
     inventory_items = session.query(Inventory).all()
 
     if not inventory_items:
@@ -20,8 +27,13 @@ def read_inventory(session: Session = Depends(CreateSession)):
     }
     
 @inventory_router.post("/add")
-def create_inventory_item(itemcreate: ItemCreate, session: Session = Depends(CreateSession)):
+def create_inventory_item(itemcreate: ItemCreate, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
 
+    access_token = create_token(user.id)
+
+    if not access_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized, invalid token")
+    
     new_item = Inventory(
         item_name=itemcreate.item_name,
         description=itemcreate.description,
@@ -48,3 +60,7 @@ def create_inventory_item(itemcreate: ItemCreate, session: Session = Depends(Cre
         "message": "Inventory item created successfully",
         "item": new_item,
     }
+
+@inventory_router.put("/edit/{item_id}")
+def update_inventory_item(item_id: int, item_update: ItemCreate, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    return edit_inventory_item(item_id, item_update, session, user)

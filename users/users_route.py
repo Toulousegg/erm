@@ -6,19 +6,7 @@ from core.security import bcrypt_context, verify_token
 from core.dependencies import CreateSession
 from core.security import create_token, create_refresh_token
 from fastapi.security import OAuth2PasswordRequestForm
-
-def authuser(identifier: str, password: str, db: Session):
-    """Busca usuario por username O email, y verifica contraseña."""
-    user = db.query(User).filter(
-        (User.username == identifier) | (User.email == identifier)
-    ).first()
-    if not user:
-        return None
-
-    if not bcrypt_context.verify(password, user.password):
-        return None
-
-    return user
+from users.users_service import authuser
 
 home_router = APIRouter(prefix="/home", tags=["home"])
 
