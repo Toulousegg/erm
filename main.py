@@ -24,7 +24,7 @@ def home(request: Request, ruta: str=""):
         return RedirectResponse(f"/{ruta}", status_code=303)
 
     return templates.TemplateResponse(
-        "index.html",
+        "base.html",
         {"request": request, "name": ""}
     )
 
