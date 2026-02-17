@@ -68,3 +68,9 @@ def update_inventory_item(item_name: str, item_update: ItemCreate, session: Sess
 @inventory_router.delete("/delete/{item_name}")
 def delete_inventory_item_route(item_name: str, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
     return delete_inventory_item(item_name, session, user)
+
+
+#proxima tarefa, quero que el inventory_log seja criado automaticamente toda vez que um item for editado ou deletado, e que ele armazene o id do 
+#item, o id do usuário que fez a ação, a ação realizada (adição, remoção, edição) e a quantidade alterada (se aplicável) dentro do endpoint de edição e deleção do item. 
+#O endpoint de leitura do inventário deve retornar também os logs relacionados a cada item, para que seja possível acompanhar o histórico de alterações de cada item.
+#e na leitura do inventário, quero que seja possível filtrar os itens por nome, para facilitar a busca por itens específicos.

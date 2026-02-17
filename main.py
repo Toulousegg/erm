@@ -3,11 +3,9 @@ from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse 
-from users.users_route import home_router
-from users.users_model import User #importo el modelo de usuario para que se cree la tabla en la base de datos, si no lo importo, no se va a crear la tabla.    
+from users.users_route import home_router 
 from inventory.inventory_route import inventory_router
 from core.database import base, engine
-from production.production_model import Production
 
 
 app = FastAPI()
