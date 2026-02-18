@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse 
 from users.users_route import home_router 
 from inventory.inventory_route import inventory_router
+from production.production_route import production_router
 from core.database import base, engine
 
 
@@ -38,3 +39,4 @@ def home_post(
 
 app.include_router(home_router)
 app.include_router(inventory_router)
+app.include_router(production_router)
