@@ -8,7 +8,7 @@ class Inventory(base):
     __tablename__ = 'inventory'
 
     id = Column('id', Integer, primary_key=True, index=True, autoincrement=True) 
-    item_name = Column('item_name', String, unique=True, index=True, nullable=False)
+    item_name = Column('item_name', String, unique=False, index=True, nullable=False)
     description = Column('description', String, nullable=False, )
     quantity = Column('quantity', Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

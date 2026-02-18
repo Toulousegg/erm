@@ -6,6 +6,7 @@ class production_schema(BaseModel):
     project_name: str = Field(..., max_length=255)
     delivery_date: date
     description: str = Field(..., max_length=500)
+    status: str = Field(..., max_length=50)
 
     class Config:
         from_attributes = True
@@ -21,6 +22,7 @@ class create_production(BaseModel):
     project_name: str = Field(..., max_length=255)
     delivery_date: date
     description: str = Field(..., max_length=500)
+    status: str = Field(..., max_length=50)
 
     class Config:
         from_attributes = True

@@ -48,6 +48,11 @@ def create_inventory_item(itemcreate: ItemCreate, session: Session = Depends(Cre
 
     if not converter_id_to_username:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Owner not found, please provide a valid owner ID")
+    
+    if new_item.item_name in [item.item_name for item in session.query(Inventory.item_name).all()]:
+        session.add(new_item)
+        session.commit()
+        session.refresh(new_item)
 
     session.add(new_item)
     session.commit()
