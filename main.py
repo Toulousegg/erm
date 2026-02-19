@@ -15,28 +15,6 @@ base.metadata.create_all(bind=engine)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-templates = Jinja2Templates(directory="templates")
-
-@app.get("/")
-def home(request: Request, ruta: str=""):
-    if ruta:
-        return RedirectResponse(f"/{ruta}", status_code=303)
-
-    return templates.TemplateResponse(
-        "home/base.html",
-        {"request": request, "name": ""}
-    )
-
-@app.post("/")
-def home_post(
-    request: Request,
-    nombre: str = Form(...)
-):
-    return templates.TemplateResponse(
-        "home/base.html",
-        {"request": request, "name": nombre}
-    )
-
 app.include_router(home_router)
 app.include_router(inventory_router)
 app.include_router(production_router)
