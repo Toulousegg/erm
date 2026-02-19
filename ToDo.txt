@@ -1,3 +1,5 @@
-1. see password in login front
+1. see password in login front .... DONE
 2. forget password in login 
 3. verify email in singup and forget password
+4. show logs in inventory frontend
+5. add add and remove endpoints in inventory
