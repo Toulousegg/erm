@@ -1,0 +1,126 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+}
+
+/* Topbar */
+
+.topbar {
+    background-color: #1f2937;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logout-btn {
+    background-color: #ef4444;
+    padding: 6px 12px;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+/* Controls */
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 30px;
+}
+
+.search-form input {
+    padding: 8px;
+    width: 200px;
+}
+
+.primary-btn {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Add Form */
+
+.add-form {
+    padding: 20px 30px;
+}
+
+.add-form input {
+    padding: 8px;
+    margin-right: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Table */
+
+.table-section {
+    padding: 20px 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+th {
+    background-color: #e5e7eb;
+    text-align: left;
+    padding: 12px;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.stock {
+    font-weight: bold;
+}
+
+/* Actions */
+
+.actions {
+    display: flex;
+    gap: 5px;
+}
+
+.actions form {
+    display: flex;
+    gap: 5px;
+}
+
+.actions input {
+    width: 60px;
+    padding: 5px;
+}
+
+.add-btn {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+}
+
+.remove-btn {
+    background-color: #f59e0b;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+}
+
+.delete-btn {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+}

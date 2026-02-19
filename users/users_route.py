@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from users.users_model import User
-from users.users_schemas import UserSchema
 from core.security import bcrypt_context, verify_token
 from core.dependencies import CreateSession
 from core.security import create_token, create_refresh_token
@@ -14,23 +13,27 @@ home_router = APIRouter(prefix="/home", tags=["home"])
 
 
 @home_router.post("/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(CreateSession)):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(CreateSession)
+):
     user = authuser(form_data.username, form_data.password, session)
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
             detail="Incorrect username or password"
         )
 
     access_token = create_token(user.id)
-    refresh_token = create_refresh_token(user.id)
 
-    return {"message": "User authenticated successfully" 
-                , "access_token": access_token
-                , "refresh_token": refresh_token
-                , "token_type": "bearer"
-                }
+    response = RedirectResponse(url="/inv/dashboard", status_code=303)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="lax"
+    )
+
+    return response
 
 
 @home_router.get("/refresh")
@@ -43,7 +46,7 @@ def refresh_token(user: User = Depends(verify_token)):
     
     
 @home_router.post("/signup")
-def create_user(request: Request, session: Session = Depends(CreateSession), fullname: str = Form(...), username: str = Form(...), email: str = Form(...), password: str = Form(...),):
+def create_user(request: Request, session: Session = Depends(CreateSession), fullname: str = Form(...), username: str = Form(...), email: str = Form(...), password: str = Form(...)):
     user = session.query(User).filter((User.email==email) | (User.username==username)).first()
     
     try:

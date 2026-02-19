@@ -7,13 +7,14 @@ from users.users_route import home_router
 from inventory.inventory_route import inventory_router
 from production.production_route import production_router
 from core.database import base, engine
+from core.dependencies import templates
 
 
 app = FastAPI()
 
 base.metadata.create_all(bind=engine)
 
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def home(request: Request):

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario</title>
+    <link rel="stylesheet" href="/static/inv/dashboard.css">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="left">
+        <h2>📦 Inventario</h2>
+    </div>
+
+    <div class="right">
+        <span>Usuario: {{ user.username }}</span>
+        <a href="/home/login" class="logout-btn">Cerrar sesión</a>
+    </div>
+</header>
+
+
+<section class="controls">
+
+    <form method="get" action="/inv/dashboard" class="search-form">
+        <input type="text" name="search" placeholder="Buscar material...">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <button onclick="toggleAddForm()" class="primary-btn">
+        + Agregar Material
+    </button>
+
+</section>
+
+
+<section id="add-form" class="add-form hidden">
+    <form method="post" action="/inv/add">
+        <input type="text" name="item_name" placeholder="Nombre" required>
+        <input type="text" name="description" placeholder="Descripción" required>
+        <input type="number" name="quantity" placeholder="Cantidad inicial" required>
+        <button type="submit">Guardar</button>
+    </form>
+</section>
+
+
+<section class="table-section">
+    <table>
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Descripción</th>
+                <th>Stock</th>
+                <th>Última actualización</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.item_name }}</td>
+                <td>{{ item.description }}</td>
+                <td class="stock">{{ item.quantity }}</td>
+                <td>{{ item.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="actions">
+
+                    <!-- SUMAR STOCK -->
+                    <form method="post" action="/inv/add-stock/{{ item.id }}">
+                        <input type="number" name="quantity" min="1" required>
+                        <button class="add-btn">+</button>
+                    </form>
+
+                    <!-- RESTAR STOCK -->
+                    <form method="post" action="/inv/remove-stock/{{ item.id }}">
+                        <input type="number" name="quantity" min="1" required>
+                        <button class="remove-btn">−</button>
+                    </form>
+
+                    <!-- ELIMINAR -->
+                    <form method="post" action="/inv/delete/{{ item.item_name }}">
+                        <button class="delete-btn">Eliminar</button>
+                    </form>
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+
+<script>
+function toggleAddForm() {
+    const form = document.getElementById("add-form");
+    form.classList.toggle("hidden");
+}
+</script>
+
+</body>
+</html>
