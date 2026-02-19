@@ -1,21 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from users.users_model import User
-from users.users_schemas import UserSchema, UserLoginSchema
+from users.users_schemas import UserSchema
 from core.security import bcrypt_context, verify_token
 from core.dependencies import CreateSession
 from core.security import create_token, create_refresh_token
 from fastapi.security import OAuth2PasswordRequestForm
 from users.users_service import authuser
+from core.dependencies import templates
 
 home_router = APIRouter(prefix="/home", tags=["home"])
 
 
 @home_router.post("/login")
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    session: Session = Depends(CreateSession)
-):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(CreateSession)):
     user = authuser(form_data.username, form_data.password, session)
 
     if not user:
@@ -44,29 +43,48 @@ def refresh_token(user: User = Depends(verify_token)):
     
     
 @home_router.post("/signup")
-def create_user(userschema: UserSchema, session: Session = Depends(CreateSession)):
-    user = session.query(User).filter((User.email==userschema.email) | (User.username==userschema.username)).first()
+def create_user(request: Request, session: Session = Depends(CreateSession), fullname: str = Form(...), username: str = Form(...), email: str = Form(...), password: str = Form(...),):
+    user = session.query(User).filter((User.email==email) | (User.username==username)).first()
+    
     try:
         if user:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
+            return templates.TemplateResponse("home/signup.html", {
+                "message": "User with this email or username already exists",
+                "request": request})
         
-        if len(userschema.password) < 8:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password must be at least 8 characters long")
-        
+        if len(password) < 8:
+            return templates.TemplateResponse("home/signup.html", {
+                "message": "Password must be at least 8 characters long",
+                "request": request})
+            
 
-        password = bcrypt_context.hash(userschema.password)
+        password = bcrypt_context.hash(password)
         new_user = User(
-            username=userschema.username,
-            email=userschema.email,
+            username=username,
+            email=email,
             password=password,
-            fullname=userschema.fullname
+            fullname=fullname
         )
         session.add(new_user)
         session.commit()
         session.refresh(new_user)
-        return {"message": "User created successfully"}
+
+        return templates.TemplateResponse("home/signup.html", {
+        "request": request})
     
     except Exception as e:
         session.rollback()
         raise HTTPException(status_code=401, detail=f"Error creating user: {str(e)}")
-    
+
+
+#VIEWS
+
+ 
+@home_router.get("/login")
+def login_page(request: Request):
+    return templates.TemplateResponse("home/login.html", {"request": request})
+
+@home_router.get("/signup")
+def signup_page(request: Request):
+    return templates.TemplateResponse("home/signup.html", {
+        "request": request})

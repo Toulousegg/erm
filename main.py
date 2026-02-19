@@ -23,7 +23,7 @@ def home(request: Request, ruta: str=""):
         return RedirectResponse(f"/{ruta}", status_code=303)
 
     return templates.TemplateResponse(
-        "base.html",
+        "home/base.html",
         {"request": request, "name": ""}
     )
 
@@ -33,7 +33,7 @@ def home_post(
     nombre: str = Form(...)
 ):
     return templates.TemplateResponse(
-        "index.html",
+        "home/base.html",
         {"request": request, "name": nombre}
     )
 

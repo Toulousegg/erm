@@ -1,44 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SingUp</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | ERM System</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Link to CSS file (Make sure the path is correct in your project) -->
+    <link rel="stylesheet" href="/static/signup.css">
 </head>
 <body>
-  <h1>Crear usuario</h1>
-  <form id="signup-form">
-    <label>Username:<br><input type="text" id="username" required></label><br>
-    <label>Email:<br><input type="email" id="email" required></label><br>
-    <label>Full name:<br><input type="text" id="fullname" required></label><br>
-    <label>Password:<br><input type="password" id="password" required></label><br>
-    <button type="submit">Crear</button>
-  </form>
 
-  <pre id="result" style="background:#f6f6f6;padding:8px;border:1px solid #ccc;">Resultado...</pre>
+    <div class="signup-container">
+        <div class="signup-header">
+            <h1>Create Account</h1>
+            <p>Join the ERM system today</p>
+        </div>
 
-  <script>
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        username: document.getElementById('username').value,
-        email: document.getElementById('email').value,
-        fullname: document.getElementById('fullname').value,
-        password: document.getElementById('password').value
-      };
+        {% if message %}
+        <div class="alert {% if 'error' in message.lower() or 'exists' in message.lower() %}alert-error{% else %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+        {% endif %}
 
-      try {
-        const res = await fetch('/home/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+        <form action="/home/signup" method="POST">
+            <div class="form-group">
+                <label for="fullname">Full Name</label>
+                <input type="text" id="fullname" name="fullname" placeholder="E.g: John Doe" required>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="johndoe123" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="email@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Minimum 8 characters" required minlength="8">
+                    <button type="button" class="toggle-password" id="toggleBtn">
+                        <img src="https://cdn-icons-png.flaticon.com/512/709/709612.png" id="eyeIcon" alt="Show">
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-signup">Sign Up</button>
+        </form>
+
+        <div class="footer-links">
+            <p>Already have an account? <a href="/home/login">Log in</a></p>
+        </div>
+    </div>
+
+    <script>
+        const passwordInput = document.getElementById('password');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        const iconView = "https://cdn-icons-png.flaticon.com/512/709/709612.png";
+        const iconHide = "https://cdn-icons-png.flaticon.com/512/2767/2767146.png";
+
+        toggleBtn.addEventListener('click', function() {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            eyeIcon.src = isPassword ? iconHide : iconView;
         });
-        const data = await res.json();
-        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById('result').textContent = String(err);
-      }
-    });
-  </script>
+    </script>
 </body>
 </html>
