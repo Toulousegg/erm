@@ -13,7 +13,14 @@ app = FastAPI()
 
 base.metadata.create_all(bind=engine)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/")
+def home(request: Request):
+    return templates.TemplateResponse(
+    "home/base.html",
+    {"request": request, "name": ""}
+    )
 
 app.include_router(home_router)
 app.include_router(inventory_router)
