@@ -7,6 +7,7 @@ from users.users_model import User
 from core.dependencies import CreateSession
 from fastapi.security import OAuth2PasswordBearer
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
+from typing import Optional
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -60,3 +61,24 @@ def verify_token(request: Request, session: Session = Depends(CreateSession)) ->
         raise HTTPException(status_code=401, detail="User not found")
 
     return user
+
+def create_verification_token(email: str) -> str:
+    to_encode = {"sub": email}
+    expires_delta = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def verify_verification_token(token: str) -> Optional[str]:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        return email
+    except JWTError:
+        return None

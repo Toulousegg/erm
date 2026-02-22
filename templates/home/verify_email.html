@@ -1,41 +1,63 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email - ERM</title>
+    <title>Verificar Email</title>
     <link rel="stylesheet" href="/static/verify_email.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Verify Email</h1>
-            <p>Enter the verification code sent to your email</p>
+    <div class="verification-container">
+        <!-- Header Section -->
+        <div class="verification-header">
+            <h1>Verificar tu Email</h1>
+            <p>Completa el proceso de verificación</p>
         </div>
-        
-        <form method="post" action="/home/verify-email">
-            <div class="form-group">
-                <label for="code">Verification Code</label>
-                <input type="text" id="code" name="code" required placeholder="000000" maxlength="6">
-            </div>
-            
-            <button type="submit" class="submit-btn">Verify Code</button>
-        </form>
-        <form method="post" action="/home/resend-verification-email" class="resend-form">
-                <input type="hidden" name="email" value="{{ email }}">
-                <button type="submit" class="btn btn-secondary">Resend Code</button>
-            </form>
-        
+
+        <!-- Message Section -->
         {% if message %}
-        <div class="message error">
-            {{ message }}
-        </div>
+            {% if "enviado" in message.lower() or "reenviado" in message.lower() %}
+                <div class="message-box success">{{ message }}</div>
+            {% elif "error" in message.lower() or "inválido" in message.lower() or "expirado" in message.lower() %}
+                <div class="message-box error">{{ message }}</div>
+            {% else %}
+                <div class="message-box info">{{ message }}</div>
+            {% endif %}
         {% endif %}
-        
-        <div class="link">
-            <a href="/home/login">Back to Login</a>
+
+        <!-- Info Text -->
+        <div class="info-text">
+            Se ha enviado un código de verificación a tu email: <strong>{{ email }}</strong>
         </div>
+
+        <!-- Formulario para ingresar el código de verificación -->
+        <form action="/home/verify-email" method="post">
+            <div class="form-group">
+                <label for="code">Código de Verificación:</label>
+                <input 
+                    type="text" 
+                    id="code" 
+                    name="code" 
+                    placeholder="Ingresa el código de 6 dígitos"
+                    required
+                    maxlength="6"
+                    pattern="[0-9]{6}"
+                    autocomplete="off"
+                >
+            </div>
+            {% if verification_jwt %}
+                <input type="hidden" name="verification_jwt" value="{{ verification_jwt }}">
+            {% endif %}
+            <button type="submit">Verificar</button>
+        </form>
+
+        <!-- Formulario para reenviar el código -->
+        <form action="/home/resend-verification-email" method="post">
+            {% if verification_jwt %}
+                <input type="hidden" name="verification_jwt" value="{{ verification_jwt }}">
+            {% endif %}
+            <button type="submit">Reenviar Código</button>
+        </form>
     </div>
 </body>
 </html>
