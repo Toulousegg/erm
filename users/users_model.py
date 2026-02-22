@@ -13,6 +13,9 @@ class User(base):
     password = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    is_verified = Column(Integer, default=0, nullable=False) # 0: False, 1: True
+    verification_code = Column(String, nullable=True)
+    verification_code_expires_at = Column(DateTime, nullable=True)
     inventory_items = relationship("Inventory", back_populates="owner")
     inventory_logs = relationship("InventoryLogs", back_populates="user")
 
