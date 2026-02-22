@@ -1,7 +1,8 @@
 1. see password in login front .... DONE
 2. forget password in login 
-3. verify email in singup and forget password
+3. verify email in singup .... DONE
 4. show logs in inventory frontend
 5. add add and remove endpoints in inventory
 6. save inventory & log in db automaticly 
 7. diferent db between 2 users
+8. resend code dont work (idk why)
