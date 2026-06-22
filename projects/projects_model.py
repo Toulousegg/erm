@@ -27,6 +27,7 @@ class Projects(base):
     photos = relationship("ProjectsPhotos", back_populates="project", cascade="all, delete-orphan")
     pdfs = relationship("ProjectsPDFs", back_populates="project", cascade="all, delete-orphan")
     comments = relationship("Comments", back_populates="project", cascade="all, delete-orphan")
+    time_entries = relationship("TimeEntry", back_populates="project", cascade="all, delete-orphan")
     
 class ProjectsPhotos(base):
     __tablename__ = 'projects_photos'

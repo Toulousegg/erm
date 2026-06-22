@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request, Form, UploadFile, File, HTTPExc
 from math import ceil
 from projects.projects_model import Projects, Comments
 from sqlalchemy import or_
+from sqlalchemy import func
 from typing import List
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
@@ -15,6 +16,8 @@ from datetime import date
 from core.config.config_loader import RAW_CONFIG
 import secrets
 from utilities.limiter.limiter import limiter
+from time_tracking.time_tracking_model import TimeEntry
+from time_tracking.time_tracking_services import format_minutes
 
 projects_router = APIRouter(prefix="/projects", tags=["prj"])
 
@@ -178,6 +181,18 @@ def show_projects_details(request: Request, project_id: int, session: Session = 
     
     if project.company_id != user.company_id:
         raise HTTPException(status_code=403, detail="You don't have permission to access this project")
+
+    total_minutes = (
+        session.query(func.coalesce(func.sum(TimeEntry.total_minutes), 0))
+        .filter(TimeEntry.project_id == project.id, TimeEntry.company_id == user.company_id)
+        .scalar()
+    )
+    stage_rows = (
+        session.query(TimeEntry.stage, func.sum(TimeEntry.total_minutes).label("total_minutes"))
+        .filter(TimeEntry.project_id == project.id, TimeEntry.company_id == user.company_id)
+        .group_by(TimeEntry.stage)
+        .all()
+    )
     
     return templates.TemplateResponse(
         "projects/projects_details.html",
@@ -199,6 +214,18 @@ def show_projects_details(request: Request, project_id: int, session: Session = 
                 "company_name": project.company.name,
                 #"company_logo": RAW_CONFIG.storage.media_base_url + "/" + project.company.logo_path if project.company.logo_path else None,
                 "created_at": project.created_at,
+                "time_summary": {
+                    "total_minutes": int(total_minutes or 0),
+                    "total_time": format_minutes(int(total_minutes or 0)),
+                    "by_stage": [
+                        {
+                            "stage": row.stage.value if row.stage else None,
+                            "total_minutes": int(row.total_minutes or 0),
+                            "total_time": format_minutes(int(row.total_minutes or 0))
+                        }
+                        for row in stage_rows
+                    ]
+                },
                 "comments": [
                     {
                         "author": comment.author_name,

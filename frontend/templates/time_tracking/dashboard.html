@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Horas</title>
+    <link rel="stylesheet" href="/static/time_tracking/time_tracking.css">
+</head>
+
+<body>
+    <main class="main-content">
+        <header class="header-top">
+            <div class="page-title">
+                <h1>Controle de Horas</h1>
+                <p>Registre e acompanhe o tempo dedicado aos projetos</p>
+            </div>
+
+            <div class="top-bar">
+                <div class="username">{{ user.username }}</div>
+            </div>
+        </header>
+
+        <section class="summary-grid">
+            <div class="summary-card">
+                <span>Total filtrado</span>
+                <strong>{{ report.total_time }}</strong>
+            </div>
+            <div class="summary-card">
+                <span>Horas decimais</span>
+                <strong>{{ report.hours_decimal }}</strong>
+            </div>
+        </section>
+
+        <section class="controls">
+            <a class="primary-btn" href="/time-tracking/add">Adicionar horas</a>
+            <a class="secondary-btn" href="/time-tracking/reports">Relatorios</a>
+        </section>
+
+        <section class="filter-panel">
+            <form method="get" action="/time-tracking/dashboard">
+                <input type="date" name="start_date" value="{{ request.query_params.get('start_date', '') }}">
+                <input type="date" name="end_date" value="{{ request.query_params.get('end_date', '') }}">
+
+                <div class="autocomplete-field">
+                    <input type="text" id="dashboard-project-search" placeholder="Projeto" autocomplete="off" value="{{ selected_project_name }}">
+                    <input type="hidden" id="dashboard-project-id" name="project_id" value="{{ request.query_params.get('project_id', '') }}">
+                    <div class="autocomplete-results" id="dashboard-project-results"></div>
+                </div>
+
+                <div class="autocomplete-field">
+                    <input type="text" id="dashboard-employee-search" placeholder="Funcionario" autocomplete="off" value="{{ selected_employee_name }}">
+                    <input type="hidden" id="dashboard-employee-id" name="employee_id" value="{{ request.query_params.get('employee_id', '') }}">
+                    <div class="autocomplete-results" id="dashboard-employee-results"></div>
+                </div>
+
+                <select name="stage">
+                    <option value="">Todas as etapas</option>
+                    {% for stage in stages %}
+                    <option value="{{ stage.value }}" {% if request.query_params.get('stage') == stage.value %}selected{% endif %}>{{ stage.value }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Filtrar</button>
+            </form>
+        </section>
+
+        <section class="data-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Projeto</th>
+                        <th>Funcionario</th>
+                        <th>Etapa</th>
+                        <th>Tarefa</th>
+                        <th>Inicio</th>
+                        <th>Fim</th>
+                        <th>Total</th>
+                        <th>Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entry_items %}
+                    <tr>
+                        <td>{{ entry.work_date }}</td>
+                        <td>{{ entry.project }}</td>
+                        <td>{{ entry.employee }}</td>
+                        <td>{{ entry.stage }}</td>
+                        <td>{{ entry.task or "-" }}</td>
+                        <td>{{ entry.start_time }}</td>
+                        <td>{{ entry.end_time }}</td>
+                        <td>{{ entry.total_time }}</td>
+                        <td>
+                            <button class="delete-btn" data-id="{{ entry.id }}">Excluir</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% set page = page %}
+            {% set total_pages = total_pages %}
+            {% set param = param %}
+            {% include "pagination.html" %}
+        </section>
+    </main>
+
+    <script>
+        function bindAutocomplete({ inputId, hiddenId, resultsId, endpoint, queryParam, label }) {
+            const input = document.getElementById(inputId);
+            const hidden = document.getElementById(hiddenId);
+            const results = document.getElementById(resultsId);
+            let timeout = null;
+
+            if (!input || !hidden || !results) return;
+
+            input.addEventListener("input", () => {
+                clearTimeout(timeout);
+                hidden.value = "";
+                results.innerHTML = "";
+
+                const value = input.value.trim();
+                if (value.length < 2) return;
+
+                timeout = setTimeout(async () => {
+                    const response = await fetch(`${endpoint}?${queryParam}=${encodeURIComponent(value)}`);
+                    if (!response.ok) return;
+
+                    const items = await response.json();
+                    results.innerHTML = "";
+
+                    items.forEach((item) => {
+                        const option = document.createElement("button");
+                        option.type = "button";
+                        option.className = "autocomplete-item";
+                        option.textContent = label(item);
+                        option.addEventListener("click", () => {
+                            input.value = label(item);
+                            hidden.value = item.id;
+                            results.innerHTML = "";
+                        });
+                        results.appendChild(option);
+                    });
+                }, 250);
+            });
+        }
+
+        bindAutocomplete({
+            inputId: "dashboard-project-search",
+            hiddenId: "dashboard-project-id",
+            resultsId: "dashboard-project-results",
+            endpoint: "/time-tracking/projects/search",
+            queryParam: "project",
+            label: (item) => item.client_name ? `${item.name} - ${item.client_name}` : item.name
+        });
+
+        bindAutocomplete({
+            inputId: "dashboard-employee-search",
+            hiddenId: "dashboard-employee-id",
+            resultsId: "dashboard-employee-results",
+            endpoint: "/time-tracking/users/search",
+            queryParam: "username",
+            label: (item) => item.fullname || item.name
+        });
+
+        document.querySelectorAll(".delete-btn").forEach((button) => {
+            button.addEventListener("click", async () => {
+                if (!confirm("Excluir este registro de horas?")) return;
+
+                const response = await fetch(`/time-tracking/${button.dataset.id}`, {
+                    method: "DELETE"
+                });
+
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert(await response.text());
+                }
+            });
+        });
+    </script>
+
+    {% include 'notification.html' %}
+    {% include 'aside.html' %}
+    {% include 'loading.html' %}
+</body>
+
+</html>

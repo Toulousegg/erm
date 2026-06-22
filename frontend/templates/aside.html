@@ -276,6 +276,11 @@
                 <span class="label">Projetos</span>
             </a>
 
+            <a class="nav-item {% if '/time-tracking' in request.url.path %}active{% endif %}" href="/time-tracking/dashboard">
+                <span class="icon">T</span>
+                <span class="label">Horas</span>
+            </a>
+
             <a class="nav-item {% if '/financery' in request.url.path %}active{% endif %}" href="/financery/dashboard">
                 <span class="icon">💵</span>
                 <span class="label">Financeiro</span>
