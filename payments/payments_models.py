@@ -34,12 +34,3 @@ class Plans(base):
     external_id = Column(String, nullable=True, index=True) #id del plan en el proveedor de pagos
     currency = Column(String, nullable=False, default="BRL", index=True) #siempre va a ser BRL no jodas
     plan_subscription = relationship("Subscription", back_populates="plan") 
-    
-class Moduls(base):
-    __tablename__ = 'moduls'
-    
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String, index=True, nullable=False)
-    price = Column(Float, nullable=False, index=True)
-    slug = Column(String, index=True, nullable=False)
-    company_moduls = relationship("Moduls_Companies", back_populates="modul")
