@@ -16,6 +16,42 @@ from utilities.limiter.limiter import limiter
 
 home_router = APIRouter(prefix="/home", tags=["home"])
 
+
+def next_onboarding_url(user: User) -> str:
+    if not user.company_id or not user.company:
+        return "/home/create-company"
+
+    subscription = user.company.company_subscription
+
+    if not subscription or not subscription.is_active:
+        return "/payments/modules"
+
+    return "/inv/dashboard"
+
+
+def set_auth_cookies(response: RedirectResponse, user_id: int):
+    access_token = create_token(user_id)
+    refresh_token = create_refresh_token(user_id)
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False, #mantener este valor en false en desarrollo y true en produccion porque puede hacer que la cookie no se guarde
+        samesite="lax"
+    )
+
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=False, #mantener este valor en false en desarrollo y true en produccion porque puede hacer que la cookie no se guarde
+        samesite="lax"
+    )
+
+    return response
+
+
 @home_router.post("/login")
 @limiter.limit("5/minute")
 async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(CreateSession)):
@@ -36,28 +72,9 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 
     await ensure_company_assignment_reminder(user, session)
 
-    access_token = create_token(user.id)
-    refresh_token = create_refresh_token(user.id)
+    response = RedirectResponse(url=next_onboarding_url(user), status_code=303)
 
-    response = RedirectResponse(url="/inv/dashboard", status_code=303)
-    
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=False, #mantener este valor en false en desarrollo y true en produccion porque puede hacer que la cookie no se guarde
-        samesite="lax"
-    )
-
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=False, #mantener este valor en false en desarrollo y true en produccion porque puede hacer que la cookie no se guarde
-        samesite="lax"
-    )
-
-    return response
+    return set_auth_cookies(response, user.id)
     
 
 @home_router.post("/signup")
@@ -163,6 +180,10 @@ async def verify_email(request: Request,session: Session = Depends(CreateSession
         })
     
     if verify_user_email(user, code, session, {"email": email, "purpose": purpose}):
+        if purpose == "email_verification":
+            response = RedirectResponse(url=next_onboarding_url(user), status_code=status.HTTP_303_SEE_OTHER)
+            return set_auth_cookies(response, user.id)
+
         return RedirectResponse(url="/home/login", status_code=status.HTTP_303_SEE_OTHER)
     
     else:
@@ -244,7 +265,7 @@ def create_company_router(request: Request, session: Session = Depends(CreateSes
 
     session.commit()
 
-    return RedirectResponse(url="/payment/plans", status_code=303)
+    return RedirectResponse(url="/payments/modules", status_code=303)
 
 @home_router.post("/forgot-password")
 async def forgot_password(request: Request, password: str = Form(...), confirm_password: str = Form(...), session: Session = Depends(CreateSession), username: str = Form(...)):

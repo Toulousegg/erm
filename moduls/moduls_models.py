@@ -20,4 +20,10 @@ class Moduls_Companies(base):
     modul = relationship("Moduls", back_populates="company_moduls")
     company_id = Column(Integer, ForeignKey('companies.id'))
     company = relationship("Company", back_populates="moduls_company")
-    __table_args__ = UniqueConstraint("company_id", "modul_id", name="uq_company_module")
+    __table_args__ = (
+    UniqueConstraint(
+        "company_id",
+        "modul_id",
+        name="uq_company_module"
+    ),
+)

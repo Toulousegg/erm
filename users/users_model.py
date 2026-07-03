@@ -39,7 +39,7 @@ class Company(base):
     legal_name = Column(String, index=True, nullable=False)
     tax_id = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    plan = Column(String, default='free', nullable=False)
+    #plan = Column(String, default='free', nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", foreign_keys=[owner_id])
     company_items = relationship("Inventory", back_populates="company")

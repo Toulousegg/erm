@@ -4,7 +4,7 @@ from core.dependencies import templates, CreateSession
 from users.users_model import User
 from payments.payments_models import Plans
 from core.security import verify_admin
-from admin.admin_services import create_plan, delete_plan_abacatepay
+from admin.admin_services import create_plan, delete_plan_abacatepay, create_module_admin, list_modules
 from core.config import ABACATE_PAY_KEY
 from utilities.limiter.limiter import limiter
 
@@ -15,6 +15,28 @@ admin_router = APIRouter(prefix="/admin", tags=["admin"], include_in_schema=Fals
 def create_plan_route(request: Request, payload: dict, session: Session = Depends(CreateSession), user: User = Depends(verify_admin)):
     create_plan(user, name=payload["name"], amount=payload["amount"], frequency=payload["frequency"], session=session)
     return {"status": "created"}
+
+
+@admin_router.post("/create-module")
+@limiter.limit("10/minute")
+def create_module_route(request: Request, payload: dict, session: Session = Depends(CreateSession), user: User = Depends(verify_admin)):
+    try:
+        module = create_module_admin(
+            user=user,
+            name=payload["name"],
+            slug=payload["slug"],
+            price=int(payload["price"]),
+            session=session
+        )
+
+        return {
+            "status": "created",
+            "module_id": module.id
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 @admin_router.post("/update-plan/{plan_id}")
 @limiter.limit("1/minute")
@@ -55,8 +77,9 @@ def create_plan_page(request: Request, user: User = Depends(verify_admin), sessi
     
     else:
         plans = session.query(Plans).all()
+        modules = list_modules(session)
         
-        return templates.TemplateResponse("plans/create_plans.html", {
+        return templates.TemplateResponse("admin/admin.html", {
             "request": request,
             "user": user,
             "planes": [
@@ -68,5 +91,16 @@ def create_plan_page(request: Request, user: User = Depends(verify_admin), sessi
                     } 
                 
                 for plan in plans
+                ],
+            "modules": [
+                {
+                    "id": module.id,
+                    "name": module.name,
+                    "slug": module.slug,
+                    "price": module.price,
+                    "price_brl": module.price / 100
+                    }
+
+                for module in modules
                 ]
             })

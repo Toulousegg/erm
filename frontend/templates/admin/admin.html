@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Plans</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+            background: #f4f4f4;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        input,
+        select {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+            background: black;
+            color: white;
+            border: none;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #222;
+            color: white;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .panel {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .muted {
+            color: #666;
+            font-size: 14px;
+            margin-top: 0;
+        }
+
+        .message {
+            display: none;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .message.ok {
+            display: block;
+            background: #e7f7ed;
+            color: #166534;
+        }
+
+        .message.error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 760px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div id="message" class="message"></div>
+
+    <div class="grid">
+        <section class="panel">
+            <h2>Crear módulo</h2>
+            <p class="muted">El precio se guarda en centavos. Ej: 49.90 -> 4990.</p>
+
+            <input
+                id="module-name"
+                placeholder="Nombre del módulo"
+            >
+
+            <input
+                id="module-slug"
+                placeholder="slug, ej: inventory"
+            >
+
+            <input
+                id="module-price"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="49.90"
+            >
+
+            <button onclick="createModule()">
+                Crear módulo
+            </button>
+        </section>
+
+        <section class="panel">
+            <h2>Crear plan</h2>
+
+            <input
+                id="name"
+                placeholder="Nombre"
+            >
+
+            <input
+                id="amount"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="49.90"
+            >
+
+            <select id="frequency">
+                <option value="1">Mensual</option>
+                <option value="12">Anual</option>
+            </select>
+
+            <button onclick="createPlan()">
+                Crear plan
+            </button>
+        </section>
+    </div>
+
+    <hr>
+
+    <h2>Módulos existentes</h2>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Slug</th>
+                <th>Precio mensual</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for module in modules %}
+
+        <tr>
+            <td>{{ module.id }}</td>
+            <td>{{ module.name }}</td>
+            <td>{{ module.slug }}</td>
+            <td>R$ {{ "%.2f"|format(module.price_brl) }}</td>
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    <h2>Planes existentes</h2>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Frecuencia</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for plan in planes %}
+
+        <tr>
+
+            <td>
+                {{ plan.id }}
+            </td>
+
+            <td>
+                <input
+                    value="{{ plan.name }}"
+                    id="name-{{ plan.id }}"
+                >
+            </td>
+
+            <td>
+                <input
+                    value="{{ plan.amount / 100 }}"
+                    id="amount-{{ plan.id }}"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                >
+            </td>
+
+            <td>
+
+                <select id="freq-{{ plan.id }}">
+
+                    <option
+                        value="1"
+                        {% if plan.frequency == 1 %}selected{% endif %}
+                    >
+                        Mensual
+                    </option>
+
+                    <option
+                        value="12"
+                        {% if plan.frequency == 12 %}selected{% endif %}
+                    >
+                        Anual
+                    </option>
+
+                </select>
+
+            </td>
+
+            <td>
+
+                <button onclick="updatePlan({{ plan.id }})">
+                    Guardar
+                </button>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<script>
+
+function showMessage(text, type = "ok") {
+    const message = document.getElementById("message");
+    message.textContent = text;
+    message.className = `message ${type}`;
+}
+
+function toCents(value) {
+    return Math.round(parseFloat(value || "0") * 100);
+}
+
+async function createModule() {
+
+    try {
+
+        const payload = {
+            name: document.getElementById("module-name").value.trim(),
+            slug: document.getElementById("module-slug").value.trim(),
+            price: toCents(document.getElementById("module-price").value)
+        };
+
+        if (!payload.name || !payload.slug || payload.price <= 0) {
+            showMessage("Preencha nome, slug e preço do módulo.", "error");
+            return;
+        }
+
+        const res = await fetch("/admin/create-module", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const result = await res.json();
+            showMessage(result.detail || "Erro criando módulo", "error");
+            return;
+        }
+
+        window.location.reload();
+
+    } catch (err) {
+        console.error(err);
+        showMessage("Erro criando módulo", "error");
+    }
+
+}
+
+async function createPlan() {
+
+    try {
+
+        const payload = {
+            name: document.getElementById("name").value,
+            amount: toCents(document.getElementById("amount").value),
+            frequency: parseInt(document.getElementById("frequency").value)
+        };
+
+        const res = await fetch("/admin/create-plan", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            showMessage("Error creando plan", "error");
+            return;
+        }
+
+        window.location.reload();
+
+    } catch (err) {
+        console.error(err);
+    }
+
+}
+
+async function updatePlan(id) {
+
+    try {
+
+        const payload = {
+            name: document.getElementById(`name-${id}`).value,
+            amount: toCents(document.getElementById(`amount-${id}`).value),
+            frequency: parseInt(document.getElementById(`freq-${id}`).value)
+        };
+
+        const res = await fetch(`/admin/update-plan/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            showMessage("Error actualizando", "error");
+            return;
+        }
+
+        window.location.reload();
+
+    } catch (err) {
+        console.error(err);
+    }
+
+}
+
+</script>
+
+</body>
+</html>

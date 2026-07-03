@@ -62,7 +62,10 @@ class PlansEnum(str, Enum):
 
 class SubscriptionStatusEnum(str, Enum):
     PENDING = "PENDING"
+    ACTIVE = "ACTIVE"
     PAID = "PAID"
+    PAST_DUE = "PAST_DUE"
+    CANCELED = "CANCELED"
     CANCELLED = "CANCELLED"
     EXPIRED = "EXPIRED"
     REFUNDED = "REFUNDED"

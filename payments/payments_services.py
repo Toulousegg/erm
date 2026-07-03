@@ -1,102 +1,136 @@
-import requests
-from core.config import ABACATE_PAY_KEY, ABACATE_BASE_URL
-from payments.payments_models import Plans
-from users.users_model import Company
-from uuid import uuid4
-
-HEADERS = {
-    "Authorization": f"Bearer {ABACATE_PAY_KEY}",
-    "Content-Type": "application/json"
-}
+from core.enum.enum import SubscriptionStatusEnum
+from payments.payments_models import Subscription
+from payments.provider import create_subscription
+from moduls.moduls_models import Moduls
+from moduls.moduls_services import assign_modules
+from datetime import date, timedelta
 
 
-def safe_response(response):
-    try:
-        data = response.json()
-    except Exception:
-        raise ValueError("Respuesta inválida de AbacatePay")
+def get_modules(session, module_ids: list[int]):
+    clean_module_ids = list(dict.fromkeys(module_ids))
 
-    if not data.get("success", False):
-        raise ValueError(f"AbacatePay error: {data.get('error')}")
+    if not clean_module_ids:
+        raise ValueError("Select at least one module.")
 
-    return data["data"]
+    modules = session.query(Moduls).filter(Moduls.id.in_(clean_module_ids)).all()
+    
+    if len(modules) != len(clean_module_ids):
+        raise ValueError("One or more modules do not exist.")
+
+    return modules
+
+def calculate_modules_amount(modules):
+
+    return sum(
+        module.price
+        for module in modules
+        )
 
 
-def select_plan(plan_id, session):
-    return session.query(Plans).filter(Plans.id == plan_id).first()
+def create_local_subscription(session, user, company, module_ids, amount):
+    existing_subscription = session.query(Subscription).filter(
+        Subscription.company_id == company.id
+    ).first()
 
-def create_subscription(email, product_id, external_id=None):
-    url = f"{ABACATE_BASE_URL}/subscriptions/create"
+    if existing_subscription:
+        existing_subscription.user_id = user.id
+        existing_subscription.amount = amount
+        existing_subscription.status = SubscriptionStatusEnum.PENDING
+        existing_subscription.is_active = False
+        existing_subscription.moduls = module_ids
+        existing_subscription.frequency = "MONTHLY"
+        session.flush()
+        session.refresh(existing_subscription)
+        return existing_subscription
 
-    # create customer (AbacatePay deduplica por email/taxId internamente)
-    customer_url = f"{ABACATE_BASE_URL}/customers/create"
-
-    customer_res = requests.post(
-        customer_url,
-        headers=HEADERS,
-        json={"email": email},
-        timeout=15
+    subscription = Subscription(
+        company_id=company.id,
+        user_id=user.id,
+        amount=amount,
+        status=SubscriptionStatusEnum.PENDING,
+        is_active=False,
+        frequency="MONTHLY",
+        moduls=module_ids
     )
 
-    customer_data = safe_response(customer_res)
-    customer_id = customer_data["id"]
+    session.add(subscription)
+    session.flush()
+    session.refresh(subscription)
 
-    payload = {
-        "customerId": customer_id,
-        "items": [
-            {
-                "id": product_id,
-                "quantity": 1
-            }
-        ],
-        "externalId": external_id or str(uuid4())
-    }
-
-    response = requests.post(url, json=payload, headers=HEADERS, timeout=15)
-    data = safe_response(response)
-
-    # URL de pago (checkout hosted)
-    return data["url"]
-
-
-def get_subscription_status(subscription_id):
-    url = f"{ABACATE_BASE_URL}/checkouts/one?id={subscription_id}"
-
-    response = requests.get(url, headers={"Authorization": f"Bearer {ABACATE_PAY_KEY}"}, timeout=15)
-
-    if response.status_code != 200:
-        return None
-
-    return safe_response(response)
-
-def update_subscription(subscription, status, session):
-    subscription.status = status
-    session.commit()
     return subscription
 
 
-def update_company_value(company_id, plan, session):
-    company = session.query(Company).filter(Company.id == company_id).first()
+def update_provider_subscription(session, subscription, provider_subscription):
+    subscription.provider_subscription_id = provider_subscription["id"]
+
+    session.commit()
+    session.refresh(subscription)
+
+    return subscription
+
+
+def create_subscription_service(session, user, module_ids: list[int]):
+    company = user.company
 
     if not company:
-        raise ValueError("Company not found")
+        raise ValueError("Company not found.")
 
-    company.plan = plan
-    session.commit()
+    clean_module_ids = list(dict.fromkeys(module_ids))
 
-    return company_id
+    modules = get_modules(session, clean_module_ids)
 
-def get_payment_status(checkout_id):
-    url = f"{ABACATE_BASE_URL}/checkouts/one?id={checkout_id}"
+    amount = calculate_modules_amount(modules)
 
-    response = requests.get(
-        url,
-        headers={"Authorization": f"Bearer {ABACATE_PAY_KEY}"},
-        timeout=15
+    subscription = create_local_subscription(session, user, company, clean_module_ids, amount)
+
+    provider_subscription = create_subscription(
+        email=user.email,
+        module_ids=clean_module_ids,
+        amount=amount,
+        external_id=str(subscription.id)
     )
 
-    if response.status_code != 200:
-        return None
+    update_provider_subscription(session, subscription, provider_subscription)
 
-    return safe_response(response)
+    return {
+        "checkout_url": provider_subscription["url"],
+        "subscription": subscription
+    }
 
+
+def activate_subscription(session, subscription):
+    subscription.status = SubscriptionStatusEnum.ACTIVE
+    subscription.is_active = True
+    subscription.current_period_start = date.today()
+    subscription.current_period_end = date.today() + timedelta(days=30)
+
+    if subscription.company_id and subscription.moduls:
+        assign_modules(session, subscription.company_id, subscription.moduls)
+        subscription.moduls = None
+
+    session.commit()
+    session.refresh(subscription)
+
+    return subscription
+
+
+def renew_subscription(session, subscription):
+    subscription.status = SubscriptionStatusEnum.ACTIVE
+    subscription.is_active = True
+    subscription.current_period_start = date.today()
+    subscription.current_period_end = date.today() + timedelta(days=30)
+
+    session.commit()
+    session.refresh(subscription)
+
+    return subscription
+
+
+def cancel_subscription(session, subscription):
+    subscription.status = SubscriptionStatusEnum.CANCELED
+    subscription.is_active = False
+
+    session.commit()
+    session.refresh(subscription)
+
+    return subscription

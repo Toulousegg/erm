@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Column, ForeignKey, Boolean, Date, Enum as SQLEnum, Float
+from sqlalchemy import Integer, String, Column, ForeignKey, Boolean, Date, Enum as SQLEnum, Float, JSON
 from sqlalchemy.orm import relationship
 from core.database import base
 from core.enum.enum import PlansEnum, SubscriptionStatusEnum
@@ -20,6 +20,7 @@ class Subscription(base):
     provider_subscription_id = Column(String, nullable=True)
     status = Column(SQLEnum(SubscriptionStatusEnum), nullable=False)
     is_active = Column(Boolean)
+    moduls = Column(JSON, nullable=True)
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=True, index=True)
     company = relationship("Company", back_populates="company_subscription")
     

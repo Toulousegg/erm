@@ -2,6 +2,8 @@ import requests
 from fastapi import HTTPException
 from core.config import ABACATE_PAY_KEY, ABACATE_BASE_URL
 from payments.payments_models import Plans
+from moduls.moduls_models import Moduls
+from moduls.moduls_services import create_module
 from uuid import uuid4
 
 HEADERS = {
@@ -93,3 +95,14 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
     session.commit()
 
     return safe_response(response)
+
+
+def list_modules(session):
+    return session.query(Moduls).order_by(Moduls.id).all()
+
+
+def create_module_admin(user, name: str, slug: str, price: int, session):
+    if user.role != "admin":
+        raise ValueError("Unauthorized")
+
+    return create_module(name=name, slug=slug, price=price, session=session)
