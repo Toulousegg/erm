@@ -9,6 +9,9 @@ class Moduls(base):
     name = Column(String, index=True, nullable=False)
     price = Column(Integer, nullable=False, index=True)
     slug = Column(String, index=True, nullable=False)
+    description = Column(String, index=True, nullable=False)
+    icon_url = Column(String, index=True, nullable=True)
+    external_id = Column(String, index=True, nullable=True) #id del modulo en el proveedor de abacatepay
     company_moduls = relationship("Moduls_Companies", back_populates="modul")
 
 

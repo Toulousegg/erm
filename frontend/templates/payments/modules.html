@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Módulos | ProntoERP</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/moduls.css') }}">
+    <link rel="stylesheet" href="../../static/moduls.css">
 </head>
 
 <body>
@@ -24,9 +24,9 @@
             {% for module in modules %}
             <article class="module-card" data-module-id="{{ module.id }}" data-module-price="{{ module.price }}">
                 <button class="module-selector" type="button" aria-pressed="false">
-                    <span class="module-visual {{ module.visual_class }}" data-module-id="{{ module.id }}">
-                        <span>{{ module.id }}</span>
-                    </span>
+                    <span class="module-visual" data-module-id="{{ module.id }}">
+                                                <img src="{{ module.icon_url }}" alt="{{ module.name }}" class="module-icon">
+                                                                    </span>
                     <span class="module-copy">
                         <strong>{{ module.name }}</strong>
                         <small>{{ module.description }}</small>

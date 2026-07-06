@@ -22,7 +22,7 @@ def add_module(session, company_id: int, module_id: int): #posiblemente pueda op
 
 def remove_module(session, company_id: int, module_id: int):
 
-    relation = session.query(Moduls_Companies).filter(Moduls_Companies.company_id == company_id,Moduls_Companies.modul_id == module_id).first()
+    relation = session.query(Moduls_Companies).filter(Moduls_Companies.company_id == company_id, Moduls_Companies.modul_id == module_id).first()
 
     if not relation:
         return False
@@ -50,7 +50,7 @@ def get_company_modules(session, company_id: int):
 
 def has_module(session, company_id: int, slug: str):
 
-    module = session.query(Moduls).join(Moduls_Companies,Moduls.id == Moduls_Companies.modul_id).filter(Moduls_Companies.company_id == company_id,Moduls.slug == slug).first()
+    module = session.query(Moduls).join(Moduls_Companies, Moduls.id == Moduls_Companies.modul_id).filter(Moduls_Companies.company_id == company_id, Moduls.slug == slug).first()
     
     return module
 
@@ -123,30 +123,19 @@ def check_subscription_status(session, company_id: int) -> bool:
 
     return True
 
-def create_module(name: str, slug: str, price: int, session):
-    if not name:
-        raise ValueError('Falta name')
-    
-    if not slug:
-        raise ValueError('Falta slug')
-    
-    
-    if price is None or price <= 0:
-        raise ValueError('Falta price')
-    
-    modulo = session.query(Moduls).filter(Moduls.slug == slug).first()
-    
-    if modulo:
-        raise ValueError('Modulo ya existente')
-    
-    new_modul = Moduls(
-        name = name,
-        slug = slug,
-        price = price
-    )
-    
-    session.add(new_modul)
-    session.commit()
-    session.refresh(new_modul)
-    
-    return new_modul
+def build_module_cards(modules):
+    cards = []
+
+    for module in modules:
+        slug = (module.slug or "").lower()
+        cards.append({
+            "id": module.id,
+            "name": module.name,
+            "slug": module.slug,
+            "price": module.price,
+            "price_brl": f"{module.price / 100:.2f}".replace(".", ","),
+            "description": module.description,
+            "icon_url": module.icon_url,
+        })
+
+    return cards

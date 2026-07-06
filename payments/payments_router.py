@@ -11,51 +11,11 @@ from payments.payments_services import create_subscription_service, activate_sub
 from payments.payments_schema import SubscriptionCreate
 from payments.webhook import verify_webhook
 from moduls.moduls_models import Moduls
+from moduls.moduls_services import build_module_cards
 from utilities.limiter.limiter import limiter
 from core.config import ABACATE_PAY_KEY
 
 payments_router = APIRouter(prefix="/payments", tags=["Payments"])
-
-MODULE_DESCRIPTIONS = {
-    "inventory": "Controle materiais, ferragens e estoque da empresa com entradas, saídas e quantidades atualizadas.",
-    "contacts": "Organize clientes, arquitetos, fornecedores e colaboradores em uma base centralizada.",
-    "production": "Acompanhe a produção da fábrica, etapas de trabalho e prazos de entrega.",
-    "projects": "Gerencie projetos por cliente, ambiente, status, arquivos e acompanhamento compartilhável.",
-    "financery": "Monitore receitas, despesas, contas a pagar, contas a receber e resultado financeiro.",
-    "cronograma": "Planeje a agenda semanal da equipe, tarefas e marcos importantes de entrega.",
-    "notifications": "Receba avisos em tempo real sobre atividades, solicitações e mudanças relevantes.",
-}
-
-MODULE_VISUALS = {
-    "inventory": "visual-inventory",
-    "contacts": "visual-contacts",
-    "production": "visual-production",
-    "projects": "visual-projects",
-    "financery": "visual-financery",
-    "cronograma": "visual-cronograma",
-    "notifications": "visual-notifications",
-}
-
-
-def build_module_cards(modules):
-    cards = []
-
-    for module in modules:
-        slug = (module.slug or "").lower()
-        cards.append({
-            "id": module.id,
-            "name": module.name,
-            "slug": module.slug,
-            "price": module.price,
-            "price_brl": f"{module.price / 100:.2f}".replace(".", ","),
-            "description": MODULE_DESCRIPTIONS.get(
-                slug,
-                "Ative este módulo para ampliar as ferramentas disponíveis para a sua empresa."
-            ),
-            "visual_class": MODULE_VISUALS.get(slug, "visual-default"),
-        })
-
-    return cards
 
 @payments_router.post("/create_plan")
 @limiter.limit("3/minute")

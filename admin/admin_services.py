@@ -1,10 +1,13 @@
 import requests
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from core.config import ABACATE_PAY_KEY, ABACATE_BASE_URL
 from payments.payments_models import Plans
 from moduls.moduls_models import Moduls
-from moduls.moduls_services import create_module
 from uuid import uuid4
+import os
+import shutil
+
+UPLOAD_FOLDER = "frontend/static/uploads"
 
 HEADERS = {
     "Authorization": f"Bearer {ABACATE_PAY_KEY}",
@@ -73,10 +76,10 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
 
     url = "https://api.abacatepay.com/v2/products/delete"
     
-    plan = session.query(Plans).filter(Plans.external_id == product_id).first()
+    # plan = session.query(Plans).filter(Plans.external_id == product_id).first()
 
-    if not plan:
-        raise HTTPException(404, "Plan no encontrado")
+    # if not plan:
+    #     raise HTTPException(404, "Plan no encontrado")
     
     headers = {
         "Authorization": f"Bearer {api_key}"
@@ -91,8 +94,8 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
     print(response.status_code)
     print(response.text)
     
-    session.delete(plan)
-    session.commit()
+    # session.delete(plan)
+    # session.commit()
 
     return safe_response(response)
 
@@ -100,9 +103,50 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
 def list_modules(session):
     return session.query(Moduls).order_by(Moduls.id).all()
 
+def create_module(name: str, slug: str, price: int, description: str, image: UploadFile, session):
+    if not name:
+        raise ValueError("Falta name")
 
-def create_module_admin(user, name: str, slug: str, price: int, session):
-    if user.role != "admin":
-        raise ValueError("Unauthorized")
+    if not slug:
+        raise ValueError("Falta slug")
 
-    return create_module(name=name, slug=slug, price=price, session=session)
+    if not description:
+        raise ValueError("Falta description")
+
+    if price is None or price <= 0:
+        raise ValueError("Falta price")
+
+    if image is None:
+        raise ValueError("Falta image")
+
+    modulo = session.query(Moduls).filter(Moduls.slug == slug).first()
+
+    if modulo:
+        raise ValueError("Modulo ya existente")
+
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+    extension = os.path.splitext(image.filename)[1]
+
+    filename = f"{uuid4()}{extension}"
+
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    
+    db_path = f"/static/uploads/{filename}"
+
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+
+    new_modul = Moduls(
+        name=name,
+        slug=slug,
+        description=description,
+        price=price,
+        icon_url=db_path
+    )
+
+    session.add(new_modul)
+    session.commit()
+    session.refresh(new_modul)
+
+    return new_modul

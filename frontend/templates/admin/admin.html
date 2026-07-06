@@ -131,6 +131,16 @@
                 placeholder="49.90"
             >
 
+            <input
+                id="module-description"
+                type="text"
+                placeholder="descripcion">
+
+            <input
+                id="module-image"
+                type="file"
+                accept="image/*">
+
             <button onclick="createModule()">
                 Crear módulo
             </button>
@@ -174,6 +184,7 @@
                 <th>ID</th>
                 <th>Nombre</th>
                 <th>Slug</th>
+                <th>Descripción</th>
                 <th>Precio mensual</th>
             </tr>
         </thead>
@@ -186,6 +197,7 @@
             <td>{{ module.id }}</td>
             <td>{{ module.name }}</td>
             <td>{{ module.slug }}</td>
+            <td>{{ module.description }}</td>
             <td>R$ {{ "%.2f"|format(module.price_brl) }}</td>
         </tr>
 
@@ -292,23 +304,28 @@ async function createModule() {
 
     try {
 
-        const payload = {
-            name: document.getElementById("module-name").value.trim(),
-            slug: document.getElementById("module-slug").value.trim(),
-            price: toCents(document.getElementById("module-price").value)
-        };
+        const name = document.getElementById("module-name").value.trim();
+        const slug = document.getElementById("module-slug").value.trim();
+        const description = document.getElementById("module-description").value.trim();
+        const price = toCents(document.getElementById("module-price").value);
+        const image = document.getElementById("module-image").files[0];
 
-        if (!payload.name || !payload.slug || payload.price <= 0) {
-            showMessage("Preencha nome, slug e preço do módulo.", "error");
+        if (!name || !slug || !description || price <= 0 || !image) {
+            showMessage("Preencha todos os campos do módulo.", "error");
             return;
         }
 
+        const formData = new FormData();
+
+        formData.append("name", name);
+        formData.append("slug", slug);
+        formData.append("description", description);
+        formData.append("price", price);
+        formData.append("image", image);
+
         const res = await fetch("/admin/create-module", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
+            body: formData
         });
 
         if (!res.ok) {
