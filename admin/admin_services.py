@@ -26,7 +26,6 @@ def safe_response(response):
 
     return data["data"]
 
-
 def create_plan(user, name: str, amount: float, frequency: int, session):
     if user.role != "admin":
         raise ValueError("Unauthorized")
@@ -54,7 +53,7 @@ def create_plan(user, name: str, amount: float, frequency: int, session):
     print("TEXT:", response.text)
     
     data = safe_response(response)
-
+    
     plan = Plans(
         name=name,
         amount=amount,
@@ -76,10 +75,10 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
 
     url = "https://api.abacatepay.com/v2/products/delete"
     
-    # plan = session.query(Plans).filter(Plans.external_id == product_id).first()
+    plan = session.query(Plans).filter(Plans.external_id == product_id).first()
 
-    # if not plan:
-    #     raise HTTPException(404, "Plan no encontrado")
+    if not plan:
+        raise HTTPException(404, "Plan no encontrado")
     
     headers = {
         "Authorization": f"Bearer {api_key}"
@@ -94,8 +93,8 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
     print(response.status_code)
     print(response.text)
     
-    # session.delete(plan)
-    # session.commit()
+    session.delete(plan)
+    session.commit()
 
     return safe_response(response)
 
@@ -103,7 +102,7 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
 def list_modules(session):
     return session.query(Moduls).order_by(Moduls.id).all()
 
-def create_module(name: str, slug: str, price: int, description: str, image: UploadFile, session):
+def create_module(name: str, slug: str, price: int, description: str, frequency: int, image: UploadFile, session):
     if not name:
         raise ValueError("Falta name")
 
@@ -123,6 +122,30 @@ def create_module(name: str, slug: str, price: int, description: str, image: Upl
 
     if modulo:
         raise ValueError("Modulo ya existente")
+    
+    url = f"{ABACATE_BASE_URL}/products/create"
+
+    cycle_map = {
+        1: "MONTHLY",
+        12: "ANNUALLY"
+    }
+
+    cycle = cycle_map.get(frequency, "MONTHLY")
+
+    payload = {
+        "externalId": f"plan_{name.lower()}_{uuid4().hex[:8]}",
+        "name": name,
+        "price": price,
+        "currency": "BRL",
+        "cycle": cycle
+    }
+
+    response = requests.post(url, json=payload, headers=HEADERS, timeout=15)
+    
+    print("STATUS:", response.status_code)
+    print("TEXT:", response.text)
+    
+    data = safe_response(response)
 
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -142,7 +165,8 @@ def create_module(name: str, slug: str, price: int, description: str, image: Upl
         slug=slug,
         description=description,
         price=price,
-        icon_url=db_path
+        icon_url=db_path,
+        external_id=data["id"]
     )
 
     session.add(new_modul)
