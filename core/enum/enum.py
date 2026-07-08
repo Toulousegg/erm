@@ -17,6 +17,17 @@ class ContactsTypes(str, Enum):
     employed = 'colaborador'
     client = 'cliente'
 
+class ProjectStageEnum(str, Enum):
+    planning = "Planejamento"
+    cutting = "Corte"
+    pre_assembly = "Pre-montagem"
+    lamination = "Laminacao"
+    truck_loading = "Carregamento"
+    installation = "Instalacao"
+    finishing = "Acabamento"
+    correction = "Correcao"
+    other = "Outro"
+
 class DebtStatusEnum(str, Enum):
     pending = "Pendente"
     cancelled = "Cancelado"

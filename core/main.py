@@ -14,6 +14,7 @@ from projects.projects_route import projects_router
 from payments.payments_router import payments_router
 from admin.admin_router import admin_router
 from cronograma.cronograma_router import cronograma_router
+from time_tracking.time_tracking_route import time_tracking_router
 from core.database import base, engine
 from core.dependencies import templates
 from datetime import datetime
@@ -61,3 +62,4 @@ app.include_router(projects_router)
 app.include_router(payments_router)
 app.include_router(admin_router)
 app.include_router(cronograma_router)
+app.include_router(time_tracking_router)

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Horas</title>
+    <link rel="stylesheet" href="/static/time_tracking/time_tracking.css">
+</head>
+
+<body>
+    <main class="main-content">
+        <header class="header-top">
+            <div class="page-title">
+                <h1>Adicionar Horas</h1>
+                <p>Informe inicio e fim; o sistema calcula o total</p>
+            </div>
+
+            <div class="top-bar">
+                <div class="username">{{ user.username }}</div>
+            </div>
+        </header>
+
+        <section class="form-panel">
+            <form method="post" action="/time-tracking/add">
+                <label>
+                    Projeto
+                    <select name="project_id" required>
+                        <option value="">Selecione</option>
+                        {% for project in projects %}
+                        <option value="{{ project.id }}">{{ project.name }}{% if project.client_name %} - {{ project.client_name }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    Etapa
+                    <select name="stage" required>
+                        {% for stage in stages %}
+                        <option value="{{ stage.value }}">{{ stage.value }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    Tarefa
+                    <input type="text" name="task" placeholder="Ex: corte das portas">
+                </label>
+
+                <label>
+                    Data
+                    <input type="date" name="work_date">
+                </label>
+
+                <div class="time-row">
+                    <label>
+                        Inicio
+                        <input type="time" name="start_time" id="start_time" required>
+                    </label>
+
+                    <label>
+                        Fim
+                        <input type="time" name="end_time" id="end_time" required>
+                    </label>
+                </div>
+
+                <div class="duration-preview" id="duration-preview">Total: -</div>
+
+                <label>
+                    Descricao
+                    <textarea name="description" rows="4" placeholder="Observacoes do trabalho"></textarea>
+                </label>
+
+                <div class="actions">
+                    <button class="primary-btn" type="submit">Salvar horas</button>
+                    <a class="secondary-btn" href="/time-tracking/dashboard">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const startInput = document.getElementById("start_time");
+        const endInput = document.getElementById("end_time");
+        const preview = document.getElementById("duration-preview");
+
+        function updatePreview() {
+            if (!startInput.value || !endInput.value) {
+                preview.textContent = "Total: -";
+                return;
+            }
+
+            const [startHour, startMinute] = startInput.value.split(":").map(Number);
+            const [endHour, endMinute] = endInput.value.split(":").map(Number);
+            const total = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+
+            if (total <= 0) {
+                preview.textContent = "Total: horario final deve ser maior";
+                return;
+            }
+
+            preview.textContent = `Total: ${Math.floor(total / 60)}h ${String(total % 60).padStart(2, "0")}m`;
+        }
+
+        startInput.addEventListener("input", updatePreview);
+        endInput.addEventListener("input", updatePreview);
+    </script>
+
+    {% include 'notification.html' %}
+    {% include 'aside.html' %}
+    {% include 'loading.html' %}
+</body>
+
+</html>

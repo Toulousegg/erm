@@ -84,6 +84,13 @@
                 <p><strong>Status:</strong> <span style="color: var(--success-color);">{{ project.status }}</span></p>
             </div>
 
+            <div class="info-data-row">
+                <p><strong>Horas registradas:</strong> <span>{{ project.time_summary.total_time }}</span></p>
+                {% for row in project.time_summary.by_stage %}
+                <p><strong>{{ row.stage }}:</strong> <span>{{ row.total_time }}</span></p>
+                {% endfor %}
+            </div>
+
             <!-- COMMENTS (Movidos dentro o debajo del info box si se prefiere, pero mantengo estructura original) -->
         </div>
 
