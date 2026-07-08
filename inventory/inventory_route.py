@@ -10,17 +10,18 @@ from core.security import verify_token
 from inventory.inventory_service import edit_inventory_item, delete_inventory_item, create_inventory_item
 from core.dependencies import templates
 from utilities.limiter.limiter import limiter
+from moduls.dependencies import require_module
 
 inventory_router = APIRouter(prefix="/inv", tags=["inv"])
 
-@inventory_router.post("/add")
+@inventory_router.post("/add", dependencies=[Depends(require_module("inventory"))])
 @limiter.limit("5/minute")
 def create_inventory_item_route(request: Request, item_name: str = Form(...), description: str = Form(...), quantity: int = Form(...), session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
     create_inventory_item(item_name, description, quantity, session, user)
     return RedirectResponse(url="/inv/dashboard", status_code=303)
 
 
-@inventory_router.post("/edit/{item_name}")
+@inventory_router.post("/edit/{item_name}", dependencies=[Depends(require_module("inventory"))])
 @limiter.limit("5/minute")
 def update_inventory_item_route(request: Request, item_name: str, item_name_new: str = Form(...), description: str = Form(...), quantity: int = Form(...), session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
     item_update = ItemCreate(item_name=item_name_new, description=description, quantity=quantity, owner_id=user.id)
@@ -28,14 +29,14 @@ def update_inventory_item_route(request: Request, item_name: str, item_name_new:
     return RedirectResponse(url="/inv/dashboard", status_code=303)
 
 
-@inventory_router.post("/delete/{item_name}")
+@inventory_router.post("/delete/{item_name}", dependencies=[Depends(require_module("inventory"))])
 @limiter.limit("5/minute")
 def delete_inventory_item_route(request: Request, item_name: str, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
     delete_inventory_item(item_name, user, session)
     return RedirectResponse(url="/inv/dashboard", status_code=303)
 
 
-@inventory_router.get("/dashboard")
+@inventory_router.get("/dashboard", dependencies=[Depends(require_module("inventory"))])
 def inventory_dashboard(request: Request, search: str = None, session: Session = Depends(CreateSession), user: User = Depends(verify_token), page_items: int = Query(1, ge=1)):
     PER_PAGE = 30
     

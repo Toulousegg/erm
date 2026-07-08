@@ -1,7 +1,6 @@
-from sqlalchemy import Integer, String, Column, ForeignKey, Boolean, Date, Enum as SQLEnum, Float
+from sqlalchemy import Integer, String, Column, ForeignKey, Boolean, Date, Enum as SQLEnum, Float, JSON
 from sqlalchemy.orm import relationship
 from core.database import base
-from datetime import date
 from core.enum.enum import PlansEnum, SubscriptionStatusEnum
 
 class Subscription(base):
@@ -15,11 +14,13 @@ class Subscription(base):
     current_period_start = Column(Date, nullable=True, index=True)
     cancel_at_period_end = Column(Date, nullable=True, index=True)
     current_period_end = Column(Date, nullable=True, index=True)
-    amount = Column(Float, nullable=False)
+    amount = Column(Float, index=True, nullable=True)
+    frequency = Column(String, index=True, nullable=True)
     payment_provider_id = Column(String, nullable=True)
     provider_subscription_id = Column(String, nullable=True)
     status = Column(SQLEnum(SubscriptionStatusEnum), nullable=False)
     is_active = Column(Boolean)
+    moduls = Column(JSON, nullable=True)
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=True, index=True)
     company = relationship("Company", back_populates="company_subscription")
     

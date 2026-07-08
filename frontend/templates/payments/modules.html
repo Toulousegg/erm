@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulos | ProntoERP</title>
+    <link rel="stylesheet" href="../../static/moduls.css">
+</head>
+
+<body>
+    <main class="modules-shell">
+        <header class="modules-header">
+            <div>
+                <span class="eyebrow">Assinatura mensal</span>
+                <h1>Escolha os módulos da sua empresa</h1>
+                <p>Monte o acesso do ProntoERP com as áreas que sua operação precisa agora.</p>
+            </div>
+            <a class="home-link" href="/">Home</a>
+        </header>
+
+        {% if modules %}
+        <section class="modules-grid" aria-label="Catálogo de módulos">
+            {% for module in modules %}
+            <article class="module-card" data-module-id="{{ module.id }}" data-module-price="{{ module.price }}">
+                <button class="module-selector" type="button" aria-pressed="false">
+                    <span class="module-visual" data-module-id="{{ module.id }}">
+                                                <img src="{{ module.icon_url }}" alt="{{ module.name }}" class="module-icon">
+                                                                    </span>
+                    <span class="module-copy">
+                        <strong>{{ module.name }}</strong>
+                        <small>{{ module.description }}</small>
+                    </span>
+                    <span class="module-price">R$ {{ module.price_brl }}/mês</span>
+                </button>
+            </article>
+            {% endfor %}
+        </section>
+
+        <aside class="checkout-bar" aria-label="Resumo da assinatura">
+            <div>
+                <span id="selected-count">0 módulos selecionados</span>
+                <strong id="selected-total">R$ 0,00/mês</strong>
+            </div>
+            <button id="checkout-button" type="button" disabled>Ir para pagamento</button>
+        </aside>
+        {% else %}
+        <section class="empty-state">
+            <h2>Nenhum módulo disponível</h2>
+            <p>Cadastre os módulos no banco de dados para liberar a contratação.</p>
+        </section>
+        {% endif %}
+    </main>
+
+    {% include 'loading.html' %}
+
+    <script>
+        const selectedModules = new Set()
+        const cards = document.querySelectorAll(".module-card")
+        const selectedCount = document.getElementById("selected-count")
+        const selectedTotal = document.getElementById("selected-total")
+        const checkoutButton = document.getElementById("checkout-button")
+
+        const formatMoney = (valueInCents) => {
+            return new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+            }).format(valueInCents / 100)
+        }
+
+        const updateSummary = () => {
+            let total = 0
+
+            cards.forEach(card => {
+                const moduleId = Number(card.dataset.moduleId)
+                if (selectedModules.has(moduleId)) {
+                    total += Number(card.dataset.modulePrice)
+                }
+            })
+
+            const count = selectedModules.size
+            selectedCount.textContent = `${count} ${count === 1 ? "módulo selecionado" : "módulos selecionados"}`
+            selectedTotal.textContent = `${formatMoney(total)}/mês`
+            checkoutButton.disabled = count === 0
+        }
+
+        cards.forEach(card => {
+            const button = card.querySelector(".module-selector")
+            const moduleId = Number(card.dataset.moduleId)
+
+            button.addEventListener("click", () => {
+                const isSelected = selectedModules.has(moduleId)
+
+                if (isSelected) {
+                    selectedModules.delete(moduleId)
+                    card.classList.remove("selected")
+                    button.setAttribute("aria-pressed", "false")
+                } else {
+                    selectedModules.add(moduleId)
+                    card.classList.add("selected")
+                    button.setAttribute("aria-pressed", "true")
+                }
+
+                updateSummary()
+            })
+        })
+
+        if (checkoutButton) {
+            checkoutButton.addEventListener("click", async () => {
+                if (!selectedModules.size) return
+
+                try {
+                    const response = await fetch("/payments/subscription/create", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            module_ids: Array.from(selectedModules)
+                        })
+                    })
+
+                    const result = await response.json()
+
+                    if (!response.ok) {
+                        throw new Error(result.detail || "Erro ao criar assinatura.")
+                    }
+
+                    if (result.payment_url) {
+                        window.location.href = result.payment_url
+                        return
+                    }
+
+                    throw new Error("Checkout não retornado pelo servidor.")
+                } catch (error) {
+                    alert(error.message)
+                }
+            })
+        }
+
+        updateSummary()
+    </script>
+</body>
+
+</html>

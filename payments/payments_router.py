@@ -1,13 +1,17 @@
 import json
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from core.dependencies import templates, CreateSession
 from users.users_model import User
 from core.security import verify_token
 from payments.payments_models import Subscription, Plans
-from payments.payments_services import select_plan, create_subscription, update_subscription, update_company_value
+from payments.payments_services import create_subscription_service, activate_subscription, cancel_subscription, renew_subscription
+from payments.payments_schema import SubscriptionCreate
 from payments.webhook import verify_webhook
+from moduls.moduls_models import Moduls
+from moduls.moduls_services import build_module_cards
 from utilities.limiter.limiter import limiter
 from core.config import ABACATE_PAY_KEY
 
@@ -50,14 +54,14 @@ async def create_plan(request: Request, session: Session = Depends(CreateSession
 
     try:
         response = requests.post(
-            f"https://api.abacatepay.com/v2/products/c  reate",
+            f"https://api.abacatepay.com/v2/products/create",
             json=abacate_payload,
             headers=headers
         )
         abacate_data = response.json()
         
         if response.status_code != 200 or not abacate_data.get("success"):
-            error_detail = abacate_data.get("error", "Erro desconhecido na AbacatePay")
+            error_detail = abacate_data.get("error", "Erro desconhecido no AbacatePay")
             raise HTTPException(status_code=400, detail=f"AbacatePay Error: {error_detail}")
 
     except Exception as e:
@@ -80,50 +84,37 @@ async def create_plan(request: Request, session: Session = Depends(CreateSession
     }
     
     
-@payments_router.post("/subscribe/{plan_id}")
-@limiter.limit("2/minute")
-async def subscribe_logic(request: Request, plan_id: int, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
-    plan = select_plan(plan_id, session)
-    
-    if not plan:
-        raise HTTPException(status_code=404, detail="404")
-    
-    amount = plan.amount
+@payments_router.post("/subscription/create")
+@limiter.limit("1/minute")
+async def subscription_create_router(request: Request, data: SubscriptionCreate, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    try:
 
-    new_sub = Subscription(
-        user_id=user.id,
-        company_id=user.company_id,
-        plan_id=plan.id,
-        status="PENDING",
-        provider_subscription_id=None,
-        payment_provider_id=None,
-        amount=amount,
-        current_period_start=None,
-        current_period_end=None,
-        cancel_at_period_end=None,
-        is_active=False
-        
-    )
-    
-    session.add(new_sub)
-    session.flush()
+        result = create_subscription_service(session, user, data.module_ids)
 
-    payment_url = create_subscription(
-        email=user.email,
-        product_id=plan.external_id,
-        external_id=str(new_sub.id)
-    )
-
-    if not payment_url or "Error" in str(payment_url):
-        session.rollback()
-        raise HTTPException(status_code=400)
-    
-    session.commit()
-    
-    return {
-        "status": "success", 
-        "payment_url": payment_url
+        return {
+            "status": "success",
+            "subscription_id": result["subscription"].id,
+            "amount": result["subscription"].amount,
+            "payment_url": result["checkout_url"]
         }
+
+    except ValueError as e:
+
+        session.rollback()
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+    except Exception:
+
+        session.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error."
+        )
 
 @payments_router.post("/webhook/signature")
 async def abacate_pay_webhook(request: Request,session: Session = Depends(CreateSession)):
@@ -132,7 +123,6 @@ async def abacate_pay_webhook(request: Request,session: Session = Depends(Create
 
     try:
         data = json.loads(body_bytes)
-        print(data)
         
     except json.JSONDecodeError:
         raise HTTPException(
@@ -141,21 +131,15 @@ async def abacate_pay_webhook(request: Request,session: Session = Depends(Create
         )
 
     event = data.get("event")
-    payload = data.get("data")
-    checkout = payload.get("checkout")
-    payment = payload.get("payment")
-    subscription_data = payload.get("subscription")
+    payload = data.get("data") or {}
+    checkout = payload.get("checkout") or {}
+    payment = payload.get("payment") or {}
+    subscription_data = payload.get("subscription") or {}
 
-    sub_id = int(checkout["externalId"])
- 
     
     if event == "subscription.completed":
 
         try:
-            checkout = payload["checkout"]
-            payment = payload["payment"]
-            subscription_data = payload["subscription"]
-
             sub_id = int(checkout["externalId"])
 
         except (KeyError, ValueError, TypeError):
@@ -170,31 +154,73 @@ async def abacate_pay_webhook(request: Request,session: Session = Depends(Create
             print(f"Subscription {sub_id} not found")
             return {"status": "not_found"}
 
-        if subscription.status == "PAID":
+        if subscription.status in ("PAID", "ACTIVE"):
             return {
                 "status": "already_processed"
             }
 
         subscription.is_active = True
-        subscription.payment_provider_id = payment["id"]
-        subscription.provider_subscription_id = subscription_data["id"]
+        subscription.payment_provider_id = payment.get("id")
+        subscription.provider_subscription_id = subscription_data.get("id")
 
-        update_subscription(
-            subscription,
-            "PAID",
-            session
-        )
+        activate_subscription(session, subscription)
 
-        update_company_value(
-            subscription.company_id,
-            subscription.plan_id,
-            session
-        )
+    elif event == "subscription.renewed":
+        try:
+            sub_id = int(checkout.get("externalId") or subscription_data.get("externalId"))
+
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid webhook payload"
+            )
+
+        subscription = session.query(Subscription).filter(Subscription.id == sub_id).first()
+
+        if not subscription:
+            return {"status": "not_found"}
+
+        renew_subscription(session, subscription)
+
+    elif event == "subscription.cancelled":
+        try:
+            sub_id = int(checkout.get("externalId") or subscription_data.get("externalId"))
+
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid webhook payload"
+            )
+
+        subscription = session.query(Subscription).filter(Subscription.id == sub_id).first()
+
+        if not subscription:
+            return {"status": "not_found"}
+
+        cancel_subscription(session, subscription)
 
     return {
         "status": "200"
     }
 #VIEWS
+
+@payments_router.get("/modules")
+@limiter.limit("5/minute")
+def modules_view(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
+    modules = session.query(Moduls).order_by(Moduls.id).all()
+
+    return templates.TemplateResponse("payments/modules.html", {
+        "request": request,
+        "user": user,
+        "userEmail": user.email,
+        "modules": build_module_cards(modules)
+    })
+
+
+@payments_router.get("/moduls")
+@limiter.limit("5/minute")
+def moduls_view_alias(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
+    return RedirectResponse(url="/payments/modules", status_code=303)
 
 @payments_router.get("/plans")
 @limiter.limit("5/minute")
@@ -222,7 +248,7 @@ def plans_view(request: Request, user: User = Depends(verify_token), session: Se
 @payments_router.get("/success")
 @limiter.limit("5/minute")
 def success_view(request: Request, user: User = Depends(verify_token)):
-    return templates.TemplateResponse("payments/pay_success.html", {
+    return templates.TemplateResponse("payments/pay_sucess.html", {
         "request": request,
         "user": user
     })
@@ -238,7 +264,7 @@ def pending_view(request: Request, user: User = Depends(verify_token)):
 @payments_router.get("/failure")
 @limiter.limit("5/minute")
 def failure_view(request: Request, user: User = Depends(verify_token)):
-    return templates.TemplateResponse("payments/pay_failure.html", {
+    return templates.TemplateResponse("payments/pay_fail.html", {
         "request": request,
         "user": user
     })

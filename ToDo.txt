@@ -22,3 +22,9 @@
 19. rate limite en todo el proyecto ................. DONE
 20. cuidar duplicados y dobles clicks 
 21. CAMBIAR TODOS LOS DATOS SENSIBLES DE .env
+
+22. Transcripción del audio:
+        "Tu todo funcionário tem que dizer aonde gastou a sua hora certo? Então ele vai dizer ah o formulário já recebe o dia né? 
+        E se é pra um funcionário já vem com o nome dele aí ele vai dizer que em cada etapa – qual etapa do projeto, quanto tempo ele 
+        levou pra no final eu saber ao longo de um tempo. Quantas horas cada etapa tem gastado nos projetos? Quantas horas gastei num 
+        projeto — tá compatível com o que eu cobrei?"

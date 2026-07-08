@@ -16,19 +16,20 @@ from datetime import date
 from core.config.config_loader import RAW_CONFIG
 import secrets
 from utilities.limiter.limiter import limiter
+from moduls.dependencies import require_module
 from time_tracking.time_tracking_model import TimeEntry
 from time_tracking.time_tracking_services import format_minutes
 
 projects_router = APIRouter(prefix="/projects", tags=["prj"])
 
-@projects_router.post("/dashboard")
+@projects_router.post("/dashboard", dependencies=[Depends(require_module("projects"))])
 @limiter.limit("3/minute")
 def show_projects_router(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
     show_projects(session, user)
     return RedirectResponse(url="/projects/dashboard", status_code=303)
     
 
-@projects_router.post("/add")
+@projects_router.post("/add", dependencies=[Depends(require_module("projects"))])
 @limiter.limit("5/minute")
 def create_new_project(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession), name: str = Form(...), carpenter_id: int = Form(...), client_name: str = Form(...), delivery: date = Form(...), description: str = Form(...), address: str = Form(...), photo: List[UploadFile] = File([]), pdf: List[UploadFile] = File([])):
     new_project = create_project(user, session, name, carpenter_id, client_name, delivery, description, address)
@@ -43,7 +44,7 @@ def create_new_project(request: Request, user: User = Depends(verify_token), ses
         
     return RedirectResponse(url=f"/projects/dashboard", status_code=303)
 
-@projects_router.post("/create_link/{project_id}")
+@projects_router.post("/create_link/{project_id}", dependencies=[Depends(require_module("projects"))])
 def create_link(project_id: int, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
     project = session.get(Projects, project_id)
     
@@ -61,7 +62,7 @@ def create_link(project_id: int, session: Session = Depends(CreateSession), user
         "token": token
         }
 
-@projects_router.post("/{project_token}/comments") 
+@projects_router.post("/{project_token}/comments", dependencies=[Depends(require_module("projects"))]) 
 def create_comment(request: Request, project_token: str, payload: CommentPayload, session: Session = Depends(CreateSession)): 
 
     session_token = request.cookies.get("comment_session")
@@ -95,7 +96,7 @@ def create_comment(request: Request, project_token: str, payload: CommentPayload
     
 # VIEWS
 
-@projects_router.get("/dashboard")
+@projects_router.get("/dashboard", dependencies=[Depends(require_module("projects"))])
 def show_projects_view(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession), page_projects: int = Query(1, ge=1)):
     
     PER_PAGE = 10
@@ -120,7 +121,7 @@ def show_projects_view(request: Request, user: User = Depends(verify_token), ses
         }
     )
 
-@projects_router.get("/add")
+@projects_router.get("/add", dependencies=[Depends(require_module("projects"))])
 def create_project_view(request: Request):
     return templates.TemplateResponse(
         "projects/projects_add.html",
@@ -128,7 +129,7 @@ def create_project_view(request: Request):
             "request": request,
         })
     
-@projects_router.get("/users/search") #esta funcion es para el autocomplete del input de carpintero en el html
+@projects_router.get("/users/search", dependencies=[Depends(require_module("projects"))]) #esta funcion es para el autocomplete del input de carpintero en el html
 def search_users_route(username: str, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     users = session.query(User).filter((User.company_id == user.company_id), User.username.ilike(f"%{username}%") | (User.fullname.ilike(f"%{username}%"))).all()
 
@@ -137,7 +138,7 @@ def search_users_route(username: str, user: User = Depends(verify_token), sessio
         for user in users
     ]
             
-@projects_router.get("/public/projects/client")
+@projects_router.get("/public/projects/client", dependencies=[Depends(require_module("projects"))])
 def shared_projects_client_view(request: Request, token: str, session: Session = Depends(CreateSession)):
     shared_project = get_shared_project_by_token(token, session)
     
@@ -172,7 +173,7 @@ def shared_projects_client_view(request: Request, token: str, session: Session =
             }
         )
     
-@projects_router.get("/{project_id}")
+@projects_router.get("/{project_id}", dependencies=[Depends(require_module("projects"))])
 def show_projects_details(request: Request, project_id: int, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
     project = session.get(Projects, project_id)
     

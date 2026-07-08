@@ -25,11 +25,12 @@ from financery.financery_models import Sells, Receivable, Debt
 from financery.financery_schema import SellsSchema, DebtCreateSchema, ReceivableCreate
 from datetime import date
 from utilities.limiter.limiter import limiter
+from moduls.dependencies import require_module
 
 financery_router = APIRouter(prefix="/financery", tags=["financery"])
 
 
-@financery_router.post("/sell")
+@financery_router.post("/sell", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("5/minute")
 def add_sell_endpoint(request: Request, data: SellsSchema, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -42,7 +43,7 @@ def add_sell_endpoint(request: Request, data: SellsSchema, user: User = Depends(
         return ValueError('No Owner')
 
 
-@financery_router.delete("/sell/{sell_id}")
+@financery_router.delete("/sell/{sell_id}", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("5/minute")
 def delete_sell_endpoint(request: Request, sell_id: int, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -59,7 +60,7 @@ def delete_sell_endpoint(request: Request, sell_id: int, user: User = Depends(ve
         return ValueError('No Owner')
 
 
-@financery_router.post("/dashboard/debt")
+@financery_router.post("/dashboard/debt", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("8/minute")
 def create_debt(request: Request, data: DebtCreateSchema, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -72,7 +73,7 @@ def create_debt(request: Request, data: DebtCreateSchema, user: User = Depends(v
         return ValueError('No Owner')
 
 
-@financery_router.post("/dashboard/receivable")
+@financery_router.post("/dashboard/receivable", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("8/minute")
 def create_receivable(request: Request, data: ReceivableCreate, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -85,7 +86,7 @@ def create_receivable(request: Request, data: ReceivableCreate, user: User = Dep
         return ValueError('No Owner')
 
 
-@financery_router.post("/dashboard/payment/{payment_id}/pay")
+@financery_router.post("/dashboard/payment/{payment_id}/pay", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("8/minute")
 def pay_debt_endpoint(request: Request, payment_id: int, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -98,7 +99,7 @@ def pay_debt_endpoint(request: Request, payment_id: int, user: User = Depends(ve
         return ValueError('No Owner')
 
 
-@financery_router.post("/dashboard/receivable/{receivable_id}/pay")
+@financery_router.post("/dashboard/receivable/{receivable_id}/pay", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("8/minute")
 def pay_receivable_endpoint(request: Request, receivable_id: int, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -111,7 +112,7 @@ def pay_receivable_endpoint(request: Request, receivable_id: int, user: User = D
         return ValueError('No Owner')
 
 
-@financery_router.delete("/dashboard/payment/{payment_id}")
+@financery_router.delete("/dashboard/payment/{payment_id}", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("8/minute")
 def delete_payment_endpoint(request: Request, payment_id: int, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -124,7 +125,7 @@ def delete_payment_endpoint(request: Request, payment_id: int, user: User = Depe
         return ValueError('No Owner')
 
 
-@financery_router.delete("/dashboard/receivable/{receivable_id}")
+@financery_router.delete("/dashboard/receivable/{receivable_id}", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("8/minute")
 def delete_receivable_endpoint(request: Request, receivable_id: int, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -137,7 +138,7 @@ def delete_receivable_endpoint(request: Request, receivable_id: int, user: User 
         return ValueError('No Owner')
 
 
-@financery_router.put("/dashboard/payment/{payment_id}")
+@financery_router.put("/dashboard/payment/{payment_id}", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("8/minute")
 def edit_payment_endpoint(request: Request, payment_id: int, data: dict = Body(...), user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -150,7 +151,7 @@ def edit_payment_endpoint(request: Request, payment_id: int, data: dict = Body(.
         return ValueError('No Owner')
 
 
-@financery_router.put("/dashboard/receivable/{receivable_id}")
+@financery_router.put("/dashboard/receivable/{receivable_id}", dependencies=[Depends(require_module("financery"))])
 @limiter.limit("8/minute")
 def edit_receivable_endpoint(request: Request, receivable_id: int, data: dict = Body(...), user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     isowner = is_owner(user)
@@ -162,7 +163,7 @@ def edit_receivable_endpoint(request: Request, receivable_id: int, data: dict = 
     else:
         return ValueError('No Owner')
     
-@financery_router.get("/users/search") #esta funcion es para el autocomplete del input de carpintero en el html
+@financery_router.get("/users/search", dependencies=[Depends(require_module("financery"))]) #esta funcion es para el autocomplete del input de carpintero en el html
 def search_users_route(request: Request, username: str, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     users = session.query(User).filter((User.company_id == user.company_id), User.username.ilike(f"%{username}%") | (User.fullname.ilike(f"%{username}%"))).all()
 
@@ -173,7 +174,7 @@ def search_users_route(request: Request, username: str, user: User = Depends(ver
 
 #VIEWS
 
-@financery_router.get("/dashboard")
+@financery_router.get("/dashboard", dependencies=[Depends(require_module("financery"))])
 def show_sell(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession), page_sells: int = Query(1, ge=1), page_debts: int = Query(1, ge=1), page_receivables: int = Query(1, ge=1)):
     
     isowner = is_owner(user)

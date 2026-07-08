@@ -40,7 +40,7 @@ class Company(base):
     legal_name = Column(String, index=True, nullable=False)
     tax_id = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    plan = Column(String, default='free', nullable=False)
+    #plan = Column(String, default='free', nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", foreign_keys=[owner_id])
     company_items = relationship("Inventory", back_populates="company")
@@ -55,6 +55,7 @@ class Company(base):
     company_projects = relationship("Projects", back_populates="company")
     company_subscription = relationship("Subscription", back_populates="company", uselist=False)
     company_schedules = relationship("WeeklySchedule", back_populates="company")
+    moduls_company = relationship("Moduls_Companies", back_populates="company")
     company_time_entries = relationship("TimeEntry", back_populates="company")
     
 class CompanyJoinRequest(base):

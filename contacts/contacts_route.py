@@ -9,11 +9,12 @@ from contacts.contacts_services import CreateContact, update_contact, delete_con
 from contacts.contacts_schema import ContactsBase, ContactUpdate
 from users.users_model import User
 from utilities.limiter.limiter import limiter
+from moduls.dependencies import require_module
 
 
 contacts_router = APIRouter(prefix="/ctc", tags=["ctc"])
 
-@contacts_router.post("/add")
+@contacts_router.post("/add", dependencies=[Depends(require_module("ctc"))])
 @limiter.limit("5/minute")
 def create_contact(request: Request, name: str = Form(...), email: str | None = Form(None), phone: str = Form(...), type: str = Form(...), user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     
@@ -28,19 +29,19 @@ def create_contact(request: Request, name: str = Form(...), email: str | None = 
     
     return RedirectResponse(url="/ctc", status_code=303)
 
-@contacts_router.put("/edit/{contactId}")
+@contacts_router.put("/edit/{contactId}", dependencies=[Depends(require_module("ctc"))])
 @limiter.limit("7/minute")
 def edit_contact(request: Request, contactId: int, data: ContactUpdate, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     return update_contact(session, contactId, user, data.name, data.email, data.phone, data.type)
 
-@contacts_router.delete("/delete/{contactId}")
+@contacts_router.delete("/delete/{contactId}", dependencies=[Depends(require_module("ctc"))])
 @limiter.limit("7/minute")
 def delete_contact_router(request: Request, contactId: int, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     return delete_contact(session, contactId, user)
 
 #VIEWS
 
-@contacts_router.get("/")
+@contacts_router.get("/", dependencies=[Depends(require_module("ctc"))])
 def get_contacts(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token), page_contacts: int = Query(1, ge=1)):
     PER_PAGE = 30
     
