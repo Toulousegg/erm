@@ -17,73 +17,6 @@ from core.config import ABACATE_PAY_KEY
 
 payments_router = APIRouter(prefix="/payments", tags=["Payments"])
 
-@payments_router.post("/create_plan")
-@limiter.limit("3/minute")
-async def create_plan(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
-    if user.role != "admin":
-        raise HTTPException(status_code=403, detail="Forbidden")
-
-    data = await request.json()
-    name = data.get("name")
-    amount = data.get("amount")
-    external_id = data.get("external_id")
-    frequency = data.get("frequency", 1) 
-
-    if not all([name, amount, external_id]):
-        raise HTTPException(status_code=400, detail="Missing required fields")
-
-    cycle_map = {
-        1: "MONTHLY",
-        12: "ANNUALLY"
-    }
-    abacate_cycle = cycle_map.get(frequency, "MONTHLY")
-
-    headers = {
-        "Authorization": f"Bearer {ABACATE_PAY_KEY}",
-        "Content-Type": "application/json"
-    }
-    
-    abacate_payload = {
-        "externalId": external_id,
-        "name": name,
-        "price": amount,
-        "currency": "BRL", 
-        "description": f"Plano {name}",
-        "cycle": abacate_cycle
-    }
-
-    try:
-        response = requests.post(
-            f"https://api.abacatepay.com/v2/products/create",
-            json=abacate_payload,
-            headers=headers
-        )
-        abacate_data = response.json()
-        
-        if response.status_code != 200 or not abacate_data.get("success"):
-            error_detail = abacate_data.get("error", "Erro desconhecido no AbacatePay")
-            raise HTTPException(status_code=400, detail=f"AbacatePay Error: {error_detail}")
-
-    except Exception as e:
-        if isinstance(e, HTTPException): raise e
-        raise HTTPException(status_code=500, detail=f"Erro de conexão com AbacatePay: {str(e)}")
-
-    new_plan = Plans(
-        name=name, 
-        amount=amount, 
-        external_id=external_id,
-        frequency=frequency,
-    )
-    session.add(new_plan)
-    session.commit()
-
-    return {
-        "status": "success", 
-        "plan_id": new_plan.id,
-        "abacatepay_id": abacate_data["data"]["id"]
-    }
-    
-    
 @payments_router.post("/subscription/create")
 @limiter.limit("1/minute")
 async def subscription_create_router(request: Request, data: SubscriptionCreate, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
@@ -221,29 +154,6 @@ def modules_view(request: Request, user: User = Depends(verify_token), session: 
 @limiter.limit("5/minute")
 def moduls_view_alias(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     return RedirectResponse(url="/payments/modules", status_code=303)
-
-@payments_router.get("/plans")
-@limiter.limit("5/minute")
-def plans_view(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession)): 
-    """Renderiza la página de selección de planes."""
-    plans = session.query(Plans).order_by(Plans.id).all()
-     
-    return templates.TemplateResponse("plans/plans.html", {
-        "request": request,
-        "plans": plans,
-        "user": user,
-        "userEmail": user.email,
-        "amount": plans[0].amount if plans else 0,
-        "plan_basic_id": plans[0].id if len(plans) > 0 else None,
-        "plan_premium_id": plans[1].id if len(plans) > 1 else None,
-        "plan_enterprise_id": plans[2].id if len(plans) > 2 else None,
-        "plan_annual_id": plans[3].id if len(plans) > 3 else None,
-        "plan_basic_price": plans[0].amount/100 if len(plans) > 0 else 0,
-        "plan_premium_price": plans[1].amount/100 if len(plans) > 1 else 0,
-        "plan_enterprise_price": plans[2].amount/100 if len(plans) > 2 else 0,
-        "plan_annual_price": plans[3].amount/100 if len(plans) > 3 else 0,
-        "descuento": round((plans[2].amount * 12) - plans[3].amount, 2) / 100 if len(plans) > 3 else 0 #dividir entre 100 por lo centavos, bruh
-    })
     
 @payments_router.get("/success")
 @limiter.limit("5/minute")

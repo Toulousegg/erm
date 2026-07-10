@@ -1,5 +1,6 @@
 import requests
 from uuid import uuid4
+from moduls.moduls_models import Moduls
 
 from core.config import ABACATE_BASE_URL, ABACATE_PAY_KEY, BASE_URL
 
@@ -22,12 +23,13 @@ def safe_response(response):
     return body["data"]
 
 
-def create_customer(email: str) -> str:
+def create_customer(email: str, name: str):
     response = requests.post(
         f"{ABACATE_BASE_URL}/customers/create",
         headers=HEADERS,
         json={
-            "email": email
+            "email": email,
+            "name": name
         },
         timeout=15
     )
@@ -37,34 +39,52 @@ def create_customer(email: str) -> str:
     return data["id"]
 
 
-def create_subscription_product(name: str, amount: int, module_ids: list[int], external_id: str) -> str:
-    response = requests.post(
+def create_subscription_product(amount: int, module_ids: list[int], session) -> str:
+    sorted_ids = sorted(module_ids)
+    ids_string = "-".join(map(str, sorted_ids))
+    composite_external_id = f"prod-modulos-{ids_string}-val-{amount}"
+    moduls_names = session.query(Moduls.name).filter(Moduls.id.in_(module_ids)).all()
+    
+    print(f"DEBUG: Buscando/Creando producto con ID: {composite_external_id} y Precio: {amount}")
+
+    list_response = requests.get(
+        f"{ABACATE_BASE_URL}/products/list",
+        headers=HEADERS,
+        timeout=15
+    )
+
+    products_list = safe_response(list_response)
+
+    if isinstance(products_list, list):
+        for product in products_list:
+            if product.get("externalId") == composite_external_id:
+                print(f"reutilizando id: {product['id']}")
+                return product["id"]
+
+    create_response = requests.post(
         f"{ABACATE_BASE_URL}/products/create",
         headers=HEADERS,
         json={
-            "externalId": external_id,
-            "name": name,
+            "externalId": composite_external_id,
+            "name": f"Assinatura ERP - {len(module_ids)} - {moduls_names}",
             "price": amount,
             "currency": "BRL",
-            "description": f"Assinatura mensal dos módulos: {', '.join(map(str, module_ids))}",
             "cycle": "MONTHLY"
         },
         timeout=15
     )
+    
+    new_data = safe_response(create_response)
+    
+    return new_data["id"]
 
-    data = safe_response(response)
-
-    return data["id"]
-
-
-def create_subscription(email: str, module_ids: list[int], amount: int, external_id: str | None = None):
-    customer_id = create_customer(email)
+def create_subscription(name: str, email: str, module_ids: list[int], amount: int, external_id: str | None = None):
+    customer_id = create_customer(email, name)
     local_external_id = external_id or str(uuid4())
+    
     product_id = create_subscription_product(
-        name=f"ProntoERP Mensal #{local_external_id}",
         amount=amount,
-        module_ids=module_ids,
-        external_id=f"prontoerp-monthly-{local_external_id}-{uuid4().hex[:8]}"
+        module_ids=module_ids
     )
 
     payload = {
@@ -98,6 +118,7 @@ def create_subscription(email: str, module_ids: list[int], amount: int, external
     )
 
     return safe_response(response)
+
 
 
 def get_subscription(subscription_id: str):

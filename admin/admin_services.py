@@ -77,8 +77,8 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
     
     plan = session.query(Plans).filter(Plans.external_id == product_id).first()
 
-    if not plan:
-        raise HTTPException(404, "Plan no encontrado")
+    # if not plan:
+    #     raise HTTPException(404, "Plan no encontrado")
     
     headers = {
         "Authorization": f"Bearer {api_key}"
@@ -93,8 +93,8 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
     print(response.status_code)
     print(response.text)
     
-    session.delete(plan)
-    session.commit()
+    #session.delete(plan)
+    #session.commit()
 
     return safe_response(response)
 
@@ -102,7 +102,7 @@ def delete_plan_abacatepay(product_id, api_key, user, session):
 def list_modules(session):
     return session.query(Moduls).order_by(Moduls.id).all()
 
-def create_module(name: str, slug: str, price: int, description: str, frequency: int, image: UploadFile, session):
+def create_module(name: str, slug: str, price: int, description: str, image: UploadFile, session):
     if not name:
         raise ValueError("Falta name")
 
@@ -130,7 +130,7 @@ def create_module(name: str, slug: str, price: int, description: str, frequency:
         12: "ANNUALLY"
     }
 
-    cycle = cycle_map.get(frequency, "MONTHLY")
+    cycle = cycle_map.get(1, "MONTHLY")
 
     payload = {
         "externalId": f"plan_{name.lower()}_{uuid4().hex[:8]}",

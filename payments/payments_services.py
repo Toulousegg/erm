@@ -7,16 +7,11 @@ from datetime import date, timedelta
 
 
 def get_modules(session, module_ids: list[int]):
-    clean_module_ids = list(dict.fromkeys(module_ids))
-
-    if not clean_module_ids:
-        raise ValueError("Select at least one module.")
-
-    modules = session.query(Moduls).filter(Moduls.id.in_(clean_module_ids)).all()
+    modules = session.query(Moduls).filter(Moduls.id.in_(module_ids)).all()
     
-    if len(modules) != len(clean_module_ids):
-        raise ValueError("One or more modules do not exist.")
-
+    if len(modules) != len(module_ids):
+        raise ValueError("Some modules not found.")
+    
     return modules
 
 def calculate_modules_amount(modules):
@@ -27,12 +22,12 @@ def calculate_modules_amount(modules):
         )
 
 
-def create_local_subscription(session, user, company, module_ids, amount):
+def save_subscrition(session, user, company, module_ids, amount):
     existing_subscription = session.query(Subscription).filter(
         Subscription.company_id == company.id
     ).first()
 
-    if existing_subscription:
+    if existing_subscription: #este if es para actualizar la subs por si alguien quiere contratar otros modulos en el futuro
         existing_subscription.user_id = user.id
         existing_subscription.amount = amount
         existing_subscription.status = SubscriptionStatusEnum.PENDING
@@ -74,18 +69,19 @@ def create_subscription_service(session, user, module_ids: list[int]):
 
     if not company:
         raise ValueError("Company not found.")
+    
+    name = user.fullname or user.username
 
-    clean_module_ids = list(dict.fromkeys(module_ids))
-
-    modules = get_modules(session, clean_module_ids)
+    modules = get_modules(session, module_ids)
 
     amount = calculate_modules_amount(modules)
 
-    subscription = create_local_subscription(session, user, company, clean_module_ids, amount)
+    subscription = save_subscrition(session, user, company, module_ids, amount)
 
     provider_subscription = create_subscription(
+        name=name,
         email=user.email,
-        module_ids=clean_module_ids,
+        module_ids=module_ids,
         amount=amount,
         external_id=str(subscription.id)
     )

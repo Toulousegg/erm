@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 from datetime import date, datetime
@@ -6,9 +6,12 @@ from zoneinfo import ZoneInfo
 from users.users_model import User
 from projects.projects_model import Projects
 from time_tracking.time_tracking_model import TimeEntry
+from time_tracking.time_tracking_schema import TimeEntryCreate
+from time_tracking.time_tracking_model import TimeEntry
+from pydantic import ValidationError
 
 
-MANAGER_ROLES = {"admin", "owner", "Administrador"}
+MANAGER_ROLES = {"admin", "owner"}
 
 
 def is_time_tracking_manager(user: User):
@@ -303,3 +306,38 @@ def get_time_report(user: User, session: Session, start_date=None, end_date=None
             for row in by_project_stage_query
         ]
     }
+
+def get_selected_project_name(user: User, session: Session, project_id: int | None):
+    if not project_id:
+        return ""
+
+    project = session.query(Projects).filter(Projects.id == project_id, Projects.company_id == user.company_id).first()
+    return project.name if project else ""
+
+
+def get_selected_employee_name(user: User, session: Session, employee_id: int | None):
+    if not employee_id:
+        return ""
+
+    if not is_time_tracking_manager(user) and employee_id != user.id:
+        return ""
+
+    employee = session.query(User).filter(User.id == employee_id, User.company_id == user.company_id).first()
+    return employee.fullname if employee else ""
+
+
+async def parse_time_entry_create(request: Request):
+    content_type = request.headers.get("content-type", "")
+
+    try:
+        if "application/json" in content_type:
+            payload = await request.json()
+            return TimeEntryCreate(**payload), False
+
+        form = await request.form()
+        payload = dict(form)
+        payload["project_id"] = int(payload.get("project_id"))
+        return TimeEntryCreate(**payload), True
+
+    except (ValidationError, ValueError, TypeError) as e:
+        raise HTTPException(status_code=400, detail=str(e))

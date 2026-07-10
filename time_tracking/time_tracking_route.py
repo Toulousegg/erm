@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, Query
+from fastapi import APIRouter, Depends, Request, Query
 from fastapi.responses import RedirectResponse
-from pydantic import ValidationError
 from math import ceil
 from sqlalchemy.orm import Session
 from core.dependencies import CreateSession, templates
@@ -9,59 +8,14 @@ from users.users_model import User
 from projects.projects_model import Projects
 from core.enum.enum import ProjectStageEnum
 from utilities.limiter.limiter import limiter
-from time_tracking.time_tracking_schema import TimeEntryCreate, TimeEntryUpdate
+from time_tracking.time_tracking_schema import TimeEntryUpdate
 from time_tracking.time_tracking_model import TimeEntry
-from time_tracking.time_tracking_services import (
-    create_time_entry,
-    update_time_entry,
-    delete_time_entry,
-    show_time_entries,
-    time_entry_to_dict,
-    time_entries_to_dict,
-    get_time_report,
-    is_time_tracking_manager
-)
+from time_tracking.time_tracking_services import *
 from datetime import date
+from moduls.dependencies import require_module
 
 
 time_tracking_router = APIRouter(prefix="/time-tracking", tags=["time_tracking"])
-
-
-def get_selected_project_name(user: User, session: Session, project_id: int | None):
-    if not project_id:
-        return ""
-
-    project = session.query(Projects).filter(Projects.id == project_id, Projects.company_id == user.company_id).first()
-    return project.name if project else ""
-
-
-def get_selected_employee_name(user: User, session: Session, employee_id: int | None):
-    if not employee_id:
-        return ""
-
-    if not is_time_tracking_manager(user) and employee_id != user.id:
-        return ""
-
-    employee = session.query(User).filter(User.id == employee_id, User.company_id == user.company_id).first()
-    return employee.fullname if employee else ""
-
-
-async def parse_time_entry_create(request: Request):
-    content_type = request.headers.get("content-type", "")
-
-    try:
-        if "application/json" in content_type:
-            payload = await request.json()
-            return TimeEntryCreate(**payload), False
-
-        form = await request.form()
-        payload = dict(form)
-        payload["project_id"] = int(payload.get("project_id"))
-        return TimeEntryCreate(**payload), True
-
-    except (ValidationError, ValueError, TypeError) as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
 
 @time_tracking_router.post("/add")
 @limiter.limit("5/minute")

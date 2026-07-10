@@ -8,7 +8,7 @@ from admin.admin_services import create_plan, delete_plan_abacatepay, create_mod
 from core.config import ABACATE_PAY_KEY
 from utilities.limiter.limiter import limiter
 
-admin_router = APIRouter(prefix="/admin", tags=["admin"], include_in_schema=False)
+admin_router = APIRouter(prefix="/admin", tags=["admin"])#, include_in_schema=False)
 
 @admin_router.post("/create-plan")
 @limiter.limit("5/minute")
