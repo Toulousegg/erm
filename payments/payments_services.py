@@ -83,7 +83,8 @@ def create_subscription_service(session, user, module_ids: list[int]):
         email=user.email,
         module_ids=module_ids,
         amount=amount,
-        external_id=str(subscription.id)
+        external_id=str(subscription.id),
+        session=session
     )
 
     update_provider_subscription(session, subscription, provider_subscription)

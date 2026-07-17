@@ -17,7 +17,7 @@ from moduls.dependencies import require_module
 
 time_tracking_router = APIRouter(prefix="/time-tracking", tags=["time_tracking"])
 
-@time_tracking_router.post("/add")
+@time_tracking_router.post("/add", dependencies=[Depends(require_module("rastriamento"))])
 @limiter.limit("5/minute")
 async def create_time_entry_endpoint(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     data, is_form = await parse_time_entry_create(request)
@@ -29,7 +29,7 @@ async def create_time_entry_endpoint(request: Request, user: User = Depends(veri
     return time_entry_to_dict(entry)
 
 
-@time_tracking_router.get("/projects/search")
+@time_tracking_router.get("/projects/search", dependencies=[Depends(require_module("rastriamento"))])
 def search_projects_route(project: str = "", user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     projects = (
         session.query(Projects)
@@ -44,7 +44,7 @@ def search_projects_route(project: str = "", user: User = Depends(verify_token),
     ]
 
 
-@time_tracking_router.get("/users/search")
+@time_tracking_router.get("/users/search", dependencies=[Depends(require_module("rastriamento"))])
 def search_users_route(username: str = "", user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     if not is_time_tracking_manager(user):
         return [{"id": user.id, "name": user.username, "fullname": user.fullname}]
@@ -62,7 +62,7 @@ def search_users_route(username: str = "", user: User = Depends(verify_token), s
     ]
 
 
-@time_tracking_router.get("/report/data")
+@time_tracking_router.get("/report/data", dependencies=[Depends(require_module("rastriamento"))])
 def time_report_data(
     user: User = Depends(verify_token),
     session: Session = Depends(CreateSession),
@@ -83,14 +83,14 @@ def time_report_data(
     )
 
 
-@time_tracking_router.put("/{entry_id}")
+@time_tracking_router.put("/{entry_id}", dependencies=[Depends(require_module("rastriamento"))])
 @limiter.limit("8/minute")
 def update_time_entry_endpoint(request: Request, entry_id: int, data: TimeEntryUpdate, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     entry = update_time_entry(user, session, entry_id, data)
     return time_entry_to_dict(entry)
 
 
-@time_tracking_router.delete("/{entry_id}")
+@time_tracking_router.delete("/{entry_id}", dependencies=[Depends(require_module("rastriamento"))])
 @limiter.limit("8/minute")
 def delete_time_entry_endpoint(request: Request, entry_id: int, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     return delete_time_entry(user, session, entry_id)
@@ -98,7 +98,7 @@ def delete_time_entry_endpoint(request: Request, entry_id: int, user: User = Dep
 
 # VIEWS
 
-@time_tracking_router.get("/dashboard")
+@time_tracking_router.get("/dashboard", dependencies=[Depends(require_module("rastriamento"))])
 def time_tracking_dashboard(
     request: Request,
     user: User = Depends(verify_token),
@@ -158,7 +158,7 @@ def time_tracking_dashboard(
     })
 
 
-@time_tracking_router.get("/add")
+@time_tracking_router.get("/add", dependencies=[Depends(require_module("rastriamento"))])
 def create_time_entry_view(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     projects = session.query(Projects).filter(Projects.company_id == user.company_id).order_by(Projects.name).all()
 
@@ -170,7 +170,7 @@ def create_time_entry_view(request: Request, user: User = Depends(verify_token),
     })
 
 
-@time_tracking_router.get("/reports")
+@time_tracking_router.get("/reports", dependencies=[Depends(require_module("rastriamento"))])
 def time_tracking_reports(
     request: Request,
     user: User = Depends(verify_token),

@@ -7,6 +7,9 @@ from datetime import datetime, timedelta, timezone
 from core.email_service import send_verification_email
 from core.config import VERIFICATION_TOKEN_EXPIRE_MINUTES
 from users.users_model import Company
+from io import BytesIO
+import barcode
+from barcode.writer import ImageWriter
 
 def authuser(identifier: str, password: str, session: Session):
     user = session.query(User).filter((User.username == identifier) | (User.email == identifier)).first()

@@ -78,13 +78,14 @@ def create_subscription_product(amount: int, module_ids: list[int], session) -> 
     
     return new_data["id"]
 
-def create_subscription(name: str, email: str, module_ids: list[int], amount: int, external_id: str | None = None):
+def create_subscription(session, name: str, email: str, module_ids: list[int], amount: int, external_id: str | None = None):
     customer_id = create_customer(email, name)
     local_external_id = external_id or str(uuid4())
     
     product_id = create_subscription_product(
         amount=amount,
-        module_ids=module_ids
+        module_ids=module_ids,
+        session=session
     )
 
     payload = {

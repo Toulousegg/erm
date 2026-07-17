@@ -36,11 +36,48 @@ def delete_inventory_item_route(request: Request, item_name: str, session: Sessi
     return RedirectResponse(url="/inv/dashboard", status_code=303)
 
 
+@inventory_router.get("/barcode-output", dependencies=[Depends(require_module("inventory"))])
+def barcode_output_route(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    company_workers = (
+        session.query(User)
+        .filter(User.company_id == user.company_id)
+        .order_by(User.fullname.asc())
+        .all()
+    )
+
+    workers = [
+        {
+            "id": worker.id,
+            "name": worker.fullname or worker.username,
+            "username": worker.username,
+            "code": worker.barcode_code,
+            "role": worker.role,
+            "can_move_inventory": worker.can_move_inventory,
+        }
+        for worker in company_workers
+        if worker.id is not None
+    ]
+
+    return templates.TemplateResponse(
+        "inv/barcode_output.html",
+        {
+            "request": request,
+            "user": user,
+            "workers": workers,
+        }
+    )
+
+
 @inventory_router.get("/dashboard", dependencies=[Depends(require_module("inventory"))])
 def inventory_dashboard(request: Request, search: str = None, session: Session = Depends(CreateSession), user: User = Depends(verify_token), page_items: int = Query(1, ge=1)):
     PER_PAGE = 30
     
     base_query = session.query(Inventory).filter(Inventory.company_id == user.company_id)
+
+    if search:
+        search_value = f"%{search.strip()}%"
+        base_query = base_query.filter(Inventory.item_name.ilike(search_value))
+
     total_items = base_query.count()
     total_items_page = ceil(total_items / PER_PAGE)
     offset_pages = (page_items - 1) * PER_PAGE
@@ -56,7 +93,16 @@ def inventory_dashboard(request: Request, search: str = None, session: Session =
                         "description": item.description, 
                         "quantity": item.quantity,
                         "updated_at": item.updated_at,
-                        "owner": item.owner.username
+                        "owner": item.owner.username,
+                        "logs": [{
+                            "id": log.id,
+                            "action": log.action,
+                            "quantity_changed": log.quantity_changed,
+                            "details": log.details,
+                            "created_at": log.created_at,
+                            "user_id": log.user_id,
+                            "user_name": log.user.username if log.user else None,
+                        } for log in item.logs]
                         } 
                         for item in item_per_page
                         ],

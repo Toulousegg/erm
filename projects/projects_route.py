@@ -138,7 +138,7 @@ def search_users_route(username: str, user: User = Depends(verify_token), sessio
         for user in users
     ]
             
-@projects_router.get("/public/projects/client", dependencies=[Depends(require_module("projects"))])
+@projects_router.get("/public/projects/client")
 def shared_projects_client_view(request: Request, token: str, session: Session = Depends(CreateSession)):
     shared_project = get_shared_project_by_token(token, session)
     

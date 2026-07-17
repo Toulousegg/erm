@@ -4,23 +4,7 @@ from core.dependencies import CreateSession, templates
 from users.users_model import User
 from core.security import verify_token
 from cronograma.cronograma_schemas import *
-from cronograma.cronograma_services import (create_schedule, 
-                                            get_current_schedule, 
-                                            update_schedule, 
-                                            delete_schedule, 
-                                            create_task, 
-                                            update_task, 
-                                            delete_task, 
-                                            create_milestone, 
-                                            toggle_milestone, 
-                                            delete_milestone, 
-                                            get_schedule_board, 
-                                            get_schedule_categories, 
-                                            create_schedule_category, 
-                                            update_schedule_category, 
-                                            delete_schedule_category,
-                                            generate_share_link,
-                                            get_shared_schedule)
+from cronograma.cronograma_services import *
 from moduls.dependencies import require_module
 
 cronograma_router = APIRouter(prefix="/schedule",tags=["Schedule"])
@@ -102,13 +86,7 @@ def share_schedule(schedule_id: int, session: Session = Depends(CreateSession), 
         "id": schedule_id
     }
 
-
-
-
-
-#VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS #VIEWS
-
-
+#VIEWS
 
 @cronograma_router.get("/", dependencies=[Depends(require_module("schedule"))])
 def get_board(request: Request):
@@ -128,7 +106,7 @@ def get_categories(session: Session = Depends(CreateSession), user: User = Depen
 
     return get_schedule_categories(session, company_id=user.company_id)
 
-@cronograma_router.get("/public/schedule", dependencies=[Depends(require_module("schedule"))])
+@cronograma_router.get("/public/schedule")
 def shared_schedule_view(request: Request, token: str, session: Session = Depends(CreateSession)):
     shared_schedule = get_shared_schedule(session, token)
     

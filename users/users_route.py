@@ -10,9 +10,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from users.users_service import authuser, generate_and_send_verification_code, verify_user_email, create_company
 from core.dependencies import templates
 from core.config import SECRET_KEY, ALGORITHM
-from utilities.net.autorouter import use_autorouter
 from jose import jwt
 from utilities.limiter.limiter import limiter
+from core.email_service import send_employee_barcode_to_owner
+from core.barcode_service import generate_code128, generate_barcode_image
+from fastapi.responses import StreamingResponse
 
 home_router = APIRouter(prefix="/home", tags=["home"])
 
@@ -73,6 +75,18 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
     await ensure_company_assignment_reminder(user, session)
 
     response = RedirectResponse(url=next_onboarding_url(user), status_code=303)
+    
+    if not user.barcode:
+        try:
+            if user.company:
+                user.barcode = generate_code128(12)
+                session.commit()
+                await send_employee_barcode_to_owner(user.company.owner.email, user.fullname, user.username, user.barcode)
+                return set_auth_cookies(RedirectResponse(url="/home/barcode/", status_code=303), user.id)
+
+        except Exception as e:
+            print("Error sending barcode email:", e)
+            return set_auth_cookies(RedirectResponse(url=next_onboarding_url(user), status_code=303), user.id)
 
     return set_auth_cookies(response, user.id)
     
@@ -81,12 +95,12 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 @limiter.limit("2/minute")
 async def create_user(request: Request, session: Session = Depends(CreateSession), company: str = Form(None), fullname: str = Form(...), username: str = Form(...), email: str = Form(...), password: str = Form(...)):
     
-    user = session.query(User).filter((User.email==email) | (User.username==username)).first()
+    user = session.query(User).filter((User.email==email) | (User.username==username) | (User.fullname==fullname)).first()
     
     try:
         if user:
             return templates.TemplateResponse("home/signup.html", {
-                "message": "User with this email or username already exists",
+                "message": "User already exists",
                 "request": request})
         
         if len(password) < 8:
@@ -108,8 +122,6 @@ async def create_user(request: Request, session: Session = Depends(CreateSession
         session.add(new_user)
         session.flush()
         session.refresh(new_user)
-        
-        session.commit()
 
         verification_jwt = create_verification_token(new_user.email, "email_verification")
 
@@ -121,7 +133,6 @@ async def create_user(request: Request, session: Session = Depends(CreateSession
             
             session.add(join_request)
             session.commit()
-            session.refresh(join_request)
 
             await notify_company_join(join_request.id, session, new_user)
 
@@ -182,6 +193,7 @@ async def verify_email(request: Request,session: Session = Depends(CreateSession
     if verify_user_email(user, code, session, {"email": email, "purpose": purpose}):
         if purpose == "email_verification":
             response = RedirectResponse(url=next_onboarding_url(user), status_code=status.HTTP_303_SEE_OTHER)
+            
             return set_auth_cookies(response, user.id)
 
         return RedirectResponse(url="/home/login", status_code=status.HTTP_303_SEE_OTHER)
@@ -354,13 +366,6 @@ def forgot_password_view(request: Request):
 def create_company_alias():
     return RedirectResponse(url="/home/create-company", status_code=303)
 
-
-use_autorouter(
-    home_router, 
-    templates, 
-    '/home'
-)
-
 @home_router.post("/refresh")
 def refresh_token(request: Request, session: Session = Depends(CreateSession)):
     
@@ -400,3 +405,50 @@ def refresh_token(request: Request, session: Session = Depends(CreateSession)):
     )
      
     return response
+
+@home_router.get("/login")
+def login_view(request: Request):
+    return templates.TemplateResponse("home/login.html", {
+        "request": request
+    })
+    
+@home_router.get("/signup")
+def signup_view(request: Request):
+    return templates.TemplateResponse("home/signup.html", {
+        "request": request
+    })
+
+@home_router.get("/barcode")
+def barcode_page(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    user = session.query(User).filter(User.id == user.id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return templates.TemplateResponse(
+        "home/barcode.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )
+    
+@home_router.get("/barcode/view")
+def get_user_barcode(session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    user = session.query(User).filter(User.id == user.id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.barcode:
+        raise HTTPException(status_code=404, detail="User has no barcode")
+
+    barcode_buffer = generate_barcode_image(user.barcode)
+
+    return StreamingResponse(
+        barcode_buffer,
+        media_type="image/png",
+        headers={
+            "Content-Disposition": f'inline; filename="barcode_{user.username}.png"'
+        }
+    )

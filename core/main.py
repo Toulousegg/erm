@@ -34,7 +34,7 @@ app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 @app.get("/")
 def home(request: Request):
     return templates.TemplateResponse(
-    "home/home.html",
+    "home/index.html",
     {"request": request}
     )
 

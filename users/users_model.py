@@ -21,8 +21,10 @@ class User(base):
     verification_code = Column(String, nullable=True)
     verification_code_expires_at = Column(DateTime(timezone=True), nullable=True)
     inventory_items = relationship("Inventory", back_populates="owner")
+    inventory_logs = relationship("InventoryLog", foreign_keys="InventoryLog.user_id", back_populates="user")
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=True, index=True)
     company = relationship("Company", foreign_keys=[company_id])
+    barcode = Column(String, unique=True, index=True, nullable=True)
     role = Column(String, default=UserRoleEnum.auxiliary.value, nullable=False) #admin, carpenter, auxiliary, owner
     sells = relationship("Sells", foreign_keys="Sells.user_id", back_populates="user") # quien hizo la venta, relacion entre sells y users
     in_charge = relationship("Sells", foreign_keys="Sells.carpenter_id", back_populates="carpenter")
