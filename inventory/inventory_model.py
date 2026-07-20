@@ -31,5 +31,6 @@ class Inventory(base):
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     owner = relationship("User", back_populates="inventory_items")
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    code = Column(String(50), nullable=False, unique=True)
     company = relationship("Company", back_populates="company_items")
     logs = relationship("InventoryLog", back_populates="inventory", cascade="all, delete-orphan")

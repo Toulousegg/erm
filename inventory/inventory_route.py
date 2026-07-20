@@ -1,26 +1,48 @@
 from fastapi import APIRouter, Depends, Request, Form, Query
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from math import ceil
 from sqlalchemy.orm import Session
 from core.dependencies import CreateSession
 from inventory.inventory_model import Inventory
-from inventory.inventory_schema import ItemCreate
+from inventory.inventory_schema import ItemCreate, InventoryOutputRequest
 from users.users_model import User
 from core.security import verify_token
-from inventory.inventory_service import edit_inventory_item, delete_inventory_item, create_inventory_item
+from inventory.inventory_service import edit_inventory_item, create_inventory_item, create_inventory_output
 from core.dependencies import templates
 from utilities.limiter.limiter import limiter
 from moduls.dependencies import require_module
 from core.dependencies import render_template
+from core.barcode_service import generate_barcode_image
 
 inventory_router = APIRouter(prefix="/inv", tags=["inv"])
 
-@inventory_router.post("/add", dependencies=[Depends(require_module("inventory"))])
+@inventory_router.post("/add",dependencies=[Depends(require_module("inventory"))])
 @limiter.limit("5/minute")
 def create_inventory_item_route(request: Request, item_name: str = Form(...), description: str = Form(...), quantity: int = Form(...), session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
-    create_inventory_item(item_name, description, quantity, session, user)
-    return RedirectResponse(url="/inv/dashboard", status_code=303)
 
+    item = create_inventory_item(item_name, description, quantity, session, user)
+
+    image = generate_barcode_image(item["code"])
+
+    return StreamingResponse(
+        image,
+        media_type="image/png",
+        headers={
+            "Content-Disposition": f"inline; filename={item['code']}.png"
+        }
+    )
+
+@inventory_router.post("/barcode/output", dependencies=[Depends(require_module("inventory"))])
+def barcode_output(data: InventoryOutputRequest, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    return create_inventory_output(
+        items=[
+            item.model_dump()
+            for item in data.items
+        ],
+        worker_id=data.worker_id,
+        user=user,
+        session=session
+    )
 
 @inventory_router.post("/edit/{item_name}", dependencies=[Depends(require_module("inventory"))])
 @limiter.limit("5/minute")
@@ -30,42 +52,26 @@ def update_inventory_item_route(request: Request, item_name: str, item_name_new:
     return RedirectResponse(url="/inv/dashboard", status_code=303)
 
 
-@inventory_router.post("/delete/{item_name}", dependencies=[Depends(require_module("inventory"))])
-@limiter.limit("5/minute")
-def delete_inventory_item_route(request: Request, item_name: str, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
-    delete_inventory_item(item_name, user, session)
-    return RedirectResponse(url="/inv/dashboard", status_code=303)
+@inventory_router.get("/barcode/worker/{code}", dependencies=[Depends(require_module("inventory"))])
+def get_worker_by_barcode(code: str, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
 
+    worker = session.query(User).filter(User.company_id == user.company_id, User.barcode == code).first()
 
-@inventory_router.get("/barcode-output", dependencies=[Depends(require_module("inventory"))])
-def barcode_output_route(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
-    company_workers = (
-        session.query(User)
-        .filter(User.company_id == user.company_id)
-        .order_by(User.fullname.asc())
-        .all()
-    )
-
-    workers = [
-        {
-            "id": worker.id,
-            "name": worker.fullname or worker.username,
-            "username": worker.username,
-            "code": worker.barcode_code,
-            "role": worker.role,
-            "can_move_inventory": worker.can_move_inventory,
+    if not worker:
+        return {
+            "success": False,
+            "message": "Código inválido"
         }
-        for worker in company_workers
-        if worker.id is not None
-    ]
 
-    return render_template(
-        "inv/barcode_output.html", request, session, user,
-        {
-            "workers": workers,
+    return {
+    "success": True,
+    "worker": {
+        "id": worker.id,
+        "name": worker.fullname,
+        "role": worker.role,
+        "can_move_inventory": True
         }
-    )
-
+    }
 
 @inventory_router.get("/dashboard", dependencies=[Depends(require_module("inventory"))])
 def inventory_dashboard(request: Request, search: str = None, session: Session = Depends(CreateSession), user: User = Depends(verify_token), page_items: int = Query(1, ge=1)):
@@ -109,6 +115,16 @@ def inventory_dashboard(request: Request, search: str = None, session: Session =
             "total_pages": total_items_page,
             "param": "items_page"
         })
+    
+@inventory_router.get("/barcode/output", dependencies=[Depends(require_module("inventory"))])
+def barcode_output_route(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+
+    return render_template(
+        "inv/barcode_output.html",
+        request=request,
+        session=session,
+        user=user
+    )
 
 
 #proxima tarefa, quero que el inventory_log seja criado automaticamente toda vez que um item for editado ou deletado, e que ele armazene o id do 

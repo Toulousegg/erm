@@ -35,3 +35,11 @@ class InvLog(BaseModel):
 
     class Config:
         from_attributes = True
+
+class OutputItem(BaseModel):
+    code: str
+    quantity: int
+
+class InventoryOutputRequest(BaseModel):
+    worker_id: int
+    items: list[OutputItem]

@@ -1,12 +1,7 @@
 from moduls.moduls_services import get_company_modules
-from fastapi.templating import Jinja2Templates
-import time
 
 
 def get_template_context(request, user, session):
-
-    start = time.time()
-     
     modules = []
 
     if user and user.company_id:
@@ -23,10 +18,8 @@ def get_template_context(request, user, session):
             )
         ]
 
-    print("Tiempo módulos:", time.time() - start)
-
-
     return {
         "request": request,
+        "user": user,
         "modules": modules
     }
