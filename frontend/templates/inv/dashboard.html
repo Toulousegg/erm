@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Estoque</title>
 
-    <link rel="stylesheet" href="../../static/inv/dashboard.css?v=3">
+    <link rel="stylesheet" href="../../static/inv/dashboard.css?v=5">
     <script type="module" src="/static/js/refresh_token.js"></script>
 </head>
 
@@ -88,6 +88,38 @@
 
         {% include "pagination.html" %}
     </main>
+
+    <div class="barcode-modal" id="barcode-modal">
+
+        <div class="barcode-box">
+
+            <button class="close-barcode" id="close-barcode">
+                ✕
+            </button>
+
+            <h2 id="barcode-name">
+                Código generado
+            </h2>
+
+            <img id="barcode-preview" src="" alt="Código de barras">
+
+
+            <p id="barcode-text"></p>
+
+
+            <button class="primary-btn" id="download-barcode">
+                Descargar imagen
+            </button>
+
+
+            <button class="primary-btn" id="copy-barcode">
+                Copiar código
+            </button>
+
+
+        </div>
+
+    </div>
     <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('collapsed');
@@ -97,6 +129,20 @@
             const addBtn = document.getElementById("add-material-btn");
             const form = document.querySelector(".add-material-form");
 
+            const modal =
+                document.getElementById("barcode-modal");
+
+            const barcodeImage =
+                document.getElementById("barcode-preview");
+
+            const barcodeText =
+                document.getElementById("barcode-text");
+
+            const barcodeName =
+                document.getElementById("barcode-name");
+
+            let currentBarcode = "";
+
             if (!addBtn || !form) {
                 console.error("Botão ou formulário não encontrado");
                 return;
@@ -104,6 +150,76 @@
 
             addBtn.addEventListener("click", () => {
                 form.classList.toggle("active");
+            });
+
+            form.addEventListener("submit", async (e) => {
+
+                e.preventDefault();
+
+
+                const formData =
+                    new FormData(form);
+
+
+
+                const response =
+                    await fetch(
+                        "/inv/add",
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+
+                if (!data.success) {
+
+                    alert(data.message);
+
+                    return;
+                }
+
+
+
+                currentBarcode =
+                    data.barcode;
+
+
+
+                barcodeName.textContent =
+                    data.item_name;
+
+
+
+                barcodeText.textContent =
+                    data.barcode;
+
+
+
+                /*
+                   Aquí llamas tu endpoint que genera
+                   StreamingResponse del barcode
+                */
+
+                barcodeImage.src =
+                    `/inv/barcode/view/${data.barcode}`;
+
+
+
+                modal.classList.add(
+                    "active"
+                );
+
+
+
+                form.reset();
+
+
             });
 
             document.querySelectorAll('.delete-btn').forEach(btn => {
@@ -183,6 +299,62 @@
                     row.querySelector('.cancel-edit').addEventListener('click', () => location.reload());
                 });
             });
+
+            document
+                .getElementById("close-barcode")
+                .addEventListener(
+                    "click",
+                    () => {
+
+                        modal.classList.remove(
+                            "active"
+                        );
+
+                    });
+
+
+
+            document
+                .getElementById("copy-barcode")
+                .addEventListener(
+                    "click",
+                    () => {
+
+                        navigator.clipboard.writeText(
+                            currentBarcode
+                        );
+
+                        alert(
+                            "Código copiado"
+                        );
+
+                    });
+
+
+
+            document
+                .getElementById("download-barcode")
+                .addEventListener(
+                    "click",
+                    () => {
+
+
+                        const link =
+                            document.createElement("a");
+
+
+                        link.href =
+                            barcodeImage.src;
+
+
+                        link.download =
+                            `${currentBarcode}.png`;
+
+
+                        link.click();
+
+
+                    });
         });
     </script>
     {% include 'notification.html' %}

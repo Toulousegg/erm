@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Form, Query
+from fastapi import APIRouter, Depends, Request, Form, Query, HTTPException
 from fastapi.responses import RedirectResponse, StreamingResponse
 from math import ceil
 from sqlalchemy.orm import Session
@@ -22,15 +22,12 @@ def create_inventory_item_route(request: Request, item_name: str = Form(...), de
 
     item = create_inventory_item(item_name, description, quantity, session, user)
 
-    image = generate_barcode_image(item["code"])
-
-    return StreamingResponse(
-        image,
-        media_type="image/png",
-        headers={
-            "Content-Disposition": f"inline; filename={item['code']}.png"
-        }
-    )
+    return {
+        "success": True,
+        "message": item["message"],
+        "item_name": item["item"],
+        "barcode": item["code"],
+    }
 
 @inventory_router.post("/barcode/output", dependencies=[Depends(require_module("inventory"))])
 def barcode_output(data: InventoryOutputRequest, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
@@ -126,8 +123,19 @@ def barcode_output_route(request: Request, session: Session = Depends(CreateSess
         user=user
     )
 
+@inventory_router.get("/barcode/view/{code}", dependencies=[Depends(require_module("inventory"))])
+def view_barcode(code: str, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
+    item = session.query(Inventory).filter(Inventory.code == code).first()
+    
+    if not item:
+        raise HTTPException(
+            status_code=404,
+            detail="Material no encontrado"
+        )
 
-#proxima tarefa, quero que el inventory_log seja criado automaticamente toda vez que um item for editado ou deletado, e que ele armazene o id do 
-#item, o id do usuário que fez a ação, a ação realizada (adição, remoção, edição) e a quantidade alterada (se aplicável) dentro do endpoint de edição e deleção do item. 
-#O endpoint de leitura do inventário deve retornar também os logs relacionados a cada item, para que seja possível acompanhar o histórico de alterações de cada item.
-#e na leitura do inventário, quero que seja possível filtrar os itens por nome, para facilitar a busca por itens específicos.
+    image = generate_barcode_image(item.code)
+
+    return StreamingResponse(
+        image,
+        media_type="image/png"
+    )

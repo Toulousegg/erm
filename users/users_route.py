@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.responses import RedirectResponse, JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from users.users_model import User, Company, CompanyJoinRequest
 from notification.notification_services import manager, create_notification, notify_company_join, ensure_company_assignment_reminder
@@ -439,3 +439,24 @@ def home_view(request: Request, session: Session = Depends(CreateSession), user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     return render_template("home/home.html", request, session, user)
+
+@home_router.get("/barcode/view")
+def view_barcode(user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
+
+    image = generate_barcode_image(user.barcode)
+
+    return StreamingResponse(
+        image,
+        media_type="image/png"
+    )
+    
+@home_router.get("/create-company")
+def create_company_view(request: Request, user: User = Depends(verify_token)):
+
+    return templates.TemplateResponse(
+        "home/create-company.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )

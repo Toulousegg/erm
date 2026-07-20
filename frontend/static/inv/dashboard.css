@@ -821,3 +821,76 @@ tr:has(.save-btn) {
 tr:has(.save-btn):hover {
     background: #eff6ff;
 }
+
+.barcode-modal {
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.5);
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+
+}
+
+
+.barcode-modal.active {
+
+    display:flex;
+
+}
+
+
+
+.barcode-box {
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:15px;
+
+    width:350px;
+
+    text-align:center;
+
+    position:relative;
+
+}
+
+
+
+.barcode-box img {
+
+    width:250px;
+
+    margin:20px;
+
+}
+
+
+
+.close-barcode {
+
+    position:absolute;
+
+    right:10px;
+
+    top:10px;
+
+    border:none;
+
+    background:none;
+
+    font-size:20px;
+
+    cursor:pointer;
+
+}
