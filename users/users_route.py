@@ -14,7 +14,7 @@ from jose import jwt
 from utilities.limiter.limiter import limiter
 from core.email_service import send_employee_barcode_to_owner
 from core.barcode_service import generate_code128, generate_barcode_image
-from fastapi.responses import StreamingResponse
+from core.dependencies import render_template
 
 home_router = APIRouter(prefix="/home", tags=["home"])
 
@@ -28,8 +28,7 @@ def next_onboarding_url(user: User) -> str:
     if not subscription or not subscription.is_active:
         return "/payments/modules"
 
-    return "/inv/dashboard"
-
+    return "/home/home"
 
 def set_auth_cookies(response: RedirectResponse, user_id: int):
     access_token = create_token(user_id)
@@ -433,22 +432,10 @@ def barcode_page(request: Request, session: Session = Depends(CreateSession), us
         }
     )
     
-@home_router.get("/barcode/view")
-def get_user_barcode(session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
-    user = session.query(User).filter(User.id == user.id).first()
-
+@home_router.get("/home")
+def home_view(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+    
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
-    if not user.barcode:
-        raise HTTPException(status_code=404, detail="User has no barcode")
-
-    barcode_buffer = generate_barcode_image(user.barcode)
-
-    return StreamingResponse(
-        barcode_buffer,
-        media_type="image/png",
-        headers={
-            "Content-Disposition": f'inline; filename="barcode_{user.username}.png"'
-        }
-    )
+    return render_template("home/home.html", request, session, user)

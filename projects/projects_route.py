@@ -19,6 +19,8 @@ from utilities.limiter.limiter import limiter
 from moduls.dependencies import require_module
 from time_tracking.time_tracking_model import TimeEntry
 from time_tracking.time_tracking_services import format_minutes
+from core.dependencies import render_template
+
 
 projects_router = APIRouter(prefix="/projects", tags=["prj"])
 
@@ -109,8 +111,8 @@ def show_projects_view(request: Request, user: User = Depends(verify_token), ses
     
     transformed_projects = tranform_contents(base_query)
     
-    return templates.TemplateResponse(
-        "projects/projects_dashboard.html",
+    return render_template(
+        "projects/projects_dashboard.html", request, session, user,
         {
             "request": request,
             "user": user,

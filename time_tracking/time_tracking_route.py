@@ -13,6 +13,7 @@ from time_tracking.time_tracking_model import TimeEntry
 from time_tracking.time_tracking_services import *
 from datetime import date
 from moduls.dependencies import require_module
+from core.dependencies import render_template
 
 
 time_tracking_router = APIRouter(prefix="/time-tracking", tags=["time_tracking"])
@@ -143,7 +144,7 @@ def time_tracking_dashboard(
         stage=stage
     )
 
-    return templates.TemplateResponse("time_tracking/dashboard.html", {
+    return render_template("time_tracking/dashboard.html", request, session, user, {
         "request": request,
         "user": user,
         "entries": entries,
@@ -162,7 +163,7 @@ def time_tracking_dashboard(
 def create_time_entry_view(request: Request, user: User = Depends(verify_token), session: Session = Depends(CreateSession)):
     projects = session.query(Projects).filter(Projects.company_id == user.company_id).order_by(Projects.name).all()
 
-    return templates.TemplateResponse("time_tracking/add.html", {
+    return render_template("time_tracking/add.html", request, session, user, {
         "request": request,
         "user": user,
         "projects": projects,
@@ -196,7 +197,7 @@ def time_tracking_reports(
     if is_time_tracking_manager(user):
         users = session.query(User).filter(User.company_id == user.company_id).order_by(User.fullname).all()
 
-    return templates.TemplateResponse("time_tracking/reports.html", {
+    return render_template("time_tracking/reports.html", request, session, user, {
         "request": request,
         "user": user,
         "report": report,

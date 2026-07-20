@@ -44,7 +44,6 @@ def assign_modules(session, company_id: int, module_ids: list[int]):
 
 
 def get_company_modules(session, company_id: int):
-    
     return session.query(Moduls).join(Moduls_Companies, Moduls.id == Moduls_Companies.modul_id).filter(Moduls_Companies.company_id == company_id).all()
 
 

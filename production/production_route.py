@@ -9,6 +9,7 @@ from production.production_schema import create_production
 from users.users_model import User
 from utilities.limiter.limiter import limiter
 from moduls.dependencies import require_module
+from core.dependencies import render_template
 
 
 production_router = APIRouter(prefix="/production", tags=["production"])
@@ -105,8 +106,8 @@ def show_production_by_client(request: Request, session: Session = Depends(Creat
     offset_pages = (page_projects - 1) * PER_PAGE
     projects_per_page = (base_query.offset(offset_pages).limit(PER_PAGE).all())
     
-    return templates.TemplateResponse(
-        "production/production.html",
+    return render_template(
+        "production/production.html", request, session, user,
         {   
             "user": user,
             "request": request,

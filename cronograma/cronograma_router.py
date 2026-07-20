@@ -6,6 +6,7 @@ from core.security import verify_token
 from cronograma.cronograma_schemas import *
 from cronograma.cronograma_services import *
 from moduls.dependencies import require_module
+from core.dependencies import render_template
 
 cronograma_router = APIRouter(prefix="/schedule",tags=["Schedule"])
 
@@ -89,13 +90,10 @@ def share_schedule(schedule_id: int, session: Session = Depends(CreateSession), 
 #VIEWS
 
 @cronograma_router.get("/", dependencies=[Depends(require_module("schedule"))])
-def get_board(request: Request):
+def get_board(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
 
-    return templates.TemplateResponse(
-        "cronograma/cronograma.html", 
-        {
-            "request": request
-            })
+    return render_template(
+        "cronograma/cronograma.html", request, session, user,)
     
 @cronograma_router.get("/board", dependencies=[Depends(require_module("schedule"))])
 def get_board_data(start: date, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):

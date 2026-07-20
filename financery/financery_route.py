@@ -5,27 +5,13 @@ from sqlalchemy.orm import Session
 from core.dependencies import CreateSession, templates
 from core.security import verify_token
 from users.users_model import User
-from financery.financery_services import (
-    add_sell,
-    kdis_calculate,
-    financial_transaction_charts,
-    get_pending_debts,
-    get_pending_receivables,
-    add_debts,
-    to_receive,
-    pay_debt,
-    pay_receivable,
-    delete_payment,
-    delete_receivable,
-    edit_payment,
-    edit_receivable,
-    is_owner
-)
+from financery.financery_services import *
 from financery.financery_models import Sells, Receivable, Debt
 from financery.financery_schema import SellsSchema, DebtCreateSchema, ReceivableCreate
 from datetime import date
 from utilities.limiter.limiter import limiter
 from moduls.dependencies import require_module
+from core.dependencies import render_template
 
 financery_router = APIRouter(prefix="/financery", tags=["financery"])
 
@@ -206,8 +192,7 @@ def show_sell(request: Request, user: User = Depends(verify_token), session: Ses
         today = date.today()
         
 
-        return templates.TemplateResponse("financery/financery_dashboard.html", {
-            "request": request,
+        return render_template("financery/financery_dashboard.html", request, session, user, {
             "sells": sells,
             "kdi_data": kdi_data,
             "chart_data": chart_data,

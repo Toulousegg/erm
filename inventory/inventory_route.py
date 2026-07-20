@@ -11,6 +11,7 @@ from inventory.inventory_service import edit_inventory_item, delete_inventory_it
 from core.dependencies import templates
 from utilities.limiter.limiter import limiter
 from moduls.dependencies import require_module
+from core.dependencies import render_template
 
 inventory_router = APIRouter(prefix="/inv", tags=["inv"])
 
@@ -58,11 +59,9 @@ def barcode_output_route(request: Request, session: Session = Depends(CreateSess
         if worker.id is not None
     ]
 
-    return templates.TemplateResponse(
-        "inv/barcode_output.html",
+    return render_template(
+        "inv/barcode_output.html", request, session, user,
         {
-            "request": request,
-            "user": user,
             "workers": workers,
         }
     )
@@ -84,10 +83,9 @@ def inventory_dashboard(request: Request, search: str = None, session: Session =
     item_per_page = (base_query.offset(offset_pages).limit(PER_PAGE).all())
     
     
-    return templates.TemplateResponse(
-        "inv/dashboard.html",
+    return render_template(
+        "inv/dashboard.html", request, session, user,
         {
-            "request": request,
             "items": [{"item_name": item.item_name,
                         "id": item.id,
                         "description": item.description, 

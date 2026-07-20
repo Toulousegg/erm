@@ -10,6 +10,7 @@ from contacts.contacts_schema import ContactsBase, ContactUpdate
 from users.users_model import User
 from utilities.limiter.limiter import limiter
 from moduls.dependencies import require_module
+from core.dependencies import render_template
 
 
 contacts_router = APIRouter(prefix="/ctc", tags=["ctc"])
@@ -51,11 +52,8 @@ def get_contacts(request: Request, session: Session = Depends(CreateSession), us
     offset_pages = (page_contacts - 1) * PER_PAGE
     contacts_per_page = (base_query.offset(offset_pages).limit(PER_PAGE).all())
 
-    return templates.TemplateResponse(
-        "contacts/contacts.html",
-        {
-            "request": request,
-            "user": user,
+    return render_template(
+        "contacts/contacts.html", request, session, user, {
             "page": page_contacts,
             "total_pages": total_contacts_page,
             "param": "page_contacts",
