@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salida de inventario por códigos</title>
+    <title>Saida de inventario por códigos</title>
 
     <link rel="stylesheet" href="../../static/inv/dashboard.css?v=4">
     <script type="module" src="/static/js/refresh_token.js"></script>
@@ -14,8 +14,8 @@
     <main class="main-content">
         <header class="header-top">
             <div class="page-title">
-                <h1>Salida de inventario</h1>
-                <p>Proceso de picking con lectura de códigos de barras para control de stock y auditoría.</p>
+                <h1>Saida de inventario</h1>
+                <p>Processo de picking com leitura de códigos de barras para controle de stock e auditoria.</p>
             </div>
 
             <div class="top-bar">
@@ -24,14 +24,14 @@
         </header>
 
         <section class="controls">
-            <a class="primary-btn" href="/inv/dashboard">← Volver al inventario</a>
+            <a class="primary-btn" href="/inv/dashboard">← Voltar ao inventário</a>
         </section>
 
         <section class="inventory-flow-card">
             <div class="flow-steps">
                 <div class="flow-step active">
                     <span>1</span>
-                    <strong>Identificación</strong>
+                    <strong>Identificação</strong>
                 </div>
                 <div class="flow-step" id="step-product">
                     <span>2</span>
@@ -39,23 +39,23 @@
                 </div>
                 <div class="flow-step" id="step-review">
                     <span>3</span>
-                    <strong>Revisión</strong>
+                    <strong>Revisão</strong>
                 </div>
             </div>
 
             <div class="flow-grid">
                 <div class="flow-panel">
-                    <h2>Identificación del trabajador</h2>
-                    <p class="flow-helper">Escanee su código de trabajador para habilitar la salida de inventario.</p>
+                    <h2>Identificação do trabalhador</h2>
+                    <p class="flow-helper">Escanee seu código de trabalhador para habilitar a saída de inventário.</p>
 
                     <form class="barcode-scan-form" id="worker-form">
-                        <input type="text" id="worker-code-input" placeholder="Ej. EMP-000123" autocomplete="off"
+                        <input type="text" id="worker-code-input" placeholder="Ex. EMP-000123" autocomplete="off"
                             required>
                         <button type="submit" class="primary-btn">Validar</button>
                     </form>
 
                     <div class="status-box" id="worker-status">
-                        Esperando identificación del operador.
+                        Esperando identificação do operador.
                     </div>
 
                     <div class="worker-summary" id="worker-summary" hidden>
@@ -66,30 +66,30 @@
 
                 <div class="flow-panel" id="product-panel" hidden>
                     <h2>Escaneo de productos</h2>
-                    <p class="flow-helper">Los productos se agregan a una lista temporal y no descuentan stock hasta
+                    <p class="flow-helper">Os produtos são adicionados a uma lista temporária e não descuentam stock até
                         confirmar.</p>
 
                     <form class="barcode-scan-form" id="product-form">
-                        <input type="text" id="product-code-input" placeholder="Escanee o ingrese un código"
+                        <input type="text" id="product-code-input" placeholder="Escanee ou ingrese um código"
                             autocomplete="off" required>
                         <button type="submit" class="primary-btn">Agregar</button>
                     </form>
 
                     <div class="status-box info" id="product-status">
-                        Listo para recibir productos.
+                        Listo para receber produtos.
                     </div>
 
                     <div class="review-panel" id="review-panel">
                         <div class="review-header">
-                            <strong>Productos pendientes</strong>
-                            <span id="summary-count">0 productos</span>
+                            <strong>Produtos pendentes</strong>
+                            <span id="summary-count">0 produtos</span>
                         </div>
 
                         <div id="pending-items" class="barcode-list"></div>
 
                         <div class="flow-actions">
                             <button type="button" class="secondary-btn" id="cancel-flow">Cancelar</button>
-                            <button type="button" class="primary-btn" id="confirm-flow">Confirmar salida</button>
+                            <button type="button" class="primary-btn" id="confirm-flow">Confirmar saida</button>
                         </div>
                     </div>
                 </div>
@@ -97,13 +97,15 @@
         </section>
 
         <section class="inventory-flow-card confirmation-panel" id="confirmation-panel" hidden>
-            <h2>Movimiento generado</h2>
-            <p class="flow-helper">Esta vista representa el historial que se registrará para auditoría y trazabilidad.
+            <h2>Movimiento gerado</h2>
+            <p class="flow-helper">
+                A saída de inventário foi registrada com sucesso. O stock foi atualizado e o movimento está disponível
+                para auditoria.
             </p>
 
             <div class="confirmation-box">
                 <div>
-                    <span class="eyebrow">Movimiento</span>
+                    <span class="eyebrow">Movimento</span>
                     <strong id="move-code">SAL-000000</strong>
                 </div>
                 <div>
@@ -111,7 +113,7 @@
                     <strong id="move-worker">-</strong>
                 </div>
                 <div>
-                    <span class="eyebrow">Fecha</span>
+                    <span class="eyebrow">Data</span>
                     <strong id="move-date">-</strong>
                 </div>
             </div>
@@ -121,156 +123,136 @@
     </main>
 
     <script>
-
-    const productCatalog = {
-        "MDF-000123": { name: "MDF Blanco 18mm", code: "MDF-000123" },
-        "TOR-000456": { name: "Tornillo 5x50", code: "TOR-000456" },
-        "BIS-000789": { name: "Bisagra 3x3", code: "BIS-000789" }
-    };
-
-    let currentWorker = null;
-    let pendingItems = [];
-    let moveNumber = 542;
+        let currentWorker = null;
+        let pendingItems = [];
+        let moveNumber = 542;
 
 
-    const workerForm = document.getElementById("worker-form");
-    const workerInput = document.getElementById("worker-code-input");
-    const workerStatus = document.getElementById("worker-status");
-    const workerSummary = document.getElementById("worker-summary");
-    const workerName = document.getElementById("worker-name");
-    const workerRole = document.getElementById("worker-role");
+        const workerForm = document.getElementById("worker-form");
+        const workerInput = document.getElementById("worker-code-input");
+        const workerStatus = document.getElementById("worker-status");
+        const workerSummary = document.getElementById("worker-summary");
+        const workerName = document.getElementById("worker-name");
+        const workerRole = document.getElementById("worker-role");
 
-    const productPanel = document.getElementById("product-panel");
-    const productForm = document.getElementById("product-form");
-    const productInput = document.getElementById("product-code-input");
-    const productStatus = document.getElementById("product-status");
+        const productPanel = document.getElementById("product-panel");
+        const productForm = document.getElementById("product-form");
+        const productInput = document.getElementById("product-code-input");
+        const productStatus = document.getElementById("product-status");
 
-    const reviewPanel = document.getElementById("review-panel");
-    const pendingItemsContainer = document.getElementById("pending-items");
-    const summaryCount = document.getElementById("summary-count");
+        const reviewPanel = document.getElementById("review-panel");
+        const pendingItemsContainer = document.getElementById("pending-items");
+        const summaryCount = document.getElementById("summary-count");
 
-    const cancelFlowBtn = document.getElementById("cancel-flow");
-    const confirmFlowBtn = document.getElementById("confirm-flow");
+        const cancelFlowBtn = document.getElementById("cancel-flow");
+        const confirmFlowBtn = document.getElementById("confirm-flow");
 
-    const confirmationPanel = document.getElementById("confirmation-panel");
-    const confirmationItems = document.getElementById("confirmation-items");
+        const confirmationPanel = document.getElementById("confirmation-panel");
+        const confirmationItems = document.getElementById("confirmation-items");
 
-    const moveCode = document.getElementById("move-code");
-    const moveWorker = document.getElementById("move-worker");
-    const moveDate = document.getElementById("move-date");
-
-
-    function setWorkerStatus(message, success = true) {
-        workerStatus.textContent = message;
-        workerStatus.classList.toggle("ok", success);
-        workerStatus.classList.toggle("error", !success);
-    }
+        const moveCode = document.getElementById("move-code");
+        const moveWorker = document.getElementById("move-worker");
+        const moveDate = document.getElementById("move-date");
 
 
-    function setProductStatus(message, info = true) {
-        productStatus.textContent = message;
-        productStatus.classList.toggle("info", info);
-        productStatus.classList.toggle("ok", !info);
-    }
-
-
-    async function validateWorker(code) {
-
-        try {
-
-            const response = await fetch(`/inv/barcode/worker/${code}`);
-
-            const data = await response.json();
-
-
-            if (!data.success) {
-                setWorkerStatus(
-                    data.message || "Código inválido",
-                    false
-                );
-
-                workerSummary.hidden = true;
-                productPanel.hidden = true;
-
-                return;
-            }
-
-
-            const worker = data.worker;
-
-
-            if (!worker.can_move_inventory) {
-
-                setWorkerStatus(
-                    "El trabajador no tiene permisos para movimientos.",
-                    false
-                );
-
-                return;
-            }
-
-
-            currentWorker = worker;
-
-
-            workerName.textContent = worker.name;
-            workerRole.textContent = worker.role;
-
-            workerSummary.hidden = false;
-
-
-            setWorkerStatus(
-                `Trabajador identificado: ${worker.name}`
-            );
-
-
-            productPanel.hidden = false;
-
-            document
-                .getElementById("step-product")
-                .classList.add("active");
-
-
-            productInput.focus();
-
-
-        } catch(error) {
-
-            console.error(error);
-
-            setWorkerStatus(
-                "Error al validar trabajador.",
-                false
-            );
+        function setWorkerStatus(message, success = true) {
+            workerStatus.textContent = message;
+            workerStatus.classList.toggle("ok", success);
+            workerStatus.classList.toggle("error", !success);
         }
-    }
+
+
+        function setProductStatus(message, info = true) {
+            productStatus.textContent = message;
+            productStatus.classList.toggle("info", info);
+            productStatus.classList.toggle("ok", !info);
+        }
+
+
+        async function validateWorker(code) {
+
+            try {
+
+                const response = await fetch(`/inv/barcode/worker/${code}`);
+
+                const data = await response.json();
+
+
+                if (!data.success) {
+                    setWorkerStatus(
+                        data.message || "Código inválido",
+                        false
+                    );
+
+                    workerSummary.hidden = true;
+                    productPanel.hidden = true;
+
+                    return;
+                }
+
+                const worker = data.worker;
+
+                currentWorker = worker;
+
+
+                workerName.textContent = worker.name;
+                workerRole.textContent = worker.role;
+
+                workerSummary.hidden = false;
+
+
+                setWorkerStatus(
+                    `Trabalhador identificado: ${worker.name}`
+                );
+
+
+                productPanel.hidden = false;
+
+                document
+                    .getElementById("step-product")
+                    .classList.add("active");
+
+
+                productInput.focus();
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                setWorkerStatus(
+                    "Erro ao validar trabalhador.",
+                    false
+                );
+            }
+        }
 
 
 
-    function renderPendingItems() {
+        function renderPendingItems() {
 
-        if (!pendingItems.length) {
+            if (!pendingItems.length) {
+
+                pendingItemsContainer.innerHTML =
+                    '<div class="empty-state">Ainda não há produtos escaneados. O stock não é modificado até confirmar.</div>';
+
+                summaryCount.textContent = "0 produtos";
+
+                reviewPanel.classList.remove("active");
+
+                return;
+            }
+
+
+            reviewPanel.classList.add("active");
+
+
+            summaryCount.textContent =
+                `${pendingItems.reduce((total, item) => total + item.quantity, 0)} produtos`;
+
 
             pendingItemsContainer.innerHTML =
-                '<div class="empty-state">Aún no hay productos escaneados. El stock no se modifica hasta confirmar.</div>';
-
-            summaryCount.textContent = "0 productos";
-
-            reviewPanel.classList.remove("active");
-
-            return;
-        }
-
-
-        reviewPanel.classList.add("active");
-
-
-        summaryCount.textContent =
-            `${pendingItems.reduce((total,item)=>total + item.quantity,0)} productos`;
-
-
-        pendingItemsContainer.innerHTML =
-            pendingItems.map((item,index)=>`
+                pendingItems.map((item, index) => `
 
                 <article class="barcode-item">
 
@@ -307,7 +289,7 @@
                             class="delete-btn"
                             data-action="remove"
                             data-index="${index}">
-                            Eliminar
+                            Apagar
                         </button>
 
                     </div>
@@ -316,284 +298,257 @@
 
             `).join("");
 
-    }
-
-
-
-    function addOrUpdateItem(code) {
-
-        const product =
-            productCatalog[code] ||
-            {
-                name:`Producto ${code}`,
-                code
-            };
-
-
-        const existing =
-            pendingItems.find(item=>item.code === code);
-
-
-        if(existing){
-
-            existing.quantity += 1;
-
-        }else{
-
-            pendingItems.push({
-                ...product,
-                quantity:1
-            });
-
         }
 
 
-        renderPendingItems();
 
-    }
+        async function addOrUpdateItem(code) {
 
-
-
-    workerForm.addEventListener(
-        "submit",
-        async(event)=>{
-
-            event.preventDefault();
-
-
-            const code = workerInput.value.trim();
-
-
-            if(!code){
-                setWorkerStatus(
-                    "Ingrese un código.",
-                    false
-                );
-                return;
-            }
-
-
-            await validateWorker(code);
-
-        }
-    );
-
-
-
-    productForm.addEventListener(
-        "submit",
-        (event)=>{
-
-            event.preventDefault();
-
-
-            const code =
-                productInput.value.trim();
-
-
-            if(!code){
-
-                setProductStatus(
-                    "Ingrese un código para agregar el producto."
-                );
-
-                return;
-            }
-
-
-            addOrUpdateItem(code);
-
-
-            setProductStatus(
-                `Producto agregado: ${code}`
-            );
-
-
-            productInput.value="";
-
-
-            document
-                .getElementById("step-review")
-                .classList.add("active");
-
-
-            productInput.focus();
-
-        }
-    );
-
-
-
-    pendingItemsContainer.addEventListener(
-        "click",
-        (event)=>{
-
-            const button =
-                event.target.closest("button[data-action]");
-
-
-            if(!button)return;
-
-
-            const index =
-                Number(button.dataset.index);
-
-
-            const action =
-                button.dataset.action;
-
-
-
-            if(action==="increase"){
-
-                pendingItems[index].quantity++;
-
-            }
-            else if(action==="decrease"){
-
-                if(pendingItems[index].quantity>1)
-                    pendingItems[index].quantity--;
-
-            }
-            else if(action==="remove"){
-
-                pendingItems.splice(index,1);
-
-            }
-
-
-            renderPendingItems();
-
-        }
-    );
-
-
-
-    cancelFlowBtn.addEventListener(
-        "click",
-        ()=>{
-
-            pendingItems=[];
-
-            renderPendingItems();
-
-            confirmationPanel.hidden=true;
-
-            setProductStatus(
-                "Operación cancelada."
-            );
-
-        }
-    );
-
-
-confirmFlowBtn.addEventListener(
-    "click",
-    async () => {
-
-        if (!currentWorker || !pendingItems.length) {
-
-            setProductStatus(
-                "Debe identificar trabajador y productos.",
-                false
-            );
-
-            return;
-        }
-
-
-        try {
-
-            const payload = {
-                worker_id: currentWorker.id,
-                items: pendingItems.map(item => ({
-                    code: item.code,
-                    quantity: item.quantity
-                }))
-            };
-
-
-            console.log("URL actual:", window.location.href);
-            console.log("Origen:", window.location.origin);
-
-            console.log("Worker actual:", currentWorker);
-            console.log("Items pendientes:", pendingItems);
-            console.log("Payload enviado:", payload);
-
-
-
-            const response = await fetch(
-                "/inv/barcode/output",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                }
-            );
-
-
-            console.log(
-                "Status backend:",
-                response.status
-            );
-
-            console.log(
-                "URL respuesta:",
-                response.url
-            );
-
-
+            const response = await fetch(`/inv/barcode/product/${code}`);
             const data = await response.json();
 
-
-            console.log(
-                "Respuesta backend:",
-                data
-            );
-
-
-
-            if (!response.ok) {
-
+            if (!response.ok || !data.success) {
                 setProductStatus(
-                    data.detail || "Error al procesar salida.",
+                    data.message || "Produto não encontrado.",
                     false
                 );
-
-                return;
+                return false;
             }
 
+            const product = data.product;
+
+            const existing = pendingItems.find(
+                item => item.code === product.code
+            );
+
+            if (existing) {
+
+                existing.quantity++;
+
+            } else {
+
+                pendingItems.push({
+                    id: product.id,
+                    name: product.item_name,
+                    code: product.code,
+                    quantity: 1
+                });
+
+            }
+
+            renderPendingItems();
+
+            return true;
+
+        }
 
 
-            moveNumber++;
+
+        workerForm.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
 
 
-            const now = new Date();
+                const code = workerInput.value.trim();
 
 
-            moveCode.textContent =
-                `SAL-${String(moveNumber).padStart(6,"0")}`;
+                if (!code) {
+                    setWorkerStatus(
+                        "Ingrese un código.",
+                        false
+                    );
+                    return;
+                }
 
 
-            moveWorker.textContent =
-                currentWorker.name;
+                await validateWorker(code);
 
+            }
+        );
 
-            moveDate.textContent =
-                now.toLocaleString(
-                    "pt-BR",
-                    {
-                        dateStyle:"short",
-                        timeStyle:"short"
-                    }
+        productForm.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+                const code = productInput.value.trim();
+
+                if (!code) {
+
+                    setProductStatus(
+                        "Adicione um código."
+                    );
+
+                    return;
+
+                }
+
+                const added = await addOrUpdateItem(code);
+
+                if (!added) {
+
+                    productInput.select();
+                    return;
+
+                }
+
+                setProductStatus(
+                    `Produto adicionado: ${code}`
                 );
 
+                productInput.value = "";
+
+                document
+                    .getElementById("step-review")
+                    .classList.add("active");
+
+                productInput.focus();
+
+            }
+        );
+
+        pendingItemsContainer.addEventListener(
+            "click",
+            (event) => {
+
+                const button =
+                    event.target.closest("button[data-action]");
 
 
-            confirmationItems.innerHTML =
-                pendingItems.map(item => `
+                if (!button) return;
+
+
+                const index =
+                    Number(button.dataset.index);
+
+
+                const action =
+                    button.dataset.action;
+
+
+
+                if (action === "increase") {
+
+                    pendingItems[index].quantity++;
+
+                }
+                else if (action === "decrease") {
+
+                    if (pendingItems[index].quantity > 1)
+                        pendingItems[index].quantity--;
+
+                }
+                else if (action === "remove") {
+
+                    pendingItems.splice(index, 1);
+
+                }
+
+
+                renderPendingItems();
+
+            }
+        );
+
+
+
+        cancelFlowBtn.addEventListener(
+            "click",
+            () => {
+
+                pendingItems = [];
+
+                renderPendingItems();
+
+                confirmationPanel.hidden = true;
+
+                setProductStatus(
+                    "Operação cancelada."
+                );
+
+            }
+        );
+
+
+        confirmFlowBtn.addEventListener(
+            "click",
+            async () => {
+
+                if (!currentWorker || !pendingItems.length) {
+
+                    setProductStatus(
+                        "Debe identificar trabalhador e produtos.",
+                        false
+                    );
+
+                    return;
+                }
+
+
+                try {
+
+                    const payload = {
+                        worker_id: currentWorker.id,
+                        items: pendingItems.map(item => ({
+                            code: item.code,
+                            quantity: item.quantity
+                        }))
+                    };
+
+
+                    const response = await fetch(
+                        "/inv/barcode/output",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(payload)
+                        }
+                    );
+
+                    if (!response.ok) {
+
+                        setProductStatus(
+                            data.detail || "Erro ao processar saída.",
+                            false
+                        );
+
+                        return;
+                    }
+
+
+
+                    moveNumber++;
+
+
+                    const now = new Date();
+
+
+                    moveCode.textContent =
+                        `SAL-${String(moveNumber).padStart(6, "0")}`;
+
+
+                    moveWorker.textContent =
+                        currentWorker.name;
+
+
+                    moveDate.textContent =
+                        now.toLocaleString(
+                            "pt-BR",
+                            {
+                                dateStyle: "short",
+                                timeStyle: "short"
+                            }
+                        );
+
+
+
+                    confirmationItems.innerHTML =
+                        pendingItems.map(item => `
 
                     <article class="barcode-item">
 
@@ -609,7 +564,7 @@ confirmFlowBtn.addEventListener(
                         <div class="barcode-item-actions">
 
                             <span class="qty-pill">
-                                Cantidad: ${item.quantity}
+                                Quantidade: ${item.quantity}
                             </span>
 
                         </div>
@@ -620,38 +575,34 @@ confirmFlowBtn.addEventListener(
 
 
 
-            confirmationPanel.hidden = false;
+                    confirmationPanel.hidden = false;
 
 
-            setProductStatus(
-                "Salida realizada correctamente."
-            );
+                    setProductStatus(
+                        "Saída processada com sucesso."
+                    );
 
 
-            pendingItems = [];
+                    pendingItems = [];
 
-            renderPendingItems();
-
-
-        } catch (error) {
-
-            console.error(
-                "Error inventory output:",
-                error
-            );
+                    renderPendingItems();
 
 
-            setProductStatus(
-                "Error de conexión con el servidor.",
-                false
-            );
+                } catch (error) {
 
-        }
+                    console.error(error);
 
-    }
-);
+                    setProductStatus(
+                        "Erro ao processar saída.",
+                        false
+                    );
 
-</script>
+                }
+
+            }
+        );
+
+    </script>
 </body>
 
 </html>

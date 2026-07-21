@@ -69,6 +69,26 @@ def get_worker_by_barcode(code: str, session: Session = Depends(CreateSession), 
         "can_move_inventory": True
         }
     }
+    
+@inventory_router.get("/barcode/product/{code}", dependencies=[Depends(require_module("inventory"))])
+def get_product_by_barcode(code: str, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
+
+    item = session.query(Inventory).filter(Inventory.company_id == user.company_id, Inventory.code == code).first()
+
+    if not item:
+        return {
+            "success": False,
+            "message": "Produto não encontrado"
+        }
+
+    return {
+        "success": True,
+        "product": {
+            "id": item.id,
+            "item_name": item.item_name,
+            "code": item.code
+        }
+    }
 
 @inventory_router.get("/dashboard", dependencies=[Depends(require_module("inventory"))])
 def inventory_dashboard(request: Request, search: str = None, session: Session = Depends(CreateSession), user: User = Depends(verify_token), page_items: int = Query(1, ge=1)):

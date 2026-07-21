@@ -243,7 +243,7 @@
         function descargar() {
             const link = document.createElement('a');
             link.href = '/home/barcode/view';
-            link.download = `codigo_barras_{{ user.id }}.png`;
+            link.download = `codigo_barras_{{ user.username }}.png`;
             link.click();
         }
 
@@ -255,10 +255,10 @@
                 fetch(barcodeImg.src)
                     .then(response => response.blob())
                     .then(blob => {
-                        const file = new File([blob], `codigo_barras_{{ user.id }}.png`, { type: blob.type });
+                        const file = new File([blob], `codigo_barras_{{ user.username }}.png`, { type: blob.type });
                         navigator.share({
-                            title: '🏷️ Mi Código de Barras',
-                            text: 'Mi código de empleado: {{ user.barcode }} - {{ user.fullname }}',
+                            title: '🏷️ Meu Código de Barras',
+                            text: 'Meu código de colaborador: {{ user.barcode }} - {{ user.fullname }}',
                             files: [file]
                         }).catch(err => {
                             if (err.name !== 'AbortError') {
