@@ -13,7 +13,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1400px;
             margin: auto;
             background: white;
             padding: 20px;
@@ -104,308 +104,322 @@
 
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <div id="message" class="message"></div>
+        <div id="message" class="message"></div>
 
-    <div class="grid">
-        <section class="panel">
-            <h2>Crear módulo</h2>
-            <p class="muted">El precio se guarda en centavos. Ej: 49.90 -> 4990.</p>
+        <div class="grid">
+            <section class="panel">
 
-            <input
-                id="module-name"
-                placeholder="Nombre del módulo"
-            >
+                <h2>Crear módulo</h2>
 
-            <input
-                id="module-slug"
-                placeholder="slug, ej: inventory"
-            >
+                <p class="muted">
+                    El precio se guarda en centavos. Ej: 49.90 -> 4990.
+                </p>
+                <input id="module-name" placeholder="Nombre del módulo publico">
 
-            <input
-                id="module-price"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="49.90"
-            >
+                <input id="module-slug" placeholder="nombre referencia en ingles para mi uso">
 
-            <input
-                id="module-description"
-                type="text"
-                placeholder="descripcion">
+                <input id="module-price" type="number" step="0.01" min="0" placeholder="49.90">
 
-            <input
-                id="module-image"
-                type="file"
-                accept="image/*">
+                <input id="module-description" placeholder="Descripción">
 
-            <button onclick="createModule()">
-                Crear módulo
-            </button>
-        </section>
+                <input id="module-icon-url" placeholder="URL payments icono">
 
-        <section class="panel">
-            <h2>Crear plan</h2>
+                <input id="module-icon-aside" placeholder="Icono sidebar url">
 
-            <input
-                id="name"
-                placeholder="Nombre"
-            >
+                <input id="module-route" placeholder="Ruta del router">
 
-            <input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="49.90"
-            >
+                <input id="module-image" type="file" accept="image/*">
 
-            <select id="frequency">
-                <option value="1">Mensual</option>
-                <option value="12">Anual</option>
-            </select>
-
-            <button onclick="createPlan()">
-                Crear plan
-            </button>
-        </section>
-    </div>
-
-    <hr>
-
-    <h2>Módulos existentes</h2>
-
-    <table>
-
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Slug</th>
-                <th>Descripción</th>
-                <th>Precio mensual</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-        {% for module in modules %}
-
-        <tr>
-            <td>{{ module.id }}</td>
-            <td>{{ module.name }}</td>
-            <td>{{ module.slug }}</td>
-            <td>{{ module.description }}</td>
-            <td>R$ {{ "%.2f"|format(module.price_brl) }}</td>
-        </tr>
-
-        {% endfor %}
-
-        </tbody>
-
-    </table>
-
-    <h2>Planes existentes</h2>
-
-    <table>
-
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Precio</th>
-                <th>Frecuencia</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-        {% for plan in planes %}
-
-        <tr>
-
-            <td>
-                {{ plan.id }}
-            </td>
-
-            <td>
-                <input
-                    value="{{ plan.name }}"
-                    id="name-{{ plan.id }}"
-                >
-            </td>
-
-            <td>
-                <input
-                    value="{{ plan.amount / 100 }}"
-                    id="amount-{{ plan.id }}"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                >
-            </td>
-
-            <td>
-
-                <select id="freq-{{ plan.id }}">
-
-                    <option
-                        value="1"
-                        {% if plan.frequency == 1 %}selected{% endif %}
-                    >
-                        Mensual
-                    </option>
-
-                    <option
-                        value="12"
-                        {% if plan.frequency == 12 %}selected{% endif %}
-                    >
-                        Anual
-                    </option>
-
-                </select>
-
-            </td>
-
-            <td>
-
-                <button onclick="updatePlan({{ plan.id }})">
-                    Guardar
+                <button onclick="createModule()">
+                    Crear módulo
                 </button>
 
-            </td>
+            </section>
 
-        </tr>
+            <section class="panel">
+                <h2>Crear plan</h2>
 
-        {% endfor %}
+                <input id="name" placeholder="Nombre">
 
-        </tbody>
+                <input id="amount" type="number" step="0.01" min="0" placeholder="49.90">
 
-    </table>
+                <select id="frequency">
+                    <option value="1">Mensual</option>
+                    <option value="12">Anual</option>
+                </select>
 
-</div>
+                <button onclick="createPlan()">
+                    Crear plan
+                </button>
+            </section>
+        </div>
 
-<script>
+        <hr>
 
-function showMessage(text, type = "ok") {
-    const message = document.getElementById("message");
-    message.textContent = text;
-    message.className = `message ${type}`;
-}
+        <h2>Módulos existentes</h2>
 
-function toCents(value) {
-    return Math.round(parseFloat(value || "0") * 100);
-}
+        <table>
 
-async function createModule() {
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Slug</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Icon URL</th>
+                    <th>Icon Aside</th>
+                    <th>External ID</th>
+                    <th>Ruta</th>
+                </tr>
+            </thead>
 
-    try {
+            <tbody>
 
-        const name = document.getElementById("module-name").value.trim();
-        const slug = document.getElementById("module-slug").value.trim();
-        const description = document.getElementById("module-description").value.trim();
-        const price = toCents(document.getElementById("module-price").value);
-        const image = document.getElementById("module-image").files[0];
+                {% for module in modules %}
 
-        if (!name || !slug || !description || price <= 0 || !image) {
-            showMessage("Preencha todos os campos do módulo.", "error");
-            return;
+                <tr>
+
+                    <td>{{ module.id }}</td>
+
+                    <td>{{ module.name }}</td>
+
+                    <td>{{ module.slug }}</td>
+
+                    <td>{{ module.description }}</td>
+
+                    <td>
+                        R$ {{ "%.2f"|format(module.price_brl) }}
+                    </td>
+
+                    <td>
+                        {% if module.icon_url %}
+                        <img src="{{ module.icon_url }}" width="35">
+                        {% endif %}
+                    </td>
+
+
+                    <td>
+                        {% if module.icon_aside %}
+                        <img src="{{ module.icon_aside }}" width="35">
+                        {% endif %}
+                    </td>
+
+
+                    <td>
+                        {{ module.external_id }}
+                    </td>
+
+
+                    <td>
+                        {{ module.module_route }}
+                    </td>
+
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        <h2>Planes existentes</h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Frecuencia</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for plan in planes %}
+
+                <tr>
+
+                    <td>
+                        {{ plan.id }}
+                    </td>
+
+                    <td>
+                        <input value="{{ plan.name }}" id="name-{{ plan.id }}">
+                    </td>
+
+                    <td>
+                        <input value="{{ plan.amount / 100 }}" id="amount-{{ plan.id }}" type="number" step="0.01"
+                            min="0">
+                    </td>
+
+                    <td>
+
+                        <select id="freq-{{ plan.id }}">
+
+                            <option value="1" {% if plan.frequency==1 %}selected{% endif %}>
+                                Mensual
+                            </option>
+
+                            <option value="12" {% if plan.frequency==12 %}selected{% endif %}>
+                                Anual
+                            </option>
+
+                        </select>
+
+                    </td>
+
+                    <td>
+
+                        <button onclick="updatePlan({{ plan.id }})">
+                            Guardar
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <script>
+
+        function showMessage(text, type = "ok") {
+            const message = document.getElementById("message");
+            message.textContent = text;
+            message.className = `message ${type}`;
         }
 
-        const formData = new FormData();
-
-        formData.append("name", name);
-        formData.append("slug", slug);
-        formData.append("description", description);
-        formData.append("price", price);
-        formData.append("image", image);
-
-        const res = await fetch("/admin/create-module", {
-            method: "POST",
-            body: formData
-        });
-
-        if (!res.ok) {
-            const result = await res.json();
-            showMessage(result.detail || "Erro criando módulo", "error");
-            return;
+        function toCents(value) {
+            return Math.round(parseFloat(value || "0") * 100);
         }
 
-        window.location.reload();
+        async function createModule() {
 
-    } catch (err) {
-        console.error(err);
-        showMessage("Erro criando módulo", "error");
-    }
+            try {
 
-}
+                const name = document.getElementById("module-name").value.trim();
+                const slug = document.getElementById("module-slug").value.trim();
+                const description = document.getElementById("module-description").value.trim();
+                const price = toCents(document.getElementById("module-price").value);
+                const icon_url = document.getElementById("module-icon-url").value.trim();
+                const icon_aside = document.getElementById("module-icon-aside").value.trim();
+                const external_id = document.getElementById("module-external-id").value.trim();
+                const module_route = document.getElementById("module-route").value.trim();
+                const image = document.getElementById("module-image").files[0];
 
-async function createPlan() {
+                if (!name || !slug || !description || price <= 0 || !image) {
+                    showMessage("Preencha todos os campos do módulo.", "error");
+                    return;
+                }
 
-    try {
+                const formData = new FormData();
 
-        const payload = {
-            name: document.getElementById("name").value,
-            amount: toCents(document.getElementById("amount").value),
-            frequency: parseInt(document.getElementById("frequency").value)
-        };
+                formData.append("name", name);
+                formData.append("slug", slug);
+                formData.append("description", description);
+                formData.append("price", price);
+                formData.append("icon_url", icon_url);
+                formData.append("icon_aside", icon_aside);
+                formData.append("external_id", external_id);
+                formData.append("module_route", module_route);
+                formData.append("image", image);
 
-        const res = await fetch("/admin/create-plan", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-        });
+                const res = await fetch("/admin/create-module", {
+                    method: "POST",
+                    body: formData
+                });
 
-        if (!res.ok) {
-            showMessage("Error creando plan", "error");
-            return;
+                if (!res.ok) {
+                    const result = await res.json();
+                    showMessage(result.detail || "Erro criando módulo", "error");
+                    return;
+                }
+
+                window.location.reload();
+
+            } catch (err) {
+                console.error(err);
+                showMessage("Erro criando módulo", "error");
+            }
+
         }
 
-        window.location.reload();
+        async function createPlan() {
 
-    } catch (err) {
-        console.error(err);
-    }
+            try {
 
-}
+                const payload = {
+                    name: document.getElementById("name").value,
+                    amount: toCents(document.getElementById("amount").value),
+                    frequency: parseInt(document.getElementById("frequency").value)
+                };
 
-async function updatePlan(id) {
+                const res = await fetch("/admin/create-plan", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
 
-    try {
+                if (!res.ok) {
+                    showMessage("Error creando plan", "error");
+                    return;
+                }
 
-        const payload = {
-            name: document.getElementById(`name-${id}`).value,
-            amount: toCents(document.getElementById(`amount-${id}`).value),
-            frequency: parseInt(document.getElementById(`freq-${id}`).value)
-        };
+                window.location.reload();
 
-        const res = await fetch(`/admin/update-plan/${id}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-        });
+            } catch (err) {
+                console.error(err);
+            }
 
-        if (!res.ok) {
-            showMessage("Error actualizando", "error");
-            return;
         }
 
-        window.location.reload();
+        async function updatePlan(id) {
 
-    } catch (err) {
-        console.error(err);
-    }
+            try {
 
-}
+                const payload = {
+                    name: document.getElementById(`name-${id}`).value,
+                    amount: toCents(document.getElementById(`amount-${id}`).value),
+                    frequency: parseInt(document.getElementById(`freq-${id}`).value)
+                };
 
-</script>
+                const res = await fetch(`/admin/update-plan/${id}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    showMessage("Error actualizando", "error");
+                    return;
+                }
+
+                window.location.reload();
+
+            } catch (err) {
+                console.error(err);
+            }
+
+        }
+
+    </script>
 
 </body>
+
 </html>

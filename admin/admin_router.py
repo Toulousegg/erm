@@ -103,7 +103,10 @@ def create_plan_page(request: Request, user: User = Depends(verify_admin), sessi
                     "price": module.price,
                     "description": module.description,
                     "price_brl": module.price / 100,
-                    "icon_url": module.icon_url
+                    "icon_url": module.icon_url,
+                    "icon_aside": module.icon_aside,
+                    "external_id": module.external_id,
+                    "module_route": module.module_route
                     }
 
                 for module in modules
