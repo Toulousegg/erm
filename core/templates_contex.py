@@ -1,7 +1,7 @@
 from moduls.moduls_services import get_company_modules
 
 
-def get_template_context(request, user, session):
+def get_template_context(request, user, session): #ESTA FUNCION ES JODIDAMENTE GENIAL
     modules = []
 
     if user and user.company_id:
@@ -10,7 +10,7 @@ def get_template_context(request, user, session):
                 "id": module.id,
                 "name": module.name,
                 "route": module.module_route,
-                "icon": module.icon
+                "icon_aside": module.icon_aside
             }
             for module in get_company_modules(
                 session,

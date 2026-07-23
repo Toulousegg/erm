@@ -13,7 +13,7 @@ class Moduls(base):
     icon_url = Column(String, index=True, nullable=True)
     external_id = Column(String, index=True, nullable=True) #id del modulo en el proveedor de abacatepay
     module_route = Column(String, index=True, nullable=True)
-    icon = Column(String, index=True, nullable=True)
+    icon_aside = Column(String, index=True, nullable=True)
     company_moduls = relationship("Moduls_Companies", back_populates="modul")
 
 

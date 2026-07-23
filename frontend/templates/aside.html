@@ -7,21 +7,16 @@
     <title>Sidebar Component</title>
 
     <style>
-        /* =========================================================
-   VARIABLES Y CONFIGURACIÓN BASE
-   ========================================================= */
         :root {
             --bg-page: #f2f4f7;
-            --bg-main: #ffffff;
             --border: #d0d7de;
             --text-main: #1f2328;
             --text-muted: #6e7781;
             --blue: #1e40af;
-            --blue-hover: #1e3a8a;
-            --red: #dc2626;
             --sidebar-width: 240px;
             --sidebar-collapsed: 70px;
         }
+
 
         * {
             margin: 0;
@@ -30,265 +25,453 @@
             font-family: system-ui, -apple-system, sans-serif;
         }
 
+
         body {
             background: var(--bg-page);
             color: var(--text-main);
-            display: flex;
             min-height: 100vh;
         }
 
-        /* =========================================================
-   SIDEBAR
-   ========================================================= */
+
+        /* SIDEBAR */
+
         .sidebar {
+
             width: var(--sidebar-width);
-            background: #fff;
+
+            background: white;
+
             border-right: 1px solid var(--border);
+
             position: fixed;
+
             height: 100vh;
+
             display: flex;
+
             flex-direction: column;
-            transition: width 0.3s ease;
+
+            transition: .3s ease;
+
             z-index: 1000;
+
         }
+
 
         .sidebar.collapsed {
+
             width: var(--sidebar-collapsed);
+
         }
+
+
+
+        /* HEADER */
 
         .sidebar-header {
+
             height: 70px;
+
             display: flex;
+
             align-items: center;
+
             justify-content: space-between;
+
             padding: 0 15px;
+
         }
+
+
 
         .sidebar.collapsed .sidebar-header {
+
             justify-content: center;
-            padding: 0;
+
         }
+
+
 
         .app-icon {
-            font-size: 24px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            font-size: 20px;
+
         }
+
+
+
+        .app-icon img {
+
+            width: 32px;
+
+            height: 32px;
+
+        }
+
+
 
         .sidebar.collapsed .app-icon {
+
             display: none;
+
         }
+
+
 
         .toggle-btn {
+
             background: none;
+
             border: none;
+
             font-size: 22px;
+
             cursor: pointer;
+
             color: var(--text-muted);
-            padding: 8px;
+
         }
 
-        /* =========================================================
-   NAVEGACIÓN
-   ========================================================= */
+
+
+        /* NAV */
+
         .sidebar-nav {
+
             padding: 10px 12px;
+
             flex: 1;
+
         }
+
+
 
         .nav-item {
+
             display: flex;
+
             align-items: center;
+
             gap: 12px;
+
             padding: 12px 15px;
+
             color: var(--text-muted);
+
             text-decoration: none;
+
             border-radius: 8px;
+
             margin-bottom: 4px;
-            transition: all 0.2s ease;
+
+            transition: .2s;
+
         }
+
+
 
         .nav-item:hover,
         .nav-item.active {
+
             background: #e7edff;
+
             color: var(--blue);
+
         }
+
+
 
         .nav-item .icon {
+
             width: 24px;
-            font-size: 20px;
+
+            height: 24px;
+
             display: flex;
+
+            align-items: center;
+
             justify-content: center;
+
         }
 
-        .sidebar.collapsed .nav-item .label {
+
+
+        .nav-item .icon img {
+
+            width: 22px;
+
+            height: 22px;
+
+        }
+
+
+
+        .sidebar.collapsed .label {
+
             display: none;
+
         }
 
-        /* =========================================================
-   FOOTER
-   ========================================================= */
-        .sidebar-footer {
-            padding: 20px;
-            border-top: 1px solid var(--border);
-        }
+
+
+        /* LOGOUT */
 
         .logout-link {
+
             display: flex;
+
             align-items: center;
+
             gap: 12px;
-            color: var(--red);
+
+            margin: 12px;
+
+            padding: 12px 15px;
+
+            color: var(--text-muted);
+
             text-decoration: none;
-            padding: 10px;
-            border-radius: 6px;
+
+            border-radius: 8px;
+
             font-weight: 500;
+
+            transition: .2s;
+
         }
 
-        .sidebar.collapsed .logout-link span:not(.icon) {
-            display: none;
+
+
+        .logout-link img {
+
+            width: 22px;
+
+            height: 22px;
+
+            object-fit: contain;
+
         }
+
+
 
         .logout-link:hover {
-            background: #ffeeee;
+
+            background: #e7edff;
+
+            color: var(--blue);
+
         }
 
-        @media (max-width: 900px) {
-            body {
-                display: block;
-            }
+
+
+        .sidebar.collapsed .logout-link span {
+
+            display: none;
+
+        }
+
+
+
+        .sidebar.collapsed .logout-link {
+
+            justify-content: center;
+
+        }
+
+
+
+        /* MOBILE */
+
+        @media(max-width:900px) {
+
 
             .sidebar {
+
                 position: fixed;
+
                 top: 12px;
+
                 right: 12px;
-                left: auto;
+
                 width: 52px;
+
                 height: 52px;
-                max-height: calc(100dvh - 24px);
+
                 overflow: hidden;
-                background: #fff;
+
                 border: 1px solid var(--border);
+
                 border-radius: 12px;
-                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
-                transition: width 0.2s ease, height 0.2s ease, box-shadow 0.2s ease;
-                z-index: 2000;
+
+                box-shadow: 0 8px 24px rgba(15, 23, 42, .12);
+
             }
+
+
 
             .sidebar.collapsed {
+
                 width: min(260px, calc(100vw - 24px));
+
                 height: auto;
-                border-radius: 12px;
-                box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+
             }
+
+
 
             .sidebar-header {
+
                 height: 52px;
+
                 padding: 0;
+
                 justify-content: center;
-                gap: 12px;
+
             }
 
+
+
             .sidebar.collapsed .sidebar-header {
+
                 justify-content: space-between;
-                padding: 0 0 0 16px;
+
+                padding-left: 16px;
+
             }
+
+
 
             .app-icon,
             .sidebar-nav,
-            .sidebar-footer {
+            .logout-link {
+
                 display: none;
+
             }
+
+
 
             .sidebar.collapsed .app-icon {
-                display: block;
-                min-width: 0;
+
+                display: flex;
+
                 font-size: 16px;
-                white-space: nowrap;
+
             }
 
-            .toggle-btn {
-                width: 52px;
-                height: 52px;
-                min-width: 52px;
-                padding: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--text-main);
-            }
+
 
             .sidebar.collapsed .sidebar-nav {
+
                 display: flex;
+
                 flex-direction: column;
-                gap: 4px;
+
                 padding: 8px;
-                flex: none;
+
             }
+
+
 
             .sidebar.collapsed .nav-item {
+
                 width: 100%;
-                margin-bottom: 0;
-                white-space: normal;
+
             }
 
-            .sidebar.collapsed .nav-item .label,
-            .sidebar.collapsed .logout-link span:not(.icon) {
-                display: inline;
-            }
 
-            .sidebar.collapsed .sidebar-footer {
-                display: block;
-                padding: 8px;
-                border-top: 1px solid var(--border);
-            }
 
             .sidebar.collapsed .logout-link {
-                width: 100%;
+
+                display: flex;
+
+                margin: 8px;
+
             }
+
+
+
+            .toggle-btn {
+
+                width: 52px;
+
+                height: 52px;
+
+            }
+
+
         }
     </style>
+
 </head>
+
 
 <body>
 
+
     <aside class="sidebar" id="sidebar">
 
+
         <div class="sidebar-header">
+
             <div class="app-icon">
                 <strong>ProntoERP</strong>
             </div>
 
-            <button class="toggle-btn" type="button" aria-label="Toggle menu" aria-expanded="false"
-                onclick="toggleSidebar()">
+
+            <button class="toggle-btn" type="button" onclick="toggleSidebar()">
                 ☰
             </button>
+
         </div>
+
 
 
         <nav class="sidebar-nav">
 
+
             {% for module in modules %}
+
 
             <a class="nav-item {% if module.route in request.url.path %}active{% endif %}" href="{{ module.route }}">
 
-                <span class="icon">{{ module.icon }}</span>
+
+                <span class="icon">
+                    <img src="{{ module.icon_aside   }}" alt="{{ module.name }}">
+                </span>
+
 
                 <span class="label">
                     {{ module.name }}
                 </span>
 
+
             </a>
 
+
             {% endfor %}
+
 
         </nav>
 
 
-        <div class="sidebar-footer">
 
-            <a class="logout-link" href="/home/login">
-                🚪 <span>Sair</span>
-            </a>
+        <a class="logout-link" href="/home/login">
 
-        </div>
+            <img src="https://cdn-icons-png.flaticon.com/512/4052/4052024.png" alt="Sair">
+
+            <span>Sair</span>
+
+        </a>
+
+
 
     </aside>
 

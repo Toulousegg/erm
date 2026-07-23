@@ -1,0 +1,368 @@
+:root {
+    --primary-color: #4f46e5;
+    --primary-dark: #4338ca;
+    --background-color: #f9fafb;
+    --card-background: #ffffff;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --border-color: #d1d5db;
+    --error-color: #ef4444;
+
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+
+    --font-family-body: -apple-system, BlinkMacSystemFont,
+        'Segoe UI', Roboto, Arial;
+}
+
+
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+    margin: 0;
+    font-family: var(--font-family-body);
+    background: var(--background-color);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+
+/* AREA PRINCIPAL */
+
+.main-content{
+    margin-left:var(--sidebar-width);
+    padding:40px;
+    flex:1;
+    min-width:0;
+    background:var(--bg-page);
+    transition:.3s;
+}  
+
+
+/* HEADER */
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+
+.page-title h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--text-primary);
+}
+
+
+.page-title p {
+    margin-top: 6px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+
+.top-bar {
+    display: flex;
+    align-items: center;
+}
+
+.username{
+    font-weight:600;
+}
+
+/* FORM CARD */
+
+.form-panel {
+    background: var(--card-background);
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0,0,0,0.04);
+    max-width: 850px;
+}
+
+
+form {
+    width: 100%;
+}
+
+
+/* LABELS */
+
+label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 14px;
+}
+
+
+
+/* INPUTS */
+
+input,
+select,
+textarea {
+
+    width: 100%;
+    min-height: 44px;
+
+    padding: 10px 12px;
+
+    margin-top: 6px;
+    margin-bottom: 12px;
+
+    border: 2px solid var(--border-color);
+
+    border-radius: var(--radius-md);
+
+    background: white;
+
+    font-size: 0.9rem;
+
+    outline: none;
+
+    transition: border-color .2s ease;
+}
+
+
+
+input:focus,
+select:focus,
+textarea:focus {
+
+    border-color: var(--primary-color);
+
+}
+
+
+
+textarea {
+
+    min-height: 100px;
+    resize: vertical;
+
+}
+
+
+/* HORARIOS */
+
+.time-row {
+
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 18px;
+
+}
+
+
+
+/* PREVIEW */
+
+.duration-preview {
+
+    margin: 15px 0;
+
+    padding: 14px;
+
+    background: #eef2ff;
+
+    border-radius: var(--radius-md);
+
+    color: var(--primary-dark);
+
+    font-weight: 700;
+
+    text-align: center;
+
+    border: 1px solid #c7d2fe;
+
+}
+
+
+
+/* BUTTONS */
+
+.actions {
+
+    display: flex;
+
+    gap: 12px;
+
+    margin-top: 22px;
+
+}
+
+
+
+.primary-btn,
+.secondary-btn {
+
+
+    min-height: 44px;
+
+    padding: 12px 18px;
+
+    border-radius: var(--radius-md);
+
+    font-size: 0.95rem;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transition: .2s ease;
+
+}
+
+
+
+.primary-btn {
+
+    background: var(--primary-color);
+
+    color: white;
+
+    border: none;
+
+    flex: 1;
+
+}
+
+
+.primary-btn:hover {
+
+    background: var(--primary-dark);
+
+}
+
+
+
+.secondary-btn {
+
+    background: white;
+
+    color: var(--text-primary);
+
+    border: 2px solid var(--border-color);
+
+    flex: 1;
+
+}
+
+
+
+.secondary-btn:hover {
+
+    border-color: var(--primary-color);
+
+    background: #f8faff;
+
+}
+
+
+
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+
+    .main-content {
+
+        margin-left: 0;
+
+        padding: 18px;
+
+    }
+
+
+    .header-top {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 15px;
+
+    }
+
+
+    .form-panel {
+
+        padding: 24px;
+
+    }
+
+}
+
+
+
+@media(max-width:640px){
+
+
+    .page-title h1 {
+
+        font-size: 1.4rem;
+
+    }
+
+
+    .form-panel {
+
+        padding: 18px 14px;
+
+    }
+
+
+    .time-row {
+
+        grid-template-columns: 1fr;
+
+        gap: 0;
+
+    }
+
+
+    .actions {
+
+        flex-direction: column;
+
+    }
+
+
+    .primary-btn,
+    .secondary-btn {
+
+        width: 100%;
+
+    }
+
+
+    input,
+    select,
+    textarea {
+
+        min-height: 48px;
+
+        font-size: 0.95rem;
+
+    }
+
+}
