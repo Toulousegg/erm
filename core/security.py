@@ -8,7 +8,7 @@ from core.dependencies import CreateSession
 from fastapi.security import OAuth2PasswordBearer
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from typing import Optional
-from core.config import URL_EXPIRATION_MINUTES
+from core.exceptions import AuthenticationRequired
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -53,23 +53,23 @@ def verify_token(request: Request, session: Session = Depends(CreateSession)) ->
     #print("TOKEN:", token)
 
     if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+        raise AuthenticationRequired()
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
         if payload.get("sub") is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise AuthenticationRequired()
 
         id_user = int(payload.get("sub"))
 
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise AuthenticationRequired()
 
     user = session.query(User).filter(User.id == id_user).first()
 
     if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+        raise AuthenticationRequired()
 
     return user
 

@@ -1,6 +1,7 @@
 #uvicorn core.main:app --reload para rodar o app
 #uvicorn main:app --reload --log-level debug para debugar cuando el log del error no es tan claro
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from users.users_route import home_router 
@@ -18,8 +19,7 @@ from time_tracking.time_tracking_route import time_tracking_router
 from moduls.moduls_router import modules_router
 from core.database import base, engine
 from core.dependencies import templates
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from core.exceptions import AuthenticationRequired
 
 
 app = FastAPI()
@@ -40,17 +40,29 @@ def home(request: Request):
     )
 
 @app.exception_handler(StarletteHTTPException)
-async def custom_http_exception_handler(request: Request, error ):
-    if error.status_code == 404:
-        print(f"404: {request.client.host} -> {request.url.path} hora: {datetime.now(ZoneInfo('America/Sao_Paulo'))}")
+async def custom_http_exception_handler(request: Request, error: StarletteHTTPException):
 
+    if error.status_code == 404:  #usuario visito pagina inexistente, da 404 y redirect
         return templates.TemplateResponse(
             "responses/404.html",
             {"request": request},
             status_code=404
         )
 
-    raise error
+    return JSONResponse(
+        status_code=error.status_code,
+        content={"detail": error.detail}
+    )
+    
+@app.exception_handler(AuthenticationRequired)
+async def authentication_required_handler(
+    request: Request,
+    error: AuthenticationRequired
+):
+    return RedirectResponse(
+        url="/home/login",
+        status_code=302
+    )
 
 app.include_router(home_router)
 app.include_router(inventory_router)
