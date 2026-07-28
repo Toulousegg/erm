@@ -69,10 +69,6 @@
                         <button class="edit-btn" data-item-id="{{ item.id }}">
                             ✏️ Editar
                         </button>
-
-                        <button class="delete-btn" data-item-id="{{ item.id }}">
-                            🗑️ Excluir
-                        </button>
                     </td>
 
                     <td>{{ item.updated_at.strftime('%d/%m/%Y') if item.updated_at else '' }}</td>

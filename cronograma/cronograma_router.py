@@ -91,9 +91,8 @@ def share_schedule(schedule_id: int, session: Session = Depends(CreateSession), 
 
 @cronograma_router.get("/", dependencies=[Depends(require_module("schedule"))])
 def get_board(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
-
     return render_template(
-        "cronograma/cronograma.html", request, session, user,)
+        "cronograma/cronograma.html", request, session, user)
     
 @cronograma_router.get("/board", dependencies=[Depends(require_module("schedule"))])
 def get_board_data(start: date, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
