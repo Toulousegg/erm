@@ -22,11 +22,11 @@ from core.dependencies import templates
 from core.exceptions import AuthenticationRequired
 
 
-app = FastAPI()
-#     docs_url=None,
-#     redoc_url=None,
-#     openapi_url=None
-# )
+app = FastAPI(
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None
+)
 
 base.metadata.create_all(bind=engine)
 

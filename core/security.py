@@ -71,7 +71,7 @@ def verify_token(request: Request, session: Session = Depends(CreateSession)) ->
     if not user:
         raise AuthenticationRequired()
 
-    return user
+    return user 
 
 def create_verification_token(email: str, purpose: str) -> str:
     to_encode = {"sub": email, "purpose": purpose}
