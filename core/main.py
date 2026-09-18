@@ -20,6 +20,7 @@ from moduls.moduls_router import modules_router
 from core.database import base, engine
 from core.dependencies import templates
 from core.exceptions import AuthenticationRequired
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI(
@@ -63,6 +64,14 @@ async def authentication_required_handler(
         url="/home/login",
         status_code=302
     )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(home_router)
 app.include_router(inventory_router)

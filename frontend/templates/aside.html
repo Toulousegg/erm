@@ -17,7 +17,6 @@
             --sidebar-collapsed: 70px;
         }
 
-
         * {
             margin: 0;
             padding: 0;
@@ -25,454 +24,234 @@
             font-family: system-ui, -apple-system, sans-serif;
         }
 
-
         body {
             background: var(--bg-page);
             color: var(--text-main);
             min-height: 100vh;
         }
 
-
         /* SIDEBAR */
-
         .sidebar {
-
             width: var(--sidebar-width);
-
             background: white;
-
             border-right: 1px solid var(--border);
-
             position: fixed;
-
             height: 100vh;
-
             display: flex;
-
             flex-direction: column;
-
             transition: .3s ease;
-
             z-index: 1000;
-
         }
-
 
         .sidebar.collapsed {
-
             width: var(--sidebar-collapsed);
-
         }
-
-
 
         /* HEADER */
-
         .sidebar-header {
-
             height: 70px;
-
             display: flex;
-
             align-items: center;
-
             justify-content: space-between;
-
             padding: 0 15px;
-
         }
-
-
 
         .sidebar.collapsed .sidebar-header {
-
             justify-content: center;
-
         }
-
-
 
         .app-icon {
-
             display: flex;
-
             align-items: center;
-
             gap: 10px;
-
             font-size: 20px;
-
         }
-
-
 
         .app-icon img {
-
             width: 32px;
-
             height: 32px;
-
         }
-
-
 
         .sidebar.collapsed .app-icon {
-
             display: none;
-
         }
-
-
 
         .toggle-btn {
-
             background: none;
-
             border: none;
-
             font-size: 22px;
-
             cursor: pointer;
-
             color: var(--text-muted);
-
         }
-
-
 
         /* NAV */
-
         .sidebar-nav {
-
             padding: 10px 12px;
-
             flex: 1;
-
         }
-
-
 
         .nav-item {
-
             display: flex;
-
             align-items: center;
-
             gap: 12px;
-
             padding: 12px 15px;
-
             color: var(--text-muted);
-
             text-decoration: none;
-
             border-radius: 8px;
-
             margin-bottom: 4px;
-
             transition: .2s;
-
         }
-
-
 
         .nav-item:hover,
         .nav-item.active {
-
             background: #e7edff;
-
             color: var(--blue);
-
         }
-
-
 
         .nav-item .icon {
-
             width: 24px;
-
             height: 24px;
-
             display: flex;
-
             align-items: center;
-
             justify-content: center;
-
         }
-
-
 
         .nav-item .icon img {
-
             width: 22px;
-
             height: 22px;
-
         }
-
-
 
         .sidebar.collapsed .label {
-
             display: none;
-
         }
-
-
 
         /* LOGOUT */
-
         .logout-link {
-
             display: flex;
-
             align-items: center;
-
             gap: 12px;
-
             margin: 12px;
-
             padding: 12px 15px;
-
             color: var(--text-muted);
-
             text-decoration: none;
-
             border-radius: 8px;
-
             font-weight: 500;
-
             transition: .2s;
-
         }
-
-
 
         .logout-link img {
-
             width: 22px;
-
             height: 22px;
-
             object-fit: contain;
-
         }
-
-
 
         .logout-link:hover {
-
             background: #e7edff;
-
             color: var(--blue);
-
         }
-
-
 
         .sidebar.collapsed .logout-link span {
-
             display: none;
-
         }
-
-
 
         .sidebar.collapsed .logout-link {
-
             justify-content: center;
-
         }
 
-
-
         /* MOBILE */
-
-        @media(max-width:900px) {
-
-
+        @media(max-width: 900px) {
             .sidebar {
-
                 position: fixed;
-
                 top: 12px;
-
                 right: 12px;
-
                 width: 52px;
-
                 height: 52px;
-
                 overflow: hidden;
-
                 border: 1px solid var(--border);
-
                 border-radius: 12px;
-
                 box-shadow: 0 8px 24px rgba(15, 23, 42, .12);
-
             }
-
-
 
             .sidebar.collapsed {
-
                 width: min(260px, calc(100vw - 24px));
-
                 height: auto;
-
             }
-
-
 
             .sidebar-header {
-
                 height: 52px;
-
                 padding: 0;
-
                 justify-content: center;
-
             }
-
-
 
             .sidebar.collapsed .sidebar-header {
-
                 justify-content: space-between;
-
                 padding-left: 16px;
-
             }
-
-
 
             .app-icon,
             .sidebar-nav,
             .logout-link {
-
                 display: none;
-
             }
-
-
 
             .sidebar.collapsed .app-icon {
-
                 display: flex;
-
                 font-size: 16px;
-
             }
-
-
 
             .sidebar.collapsed .sidebar-nav {
-
                 display: flex;
-
                 flex-direction: column;
-
                 padding: 8px;
-
             }
-
-
 
             .sidebar.collapsed .nav-item {
-
                 width: 100%;
-
             }
-
-
 
             .sidebar.collapsed .logout-link {
-
                 display: flex;
-
                 margin: 8px;
-
             }
-
-
 
             .toggle-btn {
-
                 width: 52px;
-
                 height: 52px;
-
             }
-
-
         }
     </style>
-
 </head>
-
 
 <body>
 
-
     <aside class="sidebar" id="sidebar">
-
-
         <div class="sidebar-header">
-
             <div class="app-icon">
                 <strong>ProntoERP</strong>
             </div>
 
-
             <button class="toggle-btn" type="button" onclick="toggleSidebar()">
                 ☰
             </button>
-
         </div>
 
-
-
         <nav class="sidebar-nav">
-
-
             {% for module in modules %}
-
-
             <a class="nav-item {% if module.route in request.url.path %}active{% endif %}" href="{{ module.route }}">
-
-
                 <span class="icon">
-                    <img src="{{ module.icon_aside   }}" alt="{{ module.name }}">
+                    <img src="{{ module.icon_aside }}" alt="{{ module.name }}">
                 </span>
-
-
                 <span class="label">
                     {{ module.name }}
                 </span>
-
-
             </a>
-
-
             {% endfor %}
-
-
         </nav>
 
-
-
         <a class="logout-link" href="/home/login">
-
             <img src="https://cdn-icons-png.flaticon.com/512/4052/4052024.png" alt="Sair">
-
             <span>Sair</span>
-
         </a>
-
-
-
     </aside>
 
     <script>
