@@ -1,9 +1,9 @@
-import type { Page } from "../../../dtos/SidebarDto/sidebarDto" //puse ese type porque despues de compilar el codigo esa interfaz no va a existir mas, entonces si intento importarlo no va a existir nada y va a dar error
+import type { Page } from "../dtos/SidebarDto/sidebarDto" //puse ese type porque despues de compilar el codigo esa interfaz no va a existir mas, entonces si intento importarlo no va a existir nada y va a dar error
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 export function Sidebar() {
-    const BASE_URL = "http://127.0.0.1:8000"
+    const BASE_URL = "http://127.0.0.1:8000/modules"
 
     /*este es para decir si el aside esta abierto o no */
     const [collapsed, setCollapsed] = useState(false); /* parece que el useState es para solo darle un valor a una variable y poder cambiarla*/
@@ -16,7 +16,7 @@ export function Sidebar() {
     }
 
     async function request() {
-        const response = await axios.get(BASE_URL + "/modules/company", {
+        const response = await axios.get(BASE_URL + "/company", {
             withCredentials: true
         })
 
