@@ -19,6 +19,8 @@ def authuser(identifier: str, password: str, session: Session):
 
     if not bcrypt_context.verify(password, user.password):
         return None
+    
+    print(bcrypt_context.verify(password, user.password))
 
     return user
 

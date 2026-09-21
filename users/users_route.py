@@ -60,9 +60,9 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 
     if not user:
         raise HTTPException(
-            status_code=401,
-            detail="Incorrect username or password"
-        )
+    status_code=401,
+    detail="Incorrect username or password"
+)
     
     if not user.is_verified:
         return templates.TemplateResponse("home/verify_email.html", {
@@ -85,7 +85,9 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 
         except Exception as e:
             print("Error sending barcode email:", e)
-            return set_auth_cookies(RedirectResponse(url=next_onboarding_url(user), status_code=303), user.id)
+            raise HTTPException(status_code=500, detail="Error creating barcode")
+                    
+        #me falta verificar los pagos, pero creo que no va a ser necesario por ahora, tengo que hacerme un cnpj
 
     return set_auth_cookies(response, user.id)
     
