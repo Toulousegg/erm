@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, Response
 from fastapi.responses import RedirectResponse, JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from users.users_model import User, Company, CompanyJoinRequest
@@ -30,7 +30,7 @@ def next_onboarding_url(user: User) -> str:
 
     return "/home/home"
 
-def set_auth_cookies(response: RedirectResponse, user_id: int):
+def set_auth_cookies(response: Response, user_id: int):
     access_token = create_token(user_id)
     refresh_token = create_refresh_token(user_id)
 
@@ -65,29 +65,45 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 )
     
     if not user.is_verified:
-        return templates.TemplateResponse("home/verify_email.html", {
-            "request": request, 
-            "email": user.email, 
-            "message": "Please verify your email address before logging in."
-        })
+        return JSONResponse(
+            status_code=403,
+            content={
+                "detail": "Please verify your email address before logging in."
+            }
+        )
 
     await ensure_company_assignment_reminder(user, session)
 
-    response = RedirectResponse(url=next_onboarding_url(user), status_code=303)
-    
+    next_url = next_onboarding_url(user)
+
     if not user.barcode:
         try:
             if user.company:
                 user.barcode = generate_code128(12)
                 session.commit()
-                await send_employee_barcode_to_owner(user.company.owner.email, user.fullname, user.username, user.barcode)
-                return set_auth_cookies(RedirectResponse(url="/home/barcode/", status_code=303), user.id)
+
+                await send_employee_barcode_to_owner(
+                    user.company.owner.email,
+                    user.fullname,
+                    user.username,
+                    user.barcode
+                )
+
+                next_url = "/home/barcode"
 
         except Exception as e:
             print("Error sending barcode email:", e)
-            raise HTTPException(status_code=500, detail="Error creating barcode")
-                    
-        #me falta verificar los pagos, pero creo que no va a ser necesario por ahora, tengo que hacerme un cnpj
+            raise HTTPException(
+                status_code=500,
+                detail="Error creating barcode"
+            )
+
+    response = JSONResponse(
+        content={
+            "message": "Login successful",
+            "redirect": next_url
+        }
+    )
 
     return set_auth_cookies(response, user.id)
     
