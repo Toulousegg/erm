@@ -53,26 +53,22 @@ def verify_token(request: Request, session: Session = Depends(CreateSession)) ->
     #print("TOKEN:", token)
 
     if not token:
-        print("no token")
         raise AuthenticationRequired()
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
         if payload.get("sub") is None:
-            print("no token")
             raise AuthenticationRequired()
 
         id_user = int(payload.get("sub"))
 
     except JWTError:
-        print("no token")
         raise AuthenticationRequired()
 
     user = session.query(User).filter(User.id == id_user).first()
 
     if not user:
-        print("no token")
         raise AuthenticationRequired()
 
     return user 

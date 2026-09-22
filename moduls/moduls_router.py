@@ -11,8 +11,6 @@ modules_router = APIRouter(prefix="/modules", tags=["Modules"])
 @modules_router.get("/company")
 def company_modules(request: Request, session: Session = Depends(CreateSession), user: User = Depends(verify_token)):
 
-    print("ENTRÉ A COMPANY MODULES")
-
     if user and user.company_id:
         modules = [
     {
@@ -28,5 +26,6 @@ def company_modules(request: Request, session: Session = Depends(CreateSession),
         "aside.html",
         {
             "request": request,
+            "modules": modules,
         }
     )
