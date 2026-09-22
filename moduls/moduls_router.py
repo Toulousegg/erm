@@ -17,7 +17,7 @@ def company_modules(request: Request, session: Session = Depends(CreateSession),
         "id": module.id,
         "name": module.name,
         "route": module.module_route,
-        "icon": module.icon
+        "icon": module.icon_aside
     }
     for module in get_company_modules(session, user.company_id)
 ]
