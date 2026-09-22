@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saida de inventario por códigos</title>
-
     <link rel="stylesheet" href="../../static/inv/dashboard.css?v=4">
     <script type="module" src="/static/js/refresh_token.js"></script>
 </head>
-
 <body>
     <main class="main-content">
         <header class="header-top">
@@ -17,7 +14,6 @@
                 <h1>Saida de inventario</h1>
                 <p>Processo de picking com leitura de códigos de barras para controle de stock e auditoria.</p>
             </div>
-
             <div class="top-bar">
                 <div class="username">{{ user.username }}</div>
             </div>
@@ -47,17 +43,11 @@
                 <div class="flow-panel">
                     <h2>Identificação do trabalhador</h2>
                     <p class="flow-helper">Escanee seu código de trabalhador para habilitar a saída de inventário.</p>
-
                     <form class="barcode-scan-form" id="worker-form">
-                        <input type="text" id="worker-code-input" placeholder="Ex. EMP-000123" autocomplete="off"
-                            required>
+                        <input type="text" id="worker-code-input" placeholder="Ex. EMP-000123" autocomplete="off" required>
                         <button type="submit" class="primary-btn">Validar</button>
                     </form>
-
-                    <div class="status-box" id="worker-status">
-                        Esperando identificação do operador.
-                    </div>
-
+                    <div class="status-box" id="worker-status">Esperando identificação do operador.</div>
                     <div class="worker-summary" id="worker-summary" hidden>
                         <strong id="worker-name">-</strong>
                         <span id="worker-role">-</span>
@@ -66,27 +56,18 @@
 
                 <div class="flow-panel" id="product-panel" hidden>
                     <h2>Escaneo de productos</h2>
-                    <p class="flow-helper">Os produtos são adicionados a uma lista temporária e não descuentam stock até
-                        confirmar.</p>
-
+                    <p class="flow-helper">Os produtos são adicionados a uma lista temporária e não descuentam stock até confirmar.</p>
                     <form class="barcode-scan-form" id="product-form">
-                        <input type="text" id="product-code-input" placeholder="Escanee ou ingrese um código"
-                            autocomplete="off" required>
+                        <input type="text" id="product-code-input" placeholder="Escanee ou ingrese um código" autocomplete="off" required>
                         <button type="submit" class="primary-btn">Agregar</button>
                     </form>
-
-                    <div class="status-box info" id="product-status">
-                        Listo para receber produtos.
-                    </div>
-
+                    <div class="status-box info" id="product-status">Listo para receber produtos.</div>
                     <div class="review-panel" id="review-panel">
                         <div class="review-header">
                             <strong>Produtos pendentes</strong>
                             <span id="summary-count">0 produtos</span>
                         </div>
-
                         <div id="pending-items" class="barcode-list"></div>
-
                         <div class="flow-actions">
                             <button type="button" class="secondary-btn" id="cancel-flow">Cancelar</button>
                             <button type="button" class="primary-btn" id="confirm-flow">Confirmar saida</button>
@@ -98,11 +79,7 @@
 
         <section class="inventory-flow-card confirmation-panel" id="confirmation-panel" hidden>
             <h2>Movimiento gerado</h2>
-            <p class="flow-helper">
-                A saída de inventário foi registrada com sucesso. O stock foi atualizado e o movimento está disponível
-                para auditoria.
-            </p>
-
+            <p class="flow-helper">A saída de inventário foi registrada com sucesso. O stock foi atualizado e o movimento está disponível para auditoria.</p>
             <div class="confirmation-box">
                 <div>
                     <span class="eyebrow">Movimento</span>
@@ -117,7 +94,6 @@
                     <strong id="move-date">-</strong>
                 </div>
             </div>
-
             <div class="barcode-list" id="confirmation-items"></div>
         </section>
     </main>
@@ -127,33 +103,26 @@
         let pendingItems = [];
         let moveNumber = 542;
 
-
         const workerForm = document.getElementById("worker-form");
         const workerInput = document.getElementById("worker-code-input");
         const workerStatus = document.getElementById("worker-status");
         const workerSummary = document.getElementById("worker-summary");
         const workerName = document.getElementById("worker-name");
         const workerRole = document.getElementById("worker-role");
-
         const productPanel = document.getElementById("product-panel");
         const productForm = document.getElementById("product-form");
         const productInput = document.getElementById("product-code-input");
         const productStatus = document.getElementById("product-status");
-
         const reviewPanel = document.getElementById("review-panel");
         const pendingItemsContainer = document.getElementById("pending-items");
         const summaryCount = document.getElementById("summary-count");
-
         const cancelFlowBtn = document.getElementById("cancel-flow");
         const confirmFlowBtn = document.getElementById("confirm-flow");
-
         const confirmationPanel = document.getElementById("confirmation-panel");
         const confirmationItems = document.getElementById("confirmation-items");
-
         const moveCode = document.getElementById("move-code");
         const moveWorker = document.getElementById("move-worker");
         const moveDate = document.getElementById("move-date");
-
 
         function setWorkerStatus(message, success = true) {
             workerStatus.textContent = message;
@@ -161,448 +130,332 @@
             workerStatus.classList.toggle("error", !success);
         }
 
-
         function setProductStatus(message, info = true) {
             productStatus.textContent = message;
             productStatus.classList.toggle("info", info);
             productStatus.classList.toggle("ok", !info);
         }
 
-
         async function validateWorker(code) {
-
             try {
+                const response = await fetch(`/inv/barcode/worker/${encodeURIComponent(code)}`);
+                const contentType = response.headers.get("content-type");
+                let data = {};
+                if (contentType && contentType.includes("application/json")) {
+                    data = await response.json().catch(() => ({}));
+                } else {
+                    const text = await response.text().catch(() => "");
+                    data = { error: text };
+                }
 
-                const response = await fetch(`/inv/barcode/worker/${code}`);
-
-                const data = await response.json();
-
-
-                if (!data.success) {
-                    setWorkerStatus(
-                        data.message || "Código inválido",
-                        false
-                    );
-
+                if (!response.ok) {
+                    showHttpError(response.status, {
+                        message: data.message || "Não foi possível validar o trabalhador.",
+                        detail: data
+                    });
+                    setWorkerStatus(data.message || "Erro ao validar trabalhador.", false);
                     workerSummary.hidden = true;
                     productPanel.hidden = true;
+                    currentWorker = null;
+                    return false;
+                }
 
-                    return;
+                if (!data.success) {
+                    setWorkerStatus(data.message || "Código inválido.", false);
+                    workerSummary.hidden = true;
+                    productPanel.hidden = true;
+                    currentWorker = null;
+                    return false;
                 }
 
                 const worker = data.worker;
+                if (!worker || !worker.id) {
+                    showHttpError(500, {
+                        message: "O servidor não retornou um trabalhador válido.",
+                        detail: data
+                    });
+                    setWorkerStatus("Não foi possível identificar o trabalhador.", false);
+                    workerSummary.hidden = true;
+                    productPanel.hidden = true;
+                    currentWorker = null;
+                    return false;
+                }
 
                 currentWorker = worker;
-
-
                 workerName.textContent = worker.name;
                 workerRole.textContent = worker.role;
-
                 workerSummary.hidden = false;
-
-
-                setWorkerStatus(
-                    `Trabalhador identificado: ${worker.name}`
-                );
-
-
+                setWorkerStatus(`Trabalhador identificado: ${worker.name}`);
                 productPanel.hidden = false;
-
-                document
-                    .getElementById("step-product")
-                    .classList.add("active");
-
-
+                document.getElementById("step-product").classList.add("active");
                 productInput.focus();
-
-
+                return true;
             } catch (error) {
-
                 console.error(error);
-
-                setWorkerStatus(
-                    "Erro ao validar trabalhador.",
-                    false
-                );
+                showHttpError(500, {
+                    message: "Não foi possível comunicar com o servidor.",
+                    detail: error.message
+                });
+                setWorkerStatus("Erro ao validar trabalhador.", false);
+                workerSummary.hidden = true;
+                productPanel.hidden = true;
+                currentWorker = null;
+                return false;
             }
         }
 
-
-
         function renderPendingItems() {
-
             if (!pendingItems.length) {
-
                 pendingItemsContainer.innerHTML =
                     '<div class="empty-state">Ainda não há produtos escaneados. O stock não é modificado até confirmar.</div>';
-
                 summaryCount.textContent = "0 produtos";
-
                 reviewPanel.classList.remove("active");
-
                 return;
             }
 
-
             reviewPanel.classList.add("active");
+            summaryCount.textContent = `${pendingItems.reduce((total, item) => total + item.quantity, 0)} produtos`;
 
-
-            summaryCount.textContent =
-                `${pendingItems.reduce((total, item) => total + item.quantity, 0)} produtos`;
-
-
-            pendingItemsContainer.innerHTML =
-                pendingItems.map((item, index) => `
-
+            pendingItemsContainer.innerHTML = pendingItems.map((item, index) => `
                 <article class="barcode-item">
-
                     <div class="barcode-item-main">
                         <strong>${item.name}</strong>
                         <span>${item.code}</span>
                     </div>
-
-
                     <div class="barcode-item-actions">
-
                         <div class="qty-control">
-
-                            <button type="button"
-                                data-action="decrease"
-                                data-index="${index}">
-                                −
-                            </button>
-
-
+                            <button type="button" data-action="decrease" data-index="${index}">−</button>
                             <span>${item.quantity}</span>
-
-
-                            <button type="button"
-                                data-action="increase"
-                                data-index="${index}">
-                                +
-                            </button>
-
+                            <button type="button" data-action="increase" data-index="${index}">+</button>
                         </div>
-
-
-                        <button type="button"
-                            class="delete-btn"
-                            data-action="remove"
-                            data-index="${index}">
-                            Apagar
-                        </button>
-
+                        <button type="button" class="delete-btn" data-action="remove" data-index="${index}">Apagar</button>
                     </div>
-
                 </article>
-
             `).join("");
-
         }
 
-
-
         async function addOrUpdateItem(code) {
+            try {
+                const response = await fetch(`/inv/barcode/product/${encodeURIComponent(code)}`);
+                const contentType = response.headers.get("content-type");
+                let data = {};
+                if (contentType && contentType.includes("application/json")) {
+                    data = await response.json().catch(() => ({}));
+                } else {
+                    const text = await response.text().catch(() => "");
+                    data = { error: text };
+                }
 
-            const response = await fetch(`/inv/barcode/product/${code}`);
-            const data = await response.json();
+                if (!response.ok || !data.success) {
+                    showHttpError(response.status || 500, {
+                        message: data.message || "Produto não encontrado.",
+                        detail: data
+                    });
+                    setProductStatus(data.message || "Produto não encontrado.", false);
+                    return false;
+                }
 
-            if (!response.ok || !data.success) {
-                setProductStatus(
-                    data.message || "Produto não encontrado.",
-                    false
-                );
+                const product = data.product;
+                if (!product || !product.id || !product.code) {
+                    showHttpError(500, {
+                        message: "O servidor não retornou um produto válido.",
+                        detail: data
+                    });
+                    setProductStatus("Não foi possível adicionar o produto.", false);
+                    return false;
+                }
+
+                const existing = pendingItems.find(item => item.code === product.code);
+                if (existing) {
+                    existing.quantity++;
+                } else {
+                    pendingItems.push({
+                        id: product.id,
+                        name: product.item_name,
+                        code: product.code,
+                        quantity: 1
+                    });
+                }
+
+                renderPendingItems();
+                return true;
+            } catch (error) {
+                console.error(error);
+                showHttpError(500, {
+                    message: "Não foi possível consultar o produto.",
+                    detail: error.message
+                });
+                setProductStatus("Erro ao consultar produto.", false);
                 return false;
             }
+        }
 
-            const product = data.product;
+        workerForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
 
-            const existing = pendingItems.find(
-                item => item.code === product.code
-            );
+            if (!workerForm.checkValidity()) {
+                workerForm.reportValidity();
+                return;
+            }
 
-            if (existing) {
+            const code = workerInput.value.trim();
+            if (!code) {
+                workerForm.reportValidity();
+                return;
+            }
 
-                existing.quantity++;
+            await validateWorker(code);
+        });
 
-            } else {
+        productForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
 
-                pendingItems.push({
-                    id: product.id,
-                    name: product.item_name,
-                    code: product.code,
-                    quantity: 1
+            if (!productForm.checkValidity()) {
+                productForm.reportValidity();
+                return;
+            }
+
+            if (!currentWorker) {
+                showHttpError(400, {
+                    message: "Identifique o trabalhador antes de adicionar produtos.",
+                    detail: "Nenhum trabalhador válido está associado à operação."
                 });
+                return;
+            }
 
+            const code = productInput.value.trim();
+            if (!code) {
+                productForm.reportValidity();
+                return;
+            }
+
+            const added = await addOrUpdateItem(code);
+            if (!added) {
+                productInput.select();
+                return;
+            }
+
+            setProductStatus(`Produto adicionado: ${code}`);
+            productInput.value = "";
+            document.getElementById("step-review").classList.add("active");
+            productInput.focus();
+        });
+
+        pendingItemsContainer.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-action]");
+            if (!button) return;
+
+            const index = Number(button.dataset.index);
+            const action = button.dataset.action;
+
+            if (!pendingItems[index]) return;
+
+            if (action === "increase") {
+                pendingItems[index].quantity++;
+            } else if (action === "decrease") {
+                if (pendingItems[index].quantity > 1) pendingItems[index].quantity--;
+            } else if (action === "remove") {
+                pendingItems.splice(index, 1);
             }
 
             renderPendingItems();
+        });
 
-            return true;
+        cancelFlowBtn.addEventListener("click", () => {
+            pendingItems = [];
+            renderPendingItems();
+            confirmationPanel.hidden = true;
+            setProductStatus("Operação cancelada.");
+            productInput.value = "";
+            productInput.focus();
+        });
 
-        }
+        confirmFlowBtn.addEventListener("click", async () => {
+            if (!currentWorker) {
+                showHttpError(400, {
+                    message: "Identifique o trabalhador antes de confirmar.",
+                    detail: "Nenhum trabalhador válido foi identificado."
+                });
+                return;
+            }
 
+            if (!pendingItems.length) {
+                showHttpError(400, {
+                    message: "Adicione pelo menos um produto antes de confirmar.",
+                    detail: "A lista de produtos pendentes está vazia."
+                });
+                return;
+            }
 
+            try {
+                const payload = {
+                    worker_id: currentWorker.id,
+                    items: pendingItems.map(item => ({
+                        code: item.code,
+                        quantity: item.quantity
+                    }))
+                };
 
-        workerForm.addEventListener(
-            "submit",
-            async (event) => {
+                const response = await fetch("/inv/barcode/output", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
 
-                event.preventDefault();
+                const contentType = response.headers.get("content-type");
+                let data = {};
+                if (contentType && contentType.includes("application/json")) {
+                    data = await response.json().catch(() => ({}));
+                } else {
+                    const text = await response.text().catch(() => "");
+                    data = { error: text };
+                }
 
-
-                const code = workerInput.value.trim();
-
-
-                if (!code) {
-                    setWorkerStatus(
-                        "Ingrese un código.",
-                        false
-                    );
+                if (!response.ok) {
+                    showHttpError(response.status, {
+                        message: data.message || data.detail || "Erro ao processar saída.",
+                        detail: data
+                    });
+                    setProductStatus(data.message || data.detail || "Erro ao processar saída.", false);
                     return;
                 }
 
-
-                await validateWorker(code);
-
-            }
-        );
-
-        productForm.addEventListener(
-            "submit",
-            async (event) => {
-
-                event.preventDefault();
-
-                const code = productInput.value.trim();
-
-                if (!code) {
-
-                    setProductStatus(
-                        "Adicione um código."
-                    );
-
-                    return;
-
-                }
-
-                const added = await addOrUpdateItem(code);
-
-                if (!added) {
-
-                    productInput.select();
-                    return;
-
-                }
-
-                setProductStatus(
-                    `Produto adicionado: ${code}`
-                );
-
-                productInput.value = "";
-
-                document
-                    .getElementById("step-review")
-                    .classList.add("active");
-
-                productInput.focus();
-
-            }
-        );
-
-        pendingItemsContainer.addEventListener(
-            "click",
-            (event) => {
-
-                const button =
-                    event.target.closest("button[data-action]");
-
-
-                if (!button) return;
-
-
-                const index =
-                    Number(button.dataset.index);
-
-
-                const action =
-                    button.dataset.action;
-
-
-
-                if (action === "increase") {
-
-                    pendingItems[index].quantity++;
-
-                }
-                else if (action === "decrease") {
-
-                    if (pendingItems[index].quantity > 1)
-                        pendingItems[index].quantity--;
-
-                }
-                else if (action === "remove") {
-
-                    pendingItems.splice(index, 1);
-
-                }
-
-
-                renderPendingItems();
-
-            }
-        );
-
-
-
-        cancelFlowBtn.addEventListener(
-            "click",
-            () => {
-
-                pendingItems = [];
-
-                renderPendingItems();
-
-                confirmationPanel.hidden = true;
-
-                setProductStatus(
-                    "Operação cancelada."
-                );
-
-            }
-        );
-
-
-        confirmFlowBtn.addEventListener(
-            "click",
-            async () => {
-
-                if (!currentWorker || !pendingItems.length) {
-
-                    setProductStatus(
-                        "Debe identificar trabalhador e produtos.",
-                        false
-                    );
-
-                    return;
-                }
-
-
-                try {
-
-                    const payload = {
-                        worker_id: currentWorker.id,
-                        items: pendingItems.map(item => ({
-                            code: item.code,
-                            quantity: item.quantity
-                        }))
-                    };
-
-
-                    const response = await fetch(
-                        "/inv/barcode/output",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify(payload)
-                        }
-                    );
-
-                    if (!response.ok) {
-
-                        setProductStatus(
-                            data.detail || "Erro ao processar saída.",
-                            false
-                        );
-
-                        return;
-                    }
-
-
-
-                    moveNumber++;
-
-
-                    const now = new Date();
-
-
-                    moveCode.textContent =
-                        `SAL-${String(moveNumber).padStart(6, "0")}`;
-
-
-                    moveWorker.textContent =
-                        currentWorker.name;
-
-
-                    moveDate.textContent =
-                        now.toLocaleString(
-                            "pt-BR",
-                            {
-                                dateStyle: "short",
-                                timeStyle: "short"
-                            }
-                        );
-
-
-
-                    confirmationItems.innerHTML =
-                        pendingItems.map(item => `
-
+                moveNumber++;
+                const now = new Date();
+                moveCode.textContent = `SAL-${String(moveNumber).padStart(6, "0")}`;
+                moveWorker.textContent = currentWorker.name;
+                moveDate.textContent = now.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+
+                confirmationItems.innerHTML = pendingItems.map(item => `
                     <article class="barcode-item">
-
                         <div class="barcode-item-main">
-
                             <strong>${item.name}</strong>
-
                             <span>${item.code}</span>
-
                         </div>
-
-
                         <div class="barcode-item-actions">
-
-                            <span class="qty-pill">
-                                Quantidade: ${item.quantity}
-                            </span>
-
+                            <span class="qty-pill">Quantidade: ${item.quantity}</span>
                         </div>
-
                     </article>
-
                 `).join("");
 
-
-
-                    confirmationPanel.hidden = false;
-
-
-                    setProductStatus(
-                        "Saída processada com sucesso."
-                    );
-
-
-                    pendingItems = [];
-
-                    renderPendingItems();
-
-
-                } catch (error) {
-
-                    console.error(error);
-
-                    setProductStatus(
-                        "Erro ao processar saída.",
-                        false
-                    );
-
-                }
-
+                confirmationPanel.hidden = false;
+                setProductStatus("Saída processada com sucesso.");
+                pendingItems = [];
+                renderPendingItems();
+            } catch (error) {
+                console.error(error);
+                showHttpError(500, {
+                    message: "Não foi possível comunicar com o servidor.",
+                    detail: error.message
+                });
+                setProductStatus("Erro ao processar saída.", false);
             }
-        );
-
+        });
     </script>
-</body>
 
+    {% include 'notification.html' %}
+    {% include 'aside.html' %}
+    {% include 'loading.html' %}
+    {% include 'http-error-modal.html' %}
+</body>
 </html>

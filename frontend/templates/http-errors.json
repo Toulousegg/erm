@@ -1,0 +1,162 @@
+{
+  "400": {
+    "title": "Requisição inválida",
+    "message": "A requisição enviada é inválida ou está mal formatada."
+  },
+  "401": {
+    "title": "Não autorizado",
+    "message": "Você precisa se autenticar para realizar esta operação."
+  },
+  "402": {
+    "title": "Pagamento necessário",
+    "message": "A operação requer um pagamento ou uma condição de pagamento."
+  },
+  "403": {
+    "title": "Acesso negado",
+    "message": "Você não tem permissão para realizar esta operação."
+  },
+  "404": {
+    "title": "Recurso não encontrado",
+    "message": "O recurso solicitado não foi encontrado."
+  },
+  "405": {
+    "title": "Método não permitido",
+    "message": "O método HTTP utilizado não é permitido para este recurso."
+  },
+  "406": {
+    "title": "Resposta não aceitável",
+    "message": "O servidor não pode gerar uma resposta compatível com a requisição."
+  },
+  "407": {
+    "title": "Autenticação de proxy necessária",
+    "message": "É necessária autenticação no proxy para concluir a requisição."
+  },
+  "408": {
+    "title": "Tempo de requisição esgotado",
+    "message": "O servidor demorou muito para receber a requisição."
+  },
+  "409": {
+    "title": "Conflito",
+    "message": "A requisição entra em conflito com o estado atual do recurso."
+  },
+  "410": {
+    "title": "Recurso não disponível",
+    "message": "O recurso solicitado foi removido e não está mais disponível."
+  },
+  "411": {
+    "title": "Comprimento necessário",
+    "message": "O servidor exige que a requisição inclua seu comprimento."
+  },
+  "412": {
+    "title": "Falha na pré-condição",
+    "message": "Uma das condições necessárias para processar a requisição não foi atendida."
+  },
+  "413": {
+    "title": "Conteúdo muito grande",
+    "message": "O conteúdo enviado excede o tamanho permitido pelo servidor."
+  },
+  "414": {
+    "title": "URI muito longa",
+    "message": "O endereço da requisição é longo demais para ser processado."
+  },
+  "415": {
+    "title": "Tipo de mídia não suportado",
+    "message": "O formato do conteúdo enviado não é suportado por este recurso."
+  },
+  "416": {
+    "title": "Intervalo insatisfatório",
+    "message": "O intervalo solicitado não pode ser atendido pelo servidor."
+  },
+  "417": {
+    "title": "Falha na expectativa",
+    "message": "O servidor não pode atender às expectativas indicadas na requisição."
+  },
+  "418": {
+    "title": "Código não utilizado",
+    "message": "Este código está reservado e não possui um uso padrão atual."
+  },
+  "421": {
+    "title": "Requisição mal direcionada",
+    "message": "A requisição foi direcionada a um servidor que não pode produzir uma resposta."
+  },
+  "422": {
+    "title": "Conteúdo não processável",
+    "message": "A requisição é válida, mas os dados enviados não podem ser processados."
+  },
+  "423": {
+    "title": "Recurso bloqueado",
+    "message": "O recurso solicitado está bloqueado e não pode ser modificado no momento."
+  },
+  "424": {
+    "title": "Falha na dependência",
+    "message": "A operação não pôde ser concluída porque uma operação dependente falhou."
+  },
+  "425": {
+    "title": "Requisição muito precoce",
+    "message": "O servidor ainda não está preparado para processar esta requisição."
+  },
+  "426": {
+    "title": "Atualização necessária",
+    "message": "O cliente deve atualizar ou alterar o protocolo utilizado."
+  },
+  "428": {
+    "title": "Pré-condição necessária",
+    "message": "O servidor exige que uma pré-condição seja incluída na requisição."
+  },
+  "429": {
+    "title": "Muitas requisições",
+    "message": "Muitas requisições foram feitas. Tente novamente mais tarde."
+  },
+  "431": {
+    "title": "Cabeçalhos muito grandes",
+    "message": "Os cabeçalhos da requisição são grandes demais para serem processados."
+  },
+  "451": {
+    "title": "Indisponível por motivos legais",
+    "message": "O recurso não está disponível devido a restrições legais."
+  },
+  "500": {
+    "title": "Erro interno do servidor",
+    "message": "O servidor encontrou um erro inesperado ao processar a requisição."
+  },
+  "501": {
+    "title": "Não implementado",
+    "message": "O servidor não suporta a funcionalidade necessária para processar esta requisição."
+  },
+  "502": {
+    "title": "Gateway inválido",
+    "message": "Um servidor intermediário recebeu uma resposta inválida do servidor de origem."
+  },
+  "503": {
+    "title": "Serviço indisponível",
+    "message": "O serviço está temporariamente indisponível. Tente novamente mais tarde."
+  },
+  "504": {
+    "title": "Tempo limite do gateway",
+    "message": "Um servidor intermediário não recebeu uma resposta a tempo do servidor de origem."
+  },
+  "505": {
+    "title": "Versão HTTP não suportada",
+    "message": "A versão do HTTP utilizada na requisição não é suportada."
+  },
+  "506": {
+    "title": "Erro de configuração do servidor",
+    "message": "O servidor encontrou um erro de configuração durante a negociação de conteúdo."
+  },
+  "507": {
+    "title": "Armazenamento insuficiente",
+    "message": "O servidor não possui armazenamento suficiente para concluir a operação."
+  },
+  "508": {
+    "title": "Loop detectado",
+    "message": "O servidor detectou um loop infinito enquanto processava a requisição."
+  },
+  "510": {
+    "title": "Extensão não disponível",
+    "message": "A requisição exige uma extensão que o servidor não suporta. Este código está obsoleto."
+  },
+  "511": {
+    "title": "Autenticação de rede necessária",
+    "message": "Você precisa se autenticar para obter acesso à rede."
+  }
+}

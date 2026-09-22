@@ -1,0 +1,318 @@
+<head>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f2f2f2;
+        }
+
+        .error-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        .error-modal {
+            width: min(500px, 100%);
+            background: #ffffff;
+            border-radius: 7px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+
+        .error-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 20px 12px;
+        }
+
+        .error-header h2 {
+            margin: 0;
+            color: #333333;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .error-close {
+            border: 0;
+            background: transparent;
+            color: #7b8490;
+            font-size: 25px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 3px;
+        }
+
+        .error-close:hover {
+            color: #333333;
+        }
+
+        .error-content {
+            padding: 0 20px 20px;
+        }
+
+        .error-message {
+            margin: 8px 0 20px;
+            color: #606772;
+            font-size: 14px;
+        }
+
+        .error-details {
+            display: none;
+            width: 100%;
+            max-height: 190px;
+            margin-bottom: 18px;
+            padding: 12px;
+            overflow: auto;
+            border: 1px solid #d4dbe5;
+            border-radius: 5px;
+            background: #fafbfc;
+            color: #333333;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .error-details.is-visible {
+            display: block;
+        }
+
+        .error-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .error-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: #3b82f6;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .error-action:hover {
+            color: #2563eb;
+        }
+
+        .error-action img {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+        }
+
+        .error-ok {
+            margin-left: auto;
+            min-width: 78px;
+            padding: 11px 18px;
+            border: 0;
+            border-radius: 6px;
+            background: #3b82f6;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .error-ok:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!--
+        Puedes abrir este archivo directamente en el navegador.
+
+        Para usarlo desde tu aplicación:
+        showHttpError(500, {
+            message: "Internal error.",
+            detail: {
+                error: "Internal Server Error",
+                status: 500,
+                path: "/api/priorizacion-vin"
+            }
+        });
+    -->
+
+    <div id="error-container"></div>
+
+    <script>
+        const iconView = "https://cdn-icons-png.flaticon.com/512/709/709612.png";
+        const iconHide = "https://cdn-icons-png.flaticon.com/512/2767/2767146.png";
+
+        let errorModalElement = null;
+        function showHttpError(statusCode, errorData = {}) {
+            closeHttpError();
+
+            const status = Number(statusCode);
+
+            const genericMessages = {
+                400: "A requisição enviada é inválida ou está mal formatada.",
+                401: "Você precisa se autenticar para realizar esta operação.",
+                403: "Você não tem permissão para realizar esta operação.",
+                404: "Recurso solicitado não encontrado.",
+                409: "A requisição entra em conflito com o estado atual do recurso.",
+                422: "A requisição é válida, mas os dados enviados não podem ser processados.",
+                429: "Muitas requisições foram feitas. Tente novamente mais tarde.",
+                500: "O servidor encontrou um erro inesperado ao processar a requisição.",
+                502: "Um servidor intermediário recebeu uma resposta inválida do servidor de origem.",
+                503: "O serviço está temporariamente indisponível. Tente novamente mais tarde.",
+                504: "Um servidor intermediário não recebeu uma resposta a tempo do servidor de origem."
+            };
+
+            const genericMessage =
+                genericMessages[status] ||
+                (status >= 400 && status <= 499
+                    ? "Não foi possível concluir a requisição."
+                    : status >= 500 && status <= 599
+                        ? "O servidor não pôde concluir a requisição."
+                        : "Ocorreu um erro inesperado.");
+
+            const message = errorData.message || genericMessage;
+
+            const details = errorData.detail !== undefined
+                ? errorData.detail
+                : errorData;
+
+            const detailText = typeof details === "string"
+                ? details
+                : JSON.stringify(details, null, 2);
+
+            const container = document.getElementById("error-container");
+
+            container.innerHTML = `
+                <div class="error-overlay" id="error-overlay">
+                    <div class="error-modal" role="alertdialog" aria-modal="true">
+                        <div class="error-header">
+                            <h2>Error</h2>
+
+                            <button
+                                class="error-close"
+                                type="button"
+                                aria-label="Cerrar"
+                                onclick="closeHttpError()"
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        <div class="error-content">
+                            <div class="error-message">
+                                ${escapeHtml(message)}
+                            </div>
+
+                            <pre class="error-details" id="error-details"></pre>
+
+                            <div class="error-actions">
+                                <button
+                                    class="error-action"
+                                    id="error-details-button"
+                                    type="button"
+                                    onclick="toggleErrorDetails()"
+                                >
+                                    <img
+                                        id="error-details-icon"
+                                        src="${iconView}"
+                                        alt=""
+                                    >
+                                    <span id="error-details-text">Mostrar detalles</span>
+                                </button>
+
+                                <button
+                                    class="error-ok"
+                                    type="button"
+                                    onclick="closeHttpError()"
+                                >
+                                    OK
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById("error-details").textContent =
+                `HTTP ${status}\n\n${detailText}`;
+
+            errorModalElement = document.getElementById("error-overlay");
+
+            errorModalElement.addEventListener("click", function (event) {
+                if (event.target === errorModalElement) {
+                    closeHttpError();
+                }
+            });
+        }
+
+        function toggleErrorDetails() {
+            const details = document.getElementById("error-details");
+            const icon = document.getElementById("error-details-icon");
+            const text = document.getElementById("error-details-text");
+
+            if (!details) {
+                return;
+            }
+
+            const visible = details.classList.toggle("is-visible");
+
+            if (visible) {
+                icon.src = iconHide;
+                text.textContent = "Ocultar detalhes";
+            } else {
+                icon.src = iconView;
+                text.textContent = "Mostrar detalhes";
+            }
+        }
+
+            function closeHttpError() {
+                const container = document.getElementById("error-container");
+
+                if (container) {
+                    container.innerHTML = "";
+                }
+
+                errorModalElement = null;
+            }
+
+            function escapeHtml(value) {
+                return String(value)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+        /*
+         * Ejemplo:
+         *
+         * showHttpError(500, {
+         *     message: "Internal error.",
+         *     detail: {
+         *         error: "Internal Server Error",
+         *         message: "Internal error.",
+         *         status: 500
+         *     }
+         * });
+         */
+    </script>

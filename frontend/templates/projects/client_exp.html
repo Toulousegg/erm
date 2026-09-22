@@ -246,18 +246,10 @@
             `translateX(-${currentSlide * 100}%)`;
     }
 
-    // =========================
-    // HEART
-    // =========================
-
     function toggleHeart(button) {
 
         button.classList.toggle("active");
     }
-
-    // =========================
-    // SHOW MORE COMMENTS
-    // =========================
 
     function toggleComments() {
 
@@ -281,10 +273,6 @@
         }
     }
 
-    // =========================
-    // CREATE COMMENT HTML
-    // =========================
-
     function createCommentElement(author, text) {
 
         const commentDiv =
@@ -304,10 +292,6 @@
 
         return commentDiv;
     }
-
-    // =========================
-    // VALIDATE INPUTS
-    // =========================
 
     function validateInputs(nameInput, textInput) {
 
@@ -351,10 +335,6 @@
         };
     }
 
-    // =========================
-    // PUBLISH COMMENT
-    // =========================
-
     async function publishComment() {
 
         const nameInput =
@@ -365,22 +345,16 @@
                 ".comment-input-box textarea"
             );
 
-        // VALIDATION
-
         const validation =
             validateInputs(nameInput, textInput);
 
         if (validation.hasError) return;
 
-        // REQUEST
-
         const response = await fetch(
             `/projects/${token}/comments`,
             {
                 method: "POST",
-
                 credentials: "include",
-
                 headers: {
                     "Content-Type": "application/json"
                 },

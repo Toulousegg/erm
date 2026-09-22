@@ -211,7 +211,7 @@ def show_projects_details(request: Request, project_id: int, session: Session = 
                 "delivery": project.delivery,
                 "status": project.status.value,
                 "address": project.address,
-                "carpenter": project.carpenter.fullname,
+                "carpenter": project.carpenter,
                 "photos": [RAW_CONFIG.storage.media_base_url + "/" + photo.photo_path for photo in project.photos],
                 "pdfs": [RAW_CONFIG.storage.media_base_url + "/" + pdf.pdf_path for pdf in project.pdfs],
                 "company_name": project.company.name,

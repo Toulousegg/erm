@@ -1,41 +1,33 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Estoque</title>
-
     <link rel="stylesheet" href="../../static/inv/dashboard.css?v=5">
     <script type="module" src="/static/js/refresh_token.js"></script>
 </head>
-
 <body>
-
     <main class="main-content">
-
         <header class="header-top">
             <div class="page-title">
                 <h1>Estoque</h1>
                 <p>Gerencie seus materiais e níveis de estoque</p>
             </div>
-
             <div class="top-bar">
-                <div class="username">
-                    {{ user.username }}
-                </div>
+                <div class="username">{{ user.username }}</div>
             </div>
         </header>
 
         <section class="controls">
             <form class="search-form" method="get" action="/inv/dashboard">
-                <input type="text" name="search" placeholder="Pesquisar materiais..."
-                    value="{{ request.query_params.get('search', '') }}">
+                <input type="text" name="search" placeholder="Pesquisar materiais..." value="{{ request.query_params.get('search', '') }}">
                 <button type="submit">🔍</button>
             </form>
 
-            <button class="primary-btn" id="add-material-btn">➕ Adicionar material</button>
-            <a class="primary-btn" href="/inv/barcode/output">📦 Saída por código</a>
+            <button class="primary-btn" id="add-material-btn">Adicionar material</button>
+
+            <a class="primary-btn" href="/inv/barcode/output">Saída por código</a>
 
             <form method="post" action="/inv/add" class="add-material-form">
                 <input type="text" name="item_name" placeholder="Nome" required>
@@ -58,22 +50,16 @@
             </thead>
             <tbody>
                 {% for item in items %}
-
                 <tr data-item-id="{{ item.id }}">
                     <td>{{ item.owner }}</td>
                     <td>{{ item.item_name }}</td>
                     <td>{{ item.description }}</td>
                     <td>{{ item.quantity }}</td>
-
                     <td class="actions">
-                        <button class="edit-btn" data-item-id="{{ item.id }}">
-                            ✏️ Editar
-                        </button>
+                        <button class="edit-btn" data-item-id="{{ item.id }}">Editar</button>
                     </td>
-
                     <td>{{ item.updated_at.strftime('%d/%m/%Y') if item.updated_at else '' }}</td>
                 </tr>
-
                 {% endfor %}
             </tbody>
         </table>
@@ -81,41 +67,20 @@
         {% set page = page %}
         {% set total_pages = total_pages %}
         {% set param = param %}
-
         {% include "pagination.html" %}
     </main>
 
     <div class="barcode-modal" id="barcode-modal">
-
         <div class="barcode-box">
-
-            <button class="close-barcode" id="close-barcode">
-                ✕
-            </button>
-
-            <h2 id="barcode-name">
-                Código generado
-            </h2>
-
+            <button class="close-barcode" id="close-barcode">✕</button>
+            <h2 id="barcode-name">Código generado</h2>
             <img id="barcode-preview" src="" alt="Código de barras">
-
-
             <p id="barcode-text"></p>
-
-
-            <button class="primary-btn" id="download-barcode">
-                Descargar imagen
-            </button>
-
-
-            <button class="primary-btn" id="copy-barcode">
-                Copiar código
-            </button>
-
-
+            <button class="primary-btn" id="download-barcode">Descargar imagen</button>
+            <button class="primary-btn" id="copy-barcode">Copiar código</button>
         </div>
-
     </div>
+
     <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('collapsed');
@@ -124,19 +89,10 @@
         document.addEventListener("DOMContentLoaded", () => {
             const addBtn = document.getElementById("add-material-btn");
             const form = document.querySelector(".add-material-form");
-
-            const modal =
-                document.getElementById("barcode-modal");
-
-            const barcodeImage =
-                document.getElementById("barcode-preview");
-
-            const barcodeText =
-                document.getElementById("barcode-text");
-
-            const barcodeName =
-                document.getElementById("barcode-name");
-
+            const modal = document.getElementById("barcode-modal");
+            const barcodeImage = document.getElementById("barcode-preview");
+            const barcodeText = document.getElementById("barcode-text");
+            const barcodeName = document.getElementById("barcode-name");
             let currentBarcode = "";
 
             if (!addBtn || !form) {
@@ -148,76 +104,69 @@
                 form.classList.toggle("active");
             });
 
+            /*
+             * ADICIONAR MATERIAL
+             */
             form.addEventListener("submit", async (e) => {
-
                 e.preventDefault();
 
+                const formData = new FormData(form);
 
-                const formData =
-                    new FormData(form);
+                try {
+                    const response = await fetch("/inv/add", {
+                        method: "POST",
+                        body: formData
+                    });
 
+                    const contentType = response.headers.get("content-type");
+                    let data = {};
+                    if (contentType && contentType.includes("application/json")) {
+                        data = await response.json().catch(() => ({}));
+                    } else {
+                        const text = await response.text().catch(() => "");
+                        data = { error: text };
+                    }
 
+                    if (!response.ok) {
+                        showHttpError(response.status, {
+                            message: data.message || "Não foi possível adicionar o material.",
+                            detail: data
+                        });
+                        return;
+                    }
 
-                const response =
-                    await fetch(
-                        "/inv/add",
-                        {
-                            method: "POST",
-                            body: formData
-                        }
-                    );
+                    if (!data.success) {
+                        showHttpError(400, {
+                            message: data.message || "Não foi possível adicionar o material.",
+                            detail: data
+                        });
+                        return;
+                    }
 
+                    currentBarcode = data.barcode;
+                    barcodeName.textContent = data.item_name;
+                    barcodeText.textContent = data.barcode;
 
-                const data =
-                    await response.json();
+                    /*
+                     * Endpoint que gera
+                     * StreamingResponse do barcode
+                     */
+                    barcodeImage.src = `/inv/barcode/view/${data.barcode}`;
 
-
-
-                if (!data.success) {
-
-                    alert(data.message);
-
-                    return;
+                    modal.classList.add("active");
+                    form.reset();
+                } catch (error) {
+                    console.error(error);
+                    showHttpError(500, {
+                        message: "Não foi possível comunicar com o servidor.",
+                        detail: error.message
+                    });
                 }
-
-
-
-                currentBarcode =
-                    data.barcode;
-
-
-
-                barcodeName.textContent =
-                    data.item_name;
-
-
-
-                barcodeText.textContent =
-                    data.barcode;
-
-
-
-                /*
-                   Aquí llamas tu endpoint que genera
-                   StreamingResponse del barcode
-                */
-
-                barcodeImage.src =
-                    `/inv/barcode/view/${data.barcode}`;
-
-
-
-                modal.classList.add(
-                    "active"
-                );
-
-
-
-                form.reset();
-
-
             });
 
+            /*
+             * EXCLUIR MATERIAL
+             */
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const row = btn.closest('tr');
@@ -225,19 +174,45 @@
 
                     if (!confirm(`Excluir "${itemName}"?`)) return;
 
-                    const response = await fetch(`/inv/delete/${encodeURIComponent(itemName)}`, {
-                        method: 'POST'
-                    });
+                    try {
+                        const response = await fetch(`/inv/delete/${encodeURIComponent(itemName)}`, {
+                            method: 'POST'
+                        });
 
-                    if (response.ok) location.reload();
-                    else alert("Erro ao excluir");
+                        const contentType = response.headers.get("content-type");
+                        let data = {};
+                        if (contentType && contentType.includes("application/json")) {
+                            data = await response.json().catch(() => ({}));
+                        } else {
+                            const text = await response.text().catch(() => "");
+                            data = { error: text };
+                        }
+
+                        if (!response.ok) {
+                            showHttpError(response.status, {
+                                message: data.message || "Não foi possível excluir o material.",
+                                detail: data
+                            });
+                            return;
+                        }
+
+                        location.reload();
+                    } catch (error) {
+                        console.error(error);
+                        showHttpError(500, {
+                            message: "Não foi possível comunicar com o servidor.",
+                            detail: error.message
+                        });
+                    }
                 });
             });
 
+            /*
+             * EDITAR MATERIAL
+             */
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const row = btn.closest('tr');
-
                     const originalOwner = row.children[0].innerText.trim();
                     const originalName = row.children[1].innerText.trim();
                     const originalDesc = row.children[2].innerText.trim();
@@ -246,29 +221,9 @@
 
                     row.innerHTML = `
                         <td>${originalOwner}</td>
-                        <td>
-    <input
-        type="text"
-        class="edit-input"
-        id="edit-name"
-        value="${originalName}">
-</td>
-
-<td>
-    <input
-        type="text"
-        class="edit-input"
-        id="edit-desc"
-        value="${originalDesc}">
-</td>
-
-<td>
-    <input
-        type="number"
-        class="edit-input"
-        id="edit-qty"
-        value="${originalQty}">
-</td>
+                        <td><input type="text" class="edit-input" id="edit-name" value="${originalName}"></td>
+                        <td><input type="text" class="edit-input" id="edit-desc" value="${originalDesc}"></td>
+                        <td><input type="number" class="edit-input" id="edit-qty" value="${originalQty}"></td>
                         <td class="actions">
                             <button type="button" class="save-btn">Salvar</button>
                             <button type="button" class="cancel-edit">Cancelar</button>
@@ -282,80 +237,86 @@
                         params.append('description', document.getElementById('edit-desc').value);
                         params.append('quantity', document.getElementById('edit-qty').value);
 
-                        const response = await fetch(`/inv/edit/${encodeURIComponent(originalName)}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: params
-                        });
+                        try {
+                            const response = await fetch(`/inv/edit/${encodeURIComponent(originalName)}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: params
+                            });
 
-                        if (response.ok) location.reload();
-                        else alert("Não foi possível atualizar");
+                            const contentType = response.headers.get("content-type");
+                            let data = {};
+                            if (contentType && contentType.includes("application/json")) {
+                                data = await response.json().catch(() => ({}));
+                            } else {
+                                const text = await response.text().catch(() => "");
+                                data = { error: text };
+                            }
+
+                            if (!response.ok) {
+                                showHttpError(response.status, {
+                                    message: data.message || "Não foi possível atualizar o material.",
+                                    detail: data
+                                });
+                                return;
+                            }
+
+                            location.reload();
+                        } catch (error) {
+                            console.error(error);
+                            showHttpError(500, {
+                                message: "Não foi possível comunicar com o servidor.",
+                                detail: error.message
+                            });
+                        }
                     });
 
                     row.querySelector('.cancel-edit').addEventListener('click', () => location.reload());
                 });
             });
 
-            document
-                .getElementById("close-barcode")
-                .addEventListener(
-                    "click",
-                    () => {
+            /*
+             * FECHAR MODAL DO CÓDIGO
+             */
+            document.getElementById("close-barcode").addEventListener("click", () => {
+                modal.classList.remove("active");
+            });
 
-                        modal.classList.remove(
-                            "active"
-                        );
+            /*
+             * COPIAR CÓDIGO
+             */
+            document.getElementById("copy-barcode").addEventListener("click", () => {
+                navigator.clipboard.writeText(currentBarcode);
+                alert("Código copiado");
+            });
 
-                    });
-
-
-
-            document
-                .getElementById("copy-barcode")
-                .addEventListener(
-                    "click",
-                    () => {
-
-                        navigator.clipboard.writeText(
-                            currentBarcode
-                        );
-
-                        alert(
-                            "Código copiado"
-                        );
-
-                    });
-
-
-
-            document
-                .getElementById("download-barcode")
-                .addEventListener(
-                    "click",
-                    () => {
-
-
-                        const link =
-                            document.createElement("a");
-
-
-                        link.href =
-                            barcodeImage.src;
-
-
-                        link.download =
-                            `${currentBarcode}.png`;
-
-
-                        link.click();
-
-
-                    });
+            /*
+             * DOWNLOAD DO CÓDIGO
+             */
+            document.getElementById("download-barcode").addEventListener("click", () => {
+                const link = document.createElement("a");
+                link.href = barcodeImage.src;
+                link.download = `${currentBarcode}.png`;
+                link.click();
+            });
         });
     </script>
+
     {% include 'notification.html' %}
     {% include 'aside.html' %}
     {% include 'loading.html' %}
-</body>
+    {% include 'http-error-modal.html' %}
 
+    {% if http_error %}
+    <script>
+        showHttpError(
+            {{ http_error.status | default(500) | tojson }},
+            {
+                message: {{ http_error.message | default("Ocorreu um erro interno.") | tojson }},
+                detail: {{ http_error.detail | default("") | tojson }}
+            }
+        );
+    </script>
+    {% endif %}
+</body>
 </html>

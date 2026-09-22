@@ -15,30 +15,40 @@
                 <h1>Controle de Horas</h1>
                 <p>Registre e acompanhe o tempo dedicado aos projetos</p>
             </div>
-
             <div class="top-bar">
-                <div class="username">{{ user.username }}</div>
+                <div class="username">
+                    {{ user.username }}
+                </div>
             </div>
         </header>
 
         <section class="summary-grid">
             <div class="summary-card">
                 <span>Total filtrado</span>
-                <strong>{{ report.total_time }}</strong>
+                <strong>
+                    {{ report.total_time }}
+                </strong>
             </div>
+
             <div class="summary-card">
                 <span>Horas decimais</span>
-                <strong>{{ report.hours_decimal }}</strong>
+                <strong>
+                    {{ report.hours_decimal }}
+                </strong>
             </div>
         </section>
 
         <section class="controls">
-            <a class="primary-btn" href="/time-tracking/add">Adicionar horas</a>
-            <a class="secondary-btn" href="/time-tracking/reports">Relatorios</a>
+            <a class="primary-btn" href="/time-tracking/add">
+                Adicionar horas
+            </a>
+            <a class="secondary-btn" href="/time-tracking/reports">
+                Relatorios
+            </a>
         </section>
 
         <section class="filter-panel">
-            <form method="get" action="/time-tracking/dashboard">
+            <form id="dashboard-filter-form" method="get" action="/time-tracking/dashboard">
                 <input type="date" name="start_date" value="{{ request.query_params.get('start_date', '') }}">
                 <input type="date" name="end_date" value="{{ request.query_params.get('end_date', '') }}">
 
@@ -57,9 +67,12 @@
                 <select name="stage">
                     <option value="">Todas as etapas</option>
                     {% for stage in stages %}
-                    <option value="{{ stage.value }}" {% if request.query_params.get('stage') == stage.value %}selected{% endif %}>{{ stage.value }}</option>
+                    <option value="{{ stage.value }}" {% if request.query_params.get('stage') == stage.value %}selected{% endif %}>
+                        {{ stage.value }}
+                    </option>
                     {% endfor %}
                 </select>
+
                 <button type="submit">Filtrar</button>
             </form>
         </section>
@@ -91,7 +104,9 @@
                         <td>{{ entry.end_time }}</td>
                         <td>{{ entry.total_time }}</td>
                         <td>
-                            <button class="delete-btn" data-id="{{ entry.id }}">Excluir</button>
+                            <button class="delete-btn" data-id="{{ entry.id }}">
+                                Excluir
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -101,18 +116,28 @@
             {% set page = page %}
             {% set total_pages = total_pages %}
             {% set param = param %}
+
             {% include "pagination.html" %}
         </section>
     </main>
 
     <script>
-        function bindAutocomplete({ inputId, hiddenId, resultsId, endpoint, queryParam, label }) {
+        function bindAutocomplete({
+            inputId,
+            hiddenId,
+            resultsId,
+            endpoint,
+            queryParam,
+            label
+        }) {
             const input = document.getElementById(inputId);
             const hidden = document.getElementById(hiddenId);
             const results = document.getElementById(resultsId);
             let timeout = null;
 
-            if (!input || !hidden || !results) return;
+            if (!input || !hidden || !results) {
+                return;
+            }
 
             input.addEventListener("input", () => {
                 clearTimeout(timeout);
@@ -120,27 +145,57 @@
                 results.innerHTML = "";
 
                 const value = input.value.trim();
-                if (value.length < 2) return;
+
+                if (value.length < 2) {
+                    return;
+                }
 
                 timeout = setTimeout(async () => {
-                    const response = await fetch(`${endpoint}?${queryParam}=${encodeURIComponent(value)}`);
-                    if (!response.ok) return;
+                    try {
+                        const response = await fetch(
+                            `${endpoint}?${queryParam}=${encodeURIComponent(value)}`
+                        );
 
-                    const items = await response.json();
-                    results.innerHTML = "";
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
 
-                    items.forEach((item) => {
-                        const option = document.createElement("button");
-                        option.type = "button";
-                        option.className = "autocomplete-item";
-                        option.textContent = label(item);
-                        option.addEventListener("click", () => {
-                            input.value = label(item);
-                            hidden.value = item.id;
-                            results.innerHTML = "";
+                            showHttpError(
+                                response.status,
+                                {
+                                    message: errorData.message || "Internal error.",
+                                    detail: errorData
+                                }
+                            );
+                            return;
+                        }
+
+                        const items = await response.json();
+                        results.innerHTML = "";
+
+                        items.forEach((item) => {
+                            const option = document.createElement("button");
+                            option.type = "button";
+                            option.className = "autocomplete-item";
+                            option.textContent = label(item);
+
+                            option.addEventListener("click", () => {
+                                input.value = label(item);
+                                hidden.value = item.id;
+                                results.innerHTML = "";
+                            });
+
+                            results.appendChild(option);
                         });
-                        results.appendChild(option);
-                    });
+
+                    } catch (error) {
+                        showHttpError(
+                            500,
+                            {
+                                message: "Não foi possível comunicar com o servidor.",
+                                detail: error.message
+                            }
+                        );
+                    }
                 }, 250);
             });
         }
@@ -151,7 +206,10 @@
             resultsId: "dashboard-project-results",
             endpoint: "/time-tracking/projects/search",
             queryParam: "project",
-            label: (item) => item.client_name ? `${item.name} - ${item.client_name}` : item.name
+            label: (item) =>
+                item.client_name
+                    ? `${item.name} - ${item.client_name}`
+                    : item.name
         });
 
         bindAutocomplete({
@@ -165,24 +223,109 @@
 
         document.querySelectorAll(".delete-btn").forEach((button) => {
             button.addEventListener("click", async () => {
-                if (!confirm("Excluir este registro de horas?")) return;
+                if (!confirm("Excluir este registro de horas?")) {
+                    return;
+                }
 
-                const response = await fetch(`/time-tracking/${button.dataset.id}`, {
-                    method: "DELETE"
-                });
+                try {
+                    const response = await fetch(
+                        `/time-tracking/${button.dataset.id}`,
+                        {
+                            method: "DELETE"
+                        }
+                    );
 
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert(await response.text());
+                    if (response.ok) {
+                        location.reload();
+                        return;
+                    }
+
+                    const errorData = await response.json().catch(() => ({}));
+
+                    showHttpError(
+                        response.status,
+                        {
+                            message: errorData.message || "Não foi possível excluir o registro.",
+                            detail: errorData
+                        }
+                    );
+
+                } catch (error) {
+                    showHttpError(
+                        500,
+                        {
+                            message: "Não foi possível comunicar com o servidor.",
+                            detail: error.message
+                        }
+                    );
                 }
             });
         });
+
+        const filterForm = document.getElementById("dashboard-filter-form");
+
+        if (filterForm) {
+            filterForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const params = new URLSearchParams(new FormData(filterForm));
+                const url = `${filterForm.action}?${params.toString()}`;
+
+                try {
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        const contentType = response.headers.get("content-type");
+                        let errorData = {};
+
+                        if (contentType && contentType.includes("application/json")) {
+                            errorData = await response.json().catch(() => ({}));
+                        } else {
+                            const text = await response.text().catch(() => "");
+                            errorData = { error: text };
+                        }
+
+                        showHttpError(
+                            response.status,
+                            {
+                                message: errorData.message || "Não foi possível aplicar os filtros.",
+                                detail: errorData
+                            }
+                        );
+
+                        return;
+                    }
+
+                    window.location.href = url;
+
+                } catch (error) {
+                    showHttpError(
+                        500,
+                        {
+                            message: "Não foi possível comunicar com o servidor.",
+                            detail: error.message
+                        }
+                    );
+                }
+            });
+        }
     </script>
 
     {% include 'notification.html' %}
     {% include 'aside.html' %}
     {% include 'loading.html' %}
-</body>
+    {% include 'http-error-modal.html' %}
 
+    {% if http_error %}
+    <script>
+        showHttpError(
+            {{ http_error.status | default(500) | tojson }},
+            {
+                message: {{ http_error.message | default("Internal error.") | tojson }},
+                detail: {{ http_error.detail | default("") | tojson }}
+            }
+        );
+    </script>
+    {% endif %}
+</body>
 </html>
