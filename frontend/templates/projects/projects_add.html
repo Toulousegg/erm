@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Construtor de projeto</title>
     <link rel="stylesheet" href="../../static/projects/projects_add.css?v=projects-add-responsive-1" />
 </head>
+
 <body>
     <form action="/projects/add" method="post" enctype="multipart/form-data" id="projectForm" novalidate>
         <div class="container">
@@ -294,11 +296,13 @@
             {{ http_error.status | default(500) | tojson }},
             {
                 message: {{ http_error.message | default("Ocorreu um erro interno.") | tojson }},
-                detail: {{ http_error.detail | default("") | tojson }}
+            detail: {{ http_error.detail | default("") | tojson }}
             }
         );
     </script>
     {% else %}
     {% endif %}
+    {% include 'loading.html' %}
 </body>
+
 </html>

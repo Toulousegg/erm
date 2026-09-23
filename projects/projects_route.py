@@ -64,13 +64,12 @@ def create_link(project_id: int, session: Session = Depends(CreateSession), user
         "token": token
         }
 
-@projects_router.post("/{project_token}/comments", dependencies=[Depends(require_module("projects"))]) 
+@projects_router.post("/{project_token}/comments") 
 def create_comment(request: Request, project_token: str, payload: CommentPayload, session: Session = Depends(CreateSession)): 
 
     session_token = request.cookies.get("comment_session")
 
     created_new_cookie = False
-
 
     if not session_token:
         session_token = secrets.token_urlsafe(12)
