@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Acompañamiento de proyectos</title>
+    <link rel="stylesheet" href="/static/project_tracking/project_tracking.css">
+</head>
+<body class="tracking-shell">
+    <header class="topbar">
+        <a class="brand" href="/tracking/" aria-label="Acompañamiento"><span class="brand-mark">M</span><span>ProntoERP <small>ACOMPAÑAMIENTO</small></span></a>
+        <a class="top-link" href="/projects/dashboard">Volver a proyectos <span aria-hidden="true">↗</span></a>
+    </header>
+    <main class="page-wrap">
+        <div class="page-heading"><div><p class="eyebrow">SEGUIMIENTO DE PRODUCCIÓN</p><h1>Acompañamiento de proyectos</h1><p class="muted">Etapas, actualizaciones y plazo en un enlace de consulta.</p></div><div class="heading-mark">↗</div></div>
+
+        {% if projects %}
+        <section class="panel create-panel">
+            <div class="section-heading"><div><p class="eyebrow">NUEVO SEGUIMIENTO</p><h2>Vincular un proyecto</h2></div><span class="step-chip">01 · Configurar plazo</span></div>
+            <form class="form-grid" method="post" action="/tracking/boards">
+                <label class="field field-wide">Proyecto existente
+                    <select name="project_id" required>{% for project in projects %}<option value="{{ project.id }}">{{ project.name }}{% if project.client_name %} · {{ project.client_name }}{% endif %}</option>{% endfor %}</select>
+                </label>
+                <label class="field">Plazo de responsabilidad (días)<input name="promised_days" type="number" min="1" max="3650" value="30" required></label>
+                <label class="field">Fecha de entrega prometida<input name="promised_delivery" type="date" required></label>
+                <div class="field-action"><button class="button button-primary" type="submit">Crear acompañamiento <span>→</span></button></div>
+            </form>
+            <p class="form-hint">Los atrasos externos se registran por separado y se suman a la previsión de entrega, sin reducir los días de responsabilidad.</p>
+        </section>
+        {% endif %}
+
+        <section class="list-section">
+            <div class="section-heading"><div><p class="eyebrow">VISTA GENERAL</p><h2>Proyectos acompañados <span class="count-pill">{{ boards|length }}</span></h2></div></div>
+            {% if boards %}
+            <div class="board-grid">
+                {% for board in boards %}
+                <a class="board-card" href="/tracking/{{ board.id }}">
+                    <div class="card-topline"><span class="status-dot status-{{ board.status }}"></span><span class="status-label">{% if board.status == 'executando' %}En ejecución{% elif board.status == 'espera' %}En espera{% elif board.status == 'cancelada' %}Cancelada{% else %}Terminada{% endif %}</span><span class="card-arrow">↗</span></div>
+                    <h3>{{ board.project.name }}</h3><p class="muted">{{ board.project.client_name or 'Cliente sin asignar' }}</p>
+                    <div class="card-progress"><div class="progress-track"><span style="width: {{ summaries[board.id].progress }}%"></span></div><strong>{{ summaries[board.id].progress }}%</strong></div>
+                    <div class="card-meta"><span>ETAPA ACTUAL</span><b>{{ summaries[board.id].current_stage.name if summaries[board.id].current_stage else 'Etapas por configurar' }}</b></div>
+                    <div class="card-footer"><span>Entrega <b>{{ summaries[board.id].adjusted_delivery.strftime('%d/%m/%Y') }}</b></span><span>{{ summaries[board.id].lost_days }} días externos</span></div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}<div class="empty-state"><div class="empty-icon">⌁</div><h3>Aún no hay acompañamientos</h3><p>Vincula un proyecto existente para crear sus etapas y compartir el progreso.</p></div>{% endif %}
+            {% if not projects and not boards %}<div class="empty-state"><h3>No hay proyectos disponibles</h3><p>Crea primero un proyecto en el módulo de proyectos.</p><a class="button button-secondary" href="/projects/add">Crear proyecto</a></div>{% endif %}
+        </section>
+    </main>
+</body>
+</html>

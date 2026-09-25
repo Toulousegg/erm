@@ -149,6 +149,19 @@ def show_projects(session: Session, user: User):
     return session.query(Projects).filter(Projects.company_id == user.company_id).options(selectinload(Projects.photos), selectinload(Projects.pdfs), joinedload(Projects.carpenter))  
 
 
+def get_project_for_company(session: Session, project_id: int, company_id: int):
+    """Return a project after checking tenant ownership for other module services."""
+    project = (
+        session.query(Projects)
+        .filter(Projects.id == project_id, Projects.company_id == company_id)
+        .options(selectinload(Projects.photos), selectinload(Projects.pdfs), joinedload(Projects.carpenter), joinedload(Projects.company))
+        .first()
+    )
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
+
+
 def generate_project_share_link(project_id: int, session: Session):
     link = session.query(SharedProjects).filter(SharedProjects.project_id == project_id).first()
             
