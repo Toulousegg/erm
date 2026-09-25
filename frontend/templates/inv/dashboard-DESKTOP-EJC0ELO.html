@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Estoque</title>
+
+    <link rel="stylesheet" href="../../static/inv/dashboard.css?v=5">
+    <script type="module" src="/static/js/refresh_token.js"></script>
+</head>
+
+<body>
+
+    <main class="main-content">
+
+        <header class="header-top">
+            <div class="page-title">
+                <h1>Estoque</h1>
+                <p>Gerencie seus materiais e níveis de estoque</p>
+            </div>
+
+            <div class="top-bar">
+                <div class="username">
+                    {{ user.username }}
+                </div>
+            </div>
+        </header>
+
+        <section class="controls">
+            <form class="search-form" method="get" action="/inv/dashboard">
+                <input type="text" name="search" placeholder="Pesquisar materiais..."
+                    value="{{ request.query_params.get('search', '') }}">
+                <button type="submit">🔍</button>
+            </form>
+
+            <button class="primary-btn" id="add-material-btn">➕ Adicionar material</button>
+            <a class="primary-btn" href="/inv/barcode/output">📦 Saída por código</a>
+
+            <form method="post" action="/inv/add" class="add-material-form">
+                <input type="text" name="item_name" placeholder="Nome" required>
+                <input type="text" name="description" placeholder="Descrição" required>
+                <input type="number" name="quantity" placeholder="Quantidade inicial" required>
+                <button type="submit">Salvar</button>
+            </form>
+        </section>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do proprietário</th>
+                    <th>Material</th>
+                    <th>Descrição</th>
+                    <th>Estoque</th>
+                    <th>Ações</th>
+                    <th>Data de atualização</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+
+                <tr data-item-id="{{ item.id }}">
+                    <td>{{ item.owner }}</td>
+                    <td>{{ item.item_name }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+
+                    <td class="actions">
+                        <button class="edit-btn" data-item-id="{{ item.id }}">
+                            ✏️ Editar
+                        </button>
+                    </td>
+
+                    <td>{{ item.updated_at.strftime('%d/%m/%Y') if item.updated_at else '' }}</td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% set page = page %}
+        {% set total_pages = total_pages %}
+        {% set param = param %}
+
+        {% include "pagination.html" %}
+    </main>
+
+    <div class="barcode-modal" id="barcode-modal">
+
+        <div class="barcode-box">
+
+            <button class="close-barcode" id="close-barcode">
+                ✕
+            </button>
+
+            <h2 id="barcode-name">
+                Código generado
+            </h2>
+
+            <img id="barcode-preview" src="" alt="Código de barras">
+
+
+            <p id="barcode-text"></p>
+
+
+            <button class="primary-btn" id="download-barcode">
+                Descargar imagen
+            </button>
+
+
+            <button class="primary-btn" id="copy-barcode">
+                Copiar código
+            </button>
+
+
+        </div>
+
+    </div>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const addBtn = document.getElementById("add-material-btn");
+            const form = document.querySelector(".add-material-form");
+
+            const modal =
+                document.getElementById("barcode-modal");
+
+            const barcodeImage =
+                document.getElementById("barcode-preview");
+
+            const barcodeText =
+                document.getElementById("barcode-text");
+
+            const barcodeName =
+                document.getElementById("barcode-name");
+
+            let currentBarcode = "";
+
+            if (!addBtn || !form) {
+                console.error("Botão ou formulário não encontrado");
+                return;
+            }
+
+            addBtn.addEventListener("click", () => {
+                form.classList.toggle("active");
+            });
+
+            form.addEventListener("submit", async (e) => {
+
+                e.preventDefault();
+
+
+                const formData =
+                    new FormData(form);
+
+
+
+                const response =
+                    await fetch(
+                        "/inv/add",
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+
+                if (!data.success) {
+
+                    alert(data.message);
+
+                    return;
+                }
+
+
+
+                currentBarcode =
+                    data.barcode;
+
+
+
+                barcodeName.textContent =
+                    data.item_name;
+
+
+
+                barcodeText.textContent =
+                    data.barcode;
+
+
+
+                /*
+                   Aquí llamas tu endpoint que genera
+                   StreamingResponse del barcode
+                */
+
+                barcodeImage.src =
+                    `/inv/barcode/view/${data.barcode}`;
+
+
+
+                modal.classList.add(
+                    "active"
+                );
+
+
+
+                form.reset();
+
+
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const row = btn.closest('tr');
+                    const itemName = row.children[1].innerText.trim();
+
+                    if (!confirm(`Excluir "${itemName}"?`)) return;
+
+                    const response = await fetch(`/inv/delete/${encodeURIComponent(itemName)}`, {
+                        method: 'POST'
+                    });
+
+                    if (response.ok) location.reload();
+                    else alert("Erro ao excluir");
+                });
+            });
+
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const row = btn.closest('tr');
+
+                    const originalOwner = row.children[0].innerText.trim();
+                    const originalName = row.children[1].innerText.trim();
+                    const originalDesc = row.children[2].innerText.trim();
+                    const originalQty = row.children[3].innerText.trim();
+                    const originalDate = row.children[5].innerText.trim();
+
+                    row.innerHTML = `
+                        <td>${originalOwner}</td>
+                        <td>
+    <input
+        type="text"
+        class="edit-input"
+        id="edit-name"
+        value="${originalName}">
+</td>
+
+<td>
+    <input
+        type="text"
+        class="edit-input"
+        id="edit-desc"
+        value="${originalDesc}">
+</td>
+
+<td>
+    <input
+        type="number"
+        class="edit-input"
+        id="edit-qty"
+        value="${originalQty}">
+</td>
+                        <td class="actions">
+                            <button type="button" class="save-btn">Salvar</button>
+                            <button type="button" class="cancel-edit">Cancelar</button>
+                        </td>
+                        <td>${originalDate}</td>
+                    `;
+
+                    row.querySelector('.save-btn').addEventListener('click', async () => {
+                        const params = new URLSearchParams();
+                        params.append('item_name_new', document.getElementById('edit-name').value);
+                        params.append('description', document.getElementById('edit-desc').value);
+                        params.append('quantity', document.getElementById('edit-qty').value);
+
+                        const response = await fetch(`/inv/edit/${encodeURIComponent(originalName)}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params
+                        });
+
+                        if (response.ok) location.reload();
+                        else alert("Não foi possível atualizar");
+                    });
+
+                    row.querySelector('.cancel-edit').addEventListener('click', () => location.reload());
+                });
+            });
+
+            document
+                .getElementById("close-barcode")
+                .addEventListener(
+                    "click",
+                    () => {
+
+                        modal.classList.remove(
+                            "active"
+                        );
+
+                    });
+
+
+
+            document
+                .getElementById("copy-barcode")
+                .addEventListener(
+                    "click",
+                    () => {
+
+                        navigator.clipboard.writeText(
+                            currentBarcode
+                        );
+
+                        alert(
+                            "Código copiado"
+                        );
+
+                    });
+
+
+
+            document
+                .getElementById("download-barcode")
+                .addEventListener(
+                    "click",
+                    () => {
+
+
+                        const link =
+                            document.createElement("a");
+
+
+                        link.href =
+                            barcodeImage.src;
+
+
+                        link.download =
+                            `${currentBarcode}.png`;
+
+
+                        link.click();
+
+
+                    });
+        });
+    </script>
+    {% include 'notification.html' %}
+    {% include 'aside.html' %}
+    {% include 'loading.html' %}
+</body>
+
+</html>

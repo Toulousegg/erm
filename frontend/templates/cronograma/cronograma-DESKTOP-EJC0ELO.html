@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma Semanal - ProntoERP</title>
+    <link rel="stylesheet" href="../../static/cronograma/cronograma.css?v=23">
+    <script type="module" src="../../static/js/refresh_token.js"></script>
+</head>
+
+<body>
+    {% include 'aside.html' %}
+    <div id="cronograma-app-wrapper">
+        <div class="schedule-container">
+            <div class="schedule-header">
+                <div class="header-titles">
+                    <h1>Cronograma da semana</h1>
+                    <div class="week-navigation">
+                        <button class="nav-btn" onclick="navigateWeek(-1)">←</button>
+                        <div class="current-week-display" id="week-range-display">Carregando...</div>
+                        <button class="nav-btn" onclick="navigateWeek(1)">→</button>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-cronograma" style="font-size: 0.75rem; padding: 6px 12px;"
+                        onclick="openCategoryModal()">Categorias</button>
+                    <button class="share-btn" onclick="shareProject()">
+                        <span>🔗</span> Compartilhar
+                    </button>
+                </div>
+            </div>
+
+            <div class="legend-section">
+                <div class="legend-list" id="color-legend"></div>
+            </div>
+
+            <div id="no-schedule-warning"
+                style="display:none; text-align:center; padding: 40px; border: 1px dashed var(--border); border-radius: 8px; margin-bottom: 24px;">
+                <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">Não há um cronograma para
+                    esta semana.</p>
+                <button class="btn-cronograma btn-cronograma-blue" style="max-width: 200px; margin: 0 auto;"
+                    onclick="createScheduleForCurrentView()">Criar Agora</button>
+            </div>
+
+            <div class="grid-container" id="weekly-grid">
+                <div class="day-column" data-day="segunda">
+                    <div class="day-header">SEGUNDA <br><small class="date-label"></small></div>
+                    <div class="task-list"></div><button class="btn-add-task" onclick="openTaskModal('segunda')">+
+                        Atividade</button>
+                </div>
+                <div class="day-column" data-day="terça">
+                    <div class="day-header">TERÇA <br><small class="date-label"></small></div>
+                    <div class="task-list"></div><button class="btn-add-task" onclick="openTaskModal('terça')">+
+                        Atividade</button>
+                </div>
+                <div class="day-column" data-day="quarta">
+                    <div class="day-header">QUARTA <br><small class="date-label"></small></div>
+                    <div class="task-list"></div><button class="btn-add-task" onclick="openTaskModal('quarta')">+
+                        Atividade</button>
+                </div>
+                <div class="day-column" data-day="quinta">
+                    <div class="day-header">QUINTA <br><small class="date-label"></small></div>
+                    <div class="task-list"></div><button class="btn-add-task" onclick="openTaskModal('quinta')">+
+                        Atividade</button>
+                </div>
+                <div class="day-column" data-day="sexta">
+                    <div class="day-header">SEXTA <br><small class="date-label"></small></div>
+                    <div class="task-list"></div><button class="btn-add-task" onclick="openTaskModal('sexta')">+
+                        Atividade</button>
+                </div>
+
+                <!-- <div class="day-column" data-day="sexta">
+                    <div class="day-header">SABADO <br><small class="date-label"></small></div>
+                    <div class="task-list"></div><button class="btn-add-task" onclick="openTaskModal('sexta')">+
+                        Atividade</button>
+                </div>
+
+                <div class="day-column" data-day="sexta">
+                    <div class="day-header">DOMINGO <br><small class="date-label"></small></div>
+                    <div class="task-list"></div><button class="btn-add-task" onclick="openTaskModal('sexta')">+
+                        Atividade</button>
+                </div> -->
+            </div>
+
+            <div class="milestones-section" style="border-top: 1px solid var(--border); padding-top: 20px;">
+                <h3 style="font-size: 1rem; margin-bottom: 15px;">🎯 Objetivos da Semana</h3>
+                <div id="milestones-list"></div>
+                <button class="btn-cronograma btn-cronograma-blue"
+                    style="margin-top: 12px; font-size: 0.75rem; max-width: 150px;" onclick="openMilestoneModal()">+
+                    Novo Objetivo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals con clases únicas -->
+    <div id="schedule-modal" class="cronograma-modal hidden">
+        <h3>Novo Cronograma</h3>
+        <form id="schedule-form">
+            <div class="form-group"><label>Título</label><input type="text" id="sched-title" required></div>
+            <div class="form-group"><label>Início</label><input type="date" id="sched-start" required></div>
+            <div class="form-group"><label>Fim</label><input type="date" id="sched-end" required></div>
+            <div class="modal-footer"><button type="submit"
+                    class="btn-cronograma btn-cronograma-blue">Criar</button><button type="button"
+                    onclick="closeModal('schedule-modal')" class="btn-cronograma">Cancelar</button></div>
+        </form>
+    </div>
+
+    <div id="task-modal" class="cronograma-modal hidden">
+        <h3>Atividade</h3>
+        <form id="task-form">
+            <input type="hidden" id="task-id"><input type="hidden" id="task-day">
+            <div class="form-group"><label>Atividade</label><input type="text" id="task-activity" required></div>
+            <div class="form-group"><label>Categoria</label><select id="task-category" required></select></div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-cronograma btn-cronograma-blue">Salvar</button>
+                <button type="button" onclick="closeModal('task-modal')" class="btn-cronograma">Cancelar</button>
+                <button type="button" id="delete-task-btn" class="btn-cronograma btn-cronograma-red hidden"
+                    onclick="handleDeleteTask()">Excluir</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="category-modal" class="cronograma-modal hidden">
+        <h3>Nova Categoria</h3>
+        <form id="category-form">
+            <div class="form-group"><label>Nome</label><input type="text" id="cat-name" required></div>
+            <div class="form-group"><label>Cor</label><input type="color" id="cat-color" value="#1e40af"></div>
+            <div class="modal-footer"><button type="submit"
+                    class="btn-cronograma btn-cronograma-blue">Criar</button><button type="button"
+                    onclick="closeModal('category-modal')" class="btn-cronograma">Fechar</button></div>
+        </form>
+    </div>
+
+    <div id="milestone-modal" class="cronograma-modal hidden">
+        <h3>Novo Objetivo</h3>
+        <form id="milestone-form">
+            <div class="form-group"><label>Descrição</label><input type="text" id="milestone-desc" required></div>
+            <div class="modal-footer"><button type="submit"
+                    class="btn-cronograma btn-cronograma-blue">Salvar</button><button type="button"
+                    onclick="closeModal('milestone-modal')" class="btn-cronograma">Cancelar</button></div>
+        </form>
+    </div>
+
+    <div id="modal-overlay" class="cronograma-overlay hidden" onclick="closeAllModals()"></div>
+
+    <script>
+        // Lógica de JavaScript idéntica a la v6 pero adaptada a los nuevos IDs/clases
+        let categories = [];
+        let currentBoard = null;
+        let viewDate = new Date();
+
+        function showModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById('modal-overlay').classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById('modal-overlay').classList.add('hidden'); }
+        function closeAllModals() { document.querySelectorAll('.cronograma-modal').forEach(m => m.classList.add('hidden')); document.getElementById('modal-overlay').classList.add('hidden'); }
+
+        function getWeekRange(date) {
+            const curr = new Date(date);
+            const first = curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1);
+            const firstDay = new Date(new Date(date).setDate(first));
+            const lastDay = new Date(new Date(date).setDate(first + 4));
+            return { start: firstDay.toISOString().split('T')[0], end: lastDay.toISOString().split('T')[0], startDate: firstDay, endDate: lastDay };
+        }
+
+        function updateViewDisplay() {
+            const range = getWeekRange(viewDate);
+            const options = { day: '2-digit', month: '2-digit' };
+            document.getElementById('week-range-display').innerText = `${range.startDate.toLocaleDateString('pt-BR', options)} - ${range.endDate.toLocaleDateString('pt-BR', options)}`;
+            ['segunda', 'terça', 'quarta', 'quinta', 'sexta'].forEach((day, i) => {
+                const d = new Date(range.startDate); d.setDate(d.getDate() + i);
+                const col = document.querySelector(`.day-column[data-day="${day}"] .date-label`);
+                if (col) col.innerText = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            });
+        }
+
+        async function navigateWeek(dir) {
+
+            viewDate.setDate(
+                viewDate.getDate() + (dir * 7)
+            );
+
+            updateViewDisplay();
+
+            await loadBoard();
+        }
+
+        async function loadCategories() {
+            const res = await fetch('/schedule/categories');
+            if (res.ok) {
+                categories = await res.json();
+                document.getElementById('color-legend').innerHTML = categories.map(c => `<div class="legend-item" onclick="deleteCategory(${c.id})"><span class="dot" style="background:${c.color}"></span><span>${c.name}</span></div>`).join('');
+                document.getElementById('task-category').innerHTML = '<option value="">Escolha...</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            }
+        }
+
+        async function loadBoard() {
+
+            try {
+
+                const range = getWeekRange(viewDate);
+
+                const res = await fetch(
+                    `/schedule/board?start=${range.start}`
+                );
+
+                const data = await res.json();
+
+                document.querySelectorAll(".task-list")
+                    .forEach(l => l.innerHTML = "");
+
+                document.getElementById("no-schedule-warning")
+                    .style.display = "none";
+
+                document.getElementById("weekly-grid")
+                    .style.opacity = "1";
+
+                document.getElementById("milestones-list")
+                    .innerHTML = "";
+
+                if (data.board) {
+
+                    currentBoard = data.board;
+
+                    renderBoard(currentBoard);
+
+                } else {
+
+                    currentBoard = null;
+
+                    document.getElementById(
+                        "no-schedule-warning"
+                    ).style.display = "block";
+
+                    document.getElementById(
+                        "weekly-grid"
+                    ).style.opacity = "0.3";
+                }
+
+            } catch (e) {
+
+                console.error(e);
+
+            }
+        }
+
+        function renderBoard(board) {
+            Object.entries(board.days || {}).forEach(([day, tasks]) => {
+                const list = document.querySelector(`.day-column[data-day="${day}"] .task-list`);
+                if (list) tasks.forEach(t => {
+                    const cat = categories.find(c => c.id === t.category_id);
+                    const item = document.createElement('div');
+                    item.className = 'task-item';
+                    item.style.borderLeftColor = cat ? cat.color : '#ddd';
+                    item.innerHTML = `<span>${t.activity}</span><button class="edit-task-btn" onclick="editTask(${t.id}, '${day}')">✏️</button>`;
+                    list.appendChild(item);
+                });
+            });
+            renderMilestones(board.milestones || []);
+        }
+
+        // Acciones simplificadas
+        async function createScheduleForCurrentView() {
+
+            const range = getWeekRange(viewDate);
+
+            const res = await fetch(
+                "/schedule/",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        title: `Semana ${range.start}`,
+                        start: range.start,
+                        end: range.end,
+                        notes: ""
+                    })
+                }
+            );
+
+            if (res.ok)
+                await loadBoard();
+        }
+
+        function openTaskModal(day) { if (!currentBoard) { alert("Crie o cronograma primeiro!"); return; } document.getElementById('task-id').value = ''; document.getElementById('task-day').value = day; document.getElementById('task-activity').value = ''; document.getElementById('task-category').value = ''; document.getElementById('delete-task-btn').classList.add('hidden'); showModal('task-modal'); }
+        function editTask(id, day) { const t = currentBoard.days[day].find(x => x.id === id); if (!t) return; document.getElementById('task-id').value = t.id; document.getElementById('task-day').value = day; document.getElementById('task-activity').value = t.activity; document.getElementById('task-category').value = t.category_id || ''; document.getElementById('delete-task-btn').classList.remove('hidden'); showModal('task-modal'); }
+        document.getElementById('task-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('task-id').value;
+            const res = await fetch(id ? `/schedule/tasks/${id}` : '/schedule/tasks', { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ weekly_schedule_id: parseInt(currentBoard.id), day_of_week: document.getElementById('task-day').value, activity: document.getElementById('task-activity').value, category_id: parseInt(document.getElementById('task-category').value) || null, order_position: 1 }) });
+            if (res.ok) { closeModal('task-modal'); await loadBoard(); }
+        };
+
+        async function handleDeleteTask() { const id = document.getElementById('task-id').value; if (id && confirm('Excluir?')) { await fetch(`/schedule/tasks/${id}`, { method: 'DELETE' }); closeModal('task-modal'); await loadBoard(); } }
+        function renderMilestones(ms) { document.getElementById('milestones-list').innerHTML = ms.map(m => `<div class="milestone-row ${m.completed ? 'completed' : ''}"><input type="checkbox" ${m.completed ? 'checked' : ''} onchange="toggleMilestone(${m.id})"><span>${m.description}</span><button class="edit-task-btn" style="color:red;opacity:1" onclick="deleteMilestone(${m.id})">✕</button></div>`).join(''); }
+        function openMilestoneModal() { if (!currentBoard) return; showModal('milestone-modal'); }
+        document.getElementById('milestone-form').onsubmit = async (e) => { e.preventDefault(); const res = await fetch('/schedule/milestones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ weekly_schedule_id: parseInt(currentBoard.id), description: document.getElementById('milestone-desc').value }) }); if (res.ok) { document.getElementById('milestone-desc').value = ''; closeModal('milestone-modal'); await loadBoard(); } };
+        async function toggleMilestone(id) { await fetch(`/schedule/milestones/${id}/toggle`, { method: 'PATCH' }); await loadBoard(); }
+        async function deleteMilestone(id) { if (confirm('Excluir?')) { await fetch(`/schedule/milestones/${id}`, { method: 'DELETE' }); await loadBoard(); } }
+        function openCategoryModal() { showModal('category-modal'); }
+        document.getElementById('category-form').onsubmit = async (e) => { e.preventDefault(); const res = await fetch('/schedule/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('cat-name').value, color: document.getElementById('cat-color').value }) }); if (res.ok) { document.getElementById('cat-name').value = ''; await loadCategories(); closeModal('category-modal'); } };
+        async function deleteCategory(id) { if (confirm('Excluir?')) { await fetch(`/schedule/categories/${id}`, { method: 'DELETE' }); await loadCategories(); await loadBoard(); } }
+
+        window.onload = async () => {
+
+            updateViewDisplay();
+
+            await loadCategories();
+
+            await loadBoard();
+
+        };
+
+        async function shareProject() {
+
+            const button = document.querySelector(".share-btn");
+
+            try {
+
+                button.disabled = true;
+                button.innerHTML = "<span>⏳</span> Gerando...";
+
+                if (!currentBoard) {
+                    alert("Nenhum cronograma carregado.");
+                    return;
+                }
+
+                const cronogramaId = currentBoard.id;
+
+                const response = await fetch(`/schedule/share/${cronogramaId}`, {
+                    method: "POST"
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error generating share link");
+                }
+
+                const data = await response.json();
+
+                const shareUrl = data.share_link;
+
+                if (navigator.share) {
+
+                    await navigator.share({
+                        title: document.title,
+                        url: shareUrl
+                    });
+
+                } else {
+
+                    await navigator.clipboard.writeText(shareUrl);
+
+                    alert("Link copiado para a área de transferência");
+                }
+
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert("Erro ao compartilhar o projeto");
+
+            } finally {
+
+                button.disabled = false;
+                button.innerHTML = "<span>🔗</span> Compartilhar";
+            }
+        }
+    </script>
+    {% include 'notification.html' %}
+    {% include 'loading.html' %}
+</body>
+
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Construtor de projeto</title>
+    <link rel="stylesheet" href="../../static/projects/projects_add.css?v=projects-add-responsive-1" />
+</head>
+
+<body>
+
+<form action="/projects/add" method="post" enctype="multipart/form-data" id="projectForm" novalidate>
+    <div class="container">
+        <h1>Construtor de projeto</h1>
+
+        <div class="card">
+            <h3>Imagens do projeto</h3>
+            <div class="dropzone" id="dropzone">
+                <p>Arraste imagens aqui ou clique</p>
+                <input type="file" id="imagesInput" name="photo" multiple accept="image/*" hidden>
+            </div>
+            <div class="image-grid" id="imageGrid"></div>
+        </div>
+
+        <div class="card">
+            <h3>Documentos PDF</h3>
+            <button type="button" class="file-button" id="pdfButton">Selecionar PDFs</button>
+            <input type="file" id="pdfInput" name="pdf" multiple accept="application/pdf" hidden>
+            <div id="pdfList"></div>
+        </div>
+
+        <div class="card card-form">
+            <h3>Dados do projeto</h3>
+
+            <div class="grid">
+                <div>
+                    <label>Nome</label>
+                    <input type="text" name="name" id="projectName" required>
+                </div>
+
+                <div>
+                    <label>Carpinteiro</label>
+                    <input type="text" name="carpenter" id="carpenterInput" required>
+                    <input type="hidden" name="carpenter_id" id="carpenterId" required>
+                    <div id="carpenterResults"></div>
+                </div>
+
+                <div>
+                    <label>Cliente</label>
+                    <input type="text" name="client_name" id="clientName" required>
+                </div>
+
+                <div>
+                    <label>Arquiteto</label>
+                    <input type="text" name="architect" id="architect" required>
+                </div>
+
+                <div>
+                    <label>Data de entrega</label>
+                    <input type="date" name="delivery" id="delivery" required>
+                </div>
+
+                <div style="grid-column: span 2;">
+                    <label>Endereço</label>
+                    <input type="text" name="address" id="address" required>
+                </div>
+            </div>
+
+            <label>Materiais</label>
+            <textarea name="materials" id="materials" required></textarea>
+
+            <label>Descrição</label>
+            <textarea name="description" id="description" required></textarea>
+
+            <button class="btn-submit">Salvar projeto</button>
+        </div>
+    </div>
+</form>
+
+<script>
+const dropzone = document.getElementById("dropzone");
+const imageInput = document.getElementById("imagesInput");
+const imageGrid = document.getElementById("imageGrid");
+const pdfInput = document.getElementById("pdfInput");
+const pdfList = document.getElementById("pdfList");
+const pdfButton = document.getElementById("pdfButton");
+
+let images = [];
+let pdfs = [];
+
+pdfButton.addEventListener("click", () => pdfInput.click());
+dropzone.addEventListener("click", () => imageInput.click());
+
+dropzone.addEventListener("dragover", e => e.preventDefault());
+
+dropzone.addEventListener("drop", e => {
+    e.preventDefault();
+    handleFiles(e.dataTransfer.files);
+});
+
+imageInput.addEventListener("change", e => {
+    handleFiles(e.target.files);
+});
+
+function handleFiles(files) {
+    [...files].forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            images.push(e.target.result);
+            renderImages();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function renderImages() {
+    imageGrid.innerHTML = "";
+    images.forEach((img, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "image-wrapper";
+        const image = document.createElement("img");
+        image.src = img;
+        const btn = document.createElement("button");
+        btn.className = "remove-img";
+        btn.innerHTML = "×";
+        btn.onclick = () => {
+            images.splice(index, 1);
+            renderImages();
+        };
+        wrapper.appendChild(image);
+        wrapper.appendChild(btn);
+        imageGrid.appendChild(wrapper);
+    });
+}
+
+pdfInput.addEventListener("change", e => {
+    const files = [...e.target.files];
+    files.forEach(file => pdfs.push(file.name));
+    renderPDFs();
+});
+
+function renderPDFs() {
+    pdfList.innerHTML = "";
+    pdfs.forEach((pdf, index) => {
+        const div = document.createElement("div");
+        div.className = "pdf-item";
+        const name = document.createElement("span");
+        name.textContent = pdf;
+        const btn = document.createElement("button");
+        btn.innerHTML = "×";
+        btn.onclick = () => {
+            pdfs.splice(index, 1);
+            renderPDFs();
+        };
+        div.appendChild(name);
+        div.appendChild(btn);
+        pdfList.appendChild(div);
+    });
+}
+
+const carpenterInput = document.getElementById("carpenterInput");
+const carpenterIdInput = document.getElementById("carpenterId");
+const carpenterResults = document.getElementById("carpenterResults");
+const projectForm = document.getElementById("projectForm");
+
+let timeout = null;
+
+projectForm.addEventListener("submit", (event) => {
+    const requiredFields = [
+        { id: "projectName", label: "Nome" },
+        { id: "carpenterInput", label: "Carpinteiro" },
+        { id: "carpenterId", label: "Carpinteiro válido" },
+        { id: "clientName", label: "Cliente" },
+        { id: "architect", label: "Arquiteto" },
+        { id: "delivery", label: "Data de entrega" },
+        { id: "address", label: "Endereço" },
+        { id: "materials", label: "Materiais" },
+        { id: "description", label: "Descrição" }
+    ];
+
+    const missing = [];
+
+    requiredFields.forEach(({ id, label }) => {
+        const field = document.getElementById(id);
+        const value = field ? field.value.trim() : "";
+
+        if (!value) {
+            missing.push(label);
+        }
+    });
+
+    if (missing.length > 0) {
+        event.preventDefault();
+        alert(`Falta preencher: ${missing.join(", ")}`);
+
+        const firstMissingId = requiredFields.find(({ label }) => missing.includes(label))?.id;
+        document.getElementById(firstMissingId)?.focus();
+    }
+});
+
+carpenterInput.addEventListener("input", () => {
+    const query = carpenterInput.value.trim();
+
+    carpenterIdInput.value = "";
+
+    if (query.length < 2) {
+        carpenterResults.innerHTML = "";
+        return;
+    }
+
+    clearTimeout(timeout);
+
+    timeout = setTimeout(async () => {
+        try {
+            const res = await fetch(`/projects/users/search?username=${query}`);
+            const data = await res.json();
+
+            carpenterResults.innerHTML = "";
+
+            data.forEach(user => {
+                const div = document.createElement("div");
+                div.textContent = user.name;
+
+                div.onclick = () => {
+                    carpenterInput.value = user.name;
+                    carpenterIdInput.value = user.id;
+                    carpenterResults.innerHTML = "";
+                };
+
+                carpenterResults.appendChild(div);
+            });
+
+        } catch (err) {
+            console.error(err);
+        }
+    }, 300);
+});
+</script>
+{% include 'loading.html' %}
+</body>
+</html>

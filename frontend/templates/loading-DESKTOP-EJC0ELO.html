@@ -1,14 +1,18 @@
+<!-- loading-utility.html -->
 <style>
   #global-loader {
     position: fixed;
     inset: 0;
+
     display: none;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     gap: 20px;
+
     background: rgba(15, 23, 42, 0.75);
     backdrop-filter: blur(4px);
+
     z-index: 999999;
   }
 
@@ -19,9 +23,11 @@
   .loader-spinner {
     width: 70px;
     height: 70px;
+
     border-radius: 50%;
     border: 5px solid rgba(255,255,255,0.15);
     border-top-color: #3b82f6;
+
     animation: spin 0.8s linear infinite;
   }
 
@@ -61,24 +67,14 @@
 </div>
 
 <script>
-  const loader = document.getElementById("global-loader");
-
-  let loaderTimeout = null;
+  const loader = document.getElementById("global-loader")
 
   function showLoader() {
-    loader.classList.add("active");
-
-    clearTimeout(loaderTimeout);
-
-    loaderTimeout = setTimeout(() => {
-      hideLoader();
-    }, 10000);
+    loader.classList.add("active")
   }
 
   function hideLoader() {
-    loader.classList.remove("active");
-    clearTimeout(loaderTimeout);
-    loaderTimeout = null;
+    loader.classList.remove("active")
   }
 
   /*
@@ -86,23 +82,24 @@
   */
   document.querySelectorAll("form").forEach(form => {
     form.addEventListener("submit", () => {
-      showLoader();
-    });
-  });
+      showLoader()
+    })
+  })
 
   /*
+    OPCIONAL:
     AUTO LOADER PARA FETCH
   */
-  const originalFetch = window.fetch;
+  const originalFetch = window.fetch
 
   window.fetch = async (...args) => {
-    showLoader();
+    showLoader()
 
     try {
-      const response = await originalFetch(...args);
-      return response;
+      const response = await originalFetch(...args)
+      return response
     } finally {
-      hideLoader();
+      hideLoader()
     }
-  };
+  }
 </script>

@@ -90,7 +90,8 @@
 
                 <div class="comments">
                     <h4>Comentários</h4>
-                    {% if comments %}
+
+                    {% if project.comments %}
                     <div id="comment-list">
                         {% for comment in project.comments %}
                         <div class="comment">
@@ -99,10 +100,10 @@
                             <p>{{ comment.text }}</p>
                         </div>
                         {% endfor %}
-                        {% else %}
-                        <span>Ainda não há comentarios</span>
-                    {% endif %}
                     </div>
+                    {% else %}
+                    <span>Ainda não há comentarios</span>
+                    {% endif %}
                 </div>
             </div>
         </div>

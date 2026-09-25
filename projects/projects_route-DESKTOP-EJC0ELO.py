@@ -64,12 +64,13 @@ def create_link(project_id: int, session: Session = Depends(CreateSession), user
         "token": token
         }
 
-@projects_router.post("/{project_token}/comments") 
+@projects_router.post("/{project_token}/comments", dependencies=[Depends(require_module("projects"))]) 
 def create_comment(request: Request, project_token: str, payload: CommentPayload, session: Session = Depends(CreateSession)): 
 
     session_token = request.cookies.get("comment_session")
 
     created_new_cookie = False
+
 
     if not session_token:
         session_token = secrets.token_urlsafe(12)
@@ -210,7 +211,7 @@ def show_projects_details(request: Request, project_id: int, session: Session = 
                 "delivery": project.delivery,
                 "status": project.status.value,
                 "address": project.address,
-                "carpenter": project.carpenter,
+                "carpenter": project.carpenter.fullname,
                 "photos": [RAW_CONFIG.storage.media_base_url + "/" + photo.photo_path for photo in project.photos],
                 "pdfs": [RAW_CONFIG.storage.media_base_url + "/" + pdf.pdf_path for pdf in project.pdfs],
                 "company_name": project.company.name,
