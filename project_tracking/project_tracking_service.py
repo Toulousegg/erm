@@ -2,22 +2,8 @@ import secrets
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, selectinload
 
-from project_tracking.project_tracking_model import (
-    TrackedFurniture,
-    TrackingBoard,
-    TrackingDelay,
-    TrackingStage,
-    TrackingStageMedia,
-    now_local,
-)
-from project_tracking.project_tracking_schema import (
-    FurnitureNotesUpdate,
-    TrackedFurnitureCreate,
-    TrackingBoardCreate,
-    TrackingDelayCreate,
-    TrackingStageCreate,
-    TrackingStageUpdate,
-)
+from project_tracking.project_tracking_model import *
+from project_tracking.project_tracking_schema import *
 from projects.projects_services import get_project_for_company
 
 

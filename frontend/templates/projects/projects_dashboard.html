@@ -36,14 +36,13 @@
                 <button type="submit">🔍</button>
             </form>
 
-            <a href="/projects/add" class="primary-btn" id="add-material-btn">➕ Adicionar projeto</a>
+            <a href="/projects/add" class="primary-btn" id="add-material-btn">Adicionar projeto</a>
 
 
 
             <a href="/tracking/" class="primary-btn">Seguimiento de proyectos</a>
         </section>
 
-        <!-- ===================== CARDS ===================== -->
         <section class="cards-container">
 
             {% for project in items %}
@@ -111,7 +110,6 @@
                 });
             });
 
-            // EDIT
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
 
@@ -131,8 +129,8 @@
                 <input type="number" id="edit-qty" value="${originalQty}">
 
                 <div class="card-actions">
-                    <button class="save-btn">💾 Salvar</button>
-                    <button class="cancel-edit">❌ Cancelar</button>
+                    <button class="save-btn">Salvar</button>
+                    <button class="cancel-edit">Cancelar</button>
                 </div>
 
                 <div class="date">${originalDate}</div>

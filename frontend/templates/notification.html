@@ -141,9 +141,9 @@ color:white;
 }
 </style>
 
-<button id="notification-bell">
-🔔
-<span id="notification-count"></span>
+<button id="notification-bell" type="button" aria-label="Abrir notificaciones" title="Notificaciones">
+    <span aria-hidden="true">!</span>
+    <span id="notification-count"></span>
 </button>
 
 <div id="notification-menu"></div>
@@ -159,7 +159,7 @@ let notifications = []
 const token = localStorage.getItem("access_token")
 
 if(!token){
-    console.log("❌ Não há token")
+    console.log("Não há token")
 }
 
 // UI
@@ -185,7 +185,7 @@ async function loadNotifications(){
         render()
 
     }catch(e){
-        console.log("❌ Erro:", e)
+        console.log("Erro:", e)
     }
 }
 
@@ -282,10 +282,10 @@ function render(){
 
                 notifications = notifications.filter(n => n.id != notiId)
                 render()
-                console.log("✅ Solicitação aceita")
+                console.log("Solicitação aceita")
 
             }catch(err){
-                console.log("❌", err)
+                console.error("Error:", err)
             }
         }
     })
@@ -320,10 +320,10 @@ function render(){
 
                 notifications = notifications.filter(n => n.id != notiId)
                 render()
-                console.log("❌ Solicitação rejeitada")
+                console.log("Solicitação rejeitada")
 
             }catch(err){
-                console.log("❌", err)
+                console.error("Error:", err)
             }
         }
     })
@@ -371,11 +371,11 @@ function render(){
                 input.disabled = true
                 btn.disabled = true
 
-                console.log("✅ Solicitud de unión enviada")
+                console.log("Solicitud de unión enviada")
             }catch(err){
                 result.innerText = "Erro ao enviar solicitação"
                 result.style.color = "#b91c1c"
-                console.log("❌", err)
+                console.error("Error:", err)
             }
         }
     })
@@ -400,7 +400,7 @@ function connectWebSocket(){
     const socket = new WebSocket(url)
 
     socket.onopen = () => {
-        console.log("🟢 WS conectado")
+        console.log("WebSocket conectado")
     }
 
     socket.onmessage = (event) => {
@@ -421,7 +421,7 @@ function connectWebSocket(){
             render()
 
         }catch(e){
-            console.log("❌ Erro WS:", e)
+            console.log("Erro WS:", e)
         }
     }
 
