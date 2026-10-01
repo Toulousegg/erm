@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
 from fastapi.responses import RedirectResponse, JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from users.users_model import User, Company, CompanyJoinRequest
@@ -30,7 +30,7 @@ def next_onboarding_url(user: User) -> str:
 
     return "/home/home"
 
-def set_auth_cookies(response: Response, user_id: int):
+def set_auth_cookies(response: RedirectResponse, user_id: int):
     access_token = create_token(user_id)
     refresh_token = create_refresh_token(user_id)
 
@@ -60,50 +60,32 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 
     if not user:
         raise HTTPException(
-    status_code=401,
-    detail="Incorrect username or password"
-)
+            status_code=401,
+            detail="Incorrect username or password"
+        )
     
     if not user.is_verified:
-        return JSONResponse(
-            status_code=403,
-            content={
-                "detail": "Please verify your email address before logging in."
-            }
-        )
+        return templates.TemplateResponse("home/verify_email.html", {
+            "request": request, 
+            "email": user.email, 
+            "message": "Please verify your email address before logging in."
+        })
 
     await ensure_company_assignment_reminder(user, session)
 
-    next_url = next_onboarding_url(user)
-
+    response = RedirectResponse(url=next_onboarding_url(user), status_code=303)
+    
     if not user.barcode:
         try:
             if user.company:
                 user.barcode = generate_code128(12)
                 session.commit()
-
-                await send_employee_barcode_to_owner(
-                    user.company.owner.email,
-                    user.fullname,
-                    user.username,
-                    user.barcode
-                )
-
-                next_url = "/home/barcode"
+                await send_employee_barcode_to_owner(user.company.owner.email, user.fullname, user.username, user.barcode)
+                return set_auth_cookies(RedirectResponse(url="/home/barcode/", status_code=303), user.id)
 
         except Exception as e:
             print("Error sending barcode email:", e)
-            raise HTTPException(
-                status_code=500,
-                detail="Error creating barcode"
-            )
-
-    response = JSONResponse(
-        content={
-            "message": "Login successful",
-            "redirect": next_url
-        }
-    )
+            return set_auth_cookies(RedirectResponse(url=next_onboarding_url(user), status_code=303), user.id)
 
     return set_auth_cookies(response, user.id)
     
