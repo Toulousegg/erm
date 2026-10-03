@@ -6,9 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="0f4b5e2d-e92f-4d18-b6c9-fddc0ccdb7c1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/templates/projects/projects_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/projects/projects_dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/projects/projects_services.py" beforeDir="false" afterPath="$PROJECT_DIR$/projects/projects_services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/static/project_tracking/project_tracking.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/static/project_tracking/project_tracking.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/aside.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/aside.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/notification.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/notification.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/project_tracking/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/project_tracking/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/project_tracking/detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/project_tracking/detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/project_tracking/public.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/project_tracking/public.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,6 +20,65 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.0" />
+      <entry key="S30" value="1.0" />
+      <entry key="S60" value="1.0" />
+      <entry key="M2" value="1.0" />
+      <entry key="M5" value="1.0" />
+      <entry key="M10" value="1.0" />
+      <entry key="M15" value="1.0" />
+      <entry key="M30" value="1.0" />
+      <entry key="H1" value="1.0" />
+      <entry key="H2" value="1.0" />
+      <entry key="H4" value="1.0" />
+      <entry key="D1" value="1.0" />
+      <entry key="W1" value="1.0" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.4175439597141847" />
+      <entry key="MS500" value="0.8397314929441403" />
+      <entry key="S2" value="0.9572714581952976" />
+      <entry key="S5" value="0.9826843601234214" />
+      <entry key="S10" value="0.9913043730981023" />
+      <entry key="S30" value="0.9970930153280337" />
+      <entry key="S60" value="0.9985454498058832" />
+      <entry key="M2" value="0.9992724602458948" />
+      <entry key="M5" value="0.9997089205560088" />
+      <entry key="M10" value="0.9998544496855574" />
+      <entry key="M15" value="0.9999029641030088" />
+      <entry key="M30" value="0.9999514808744516" />
+      <entry key="H1" value="0.9999757401429555" />
+      <entry key="H2" value="0.9999878699979092" />
+      <entry key="H4" value="0.9999939349805624" />
+      <entry key="D1" value="0.9999989891608726" />
+      <entry key="W1" value="0.9999998555943478" />
+    </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4,
@@ -84,8 +146,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-34e2839f716b-intellij.indexing.shared.core-IU-262.9437.185" />
-        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.9437.185" />
+        <option value="bundled-python-sdk-73a66231627c-5bd6d13a2a75-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-262.10968.92" />
       </set>
     </attachedChunks>
   </component>
@@ -98,6 +159,8 @@
       <updated>1789857053686</updated>
       <workItem from="1790118735920" duration="142000" />
       <workItem from="1790204587842" duration="3592000" />
+      <workItem from="1790903034233" duration="641000" />
+      <workItem from="1790975059953" duration="3475000" />
     </task>
     <servers />
   </component>

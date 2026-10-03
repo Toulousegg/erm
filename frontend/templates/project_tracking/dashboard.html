@@ -4,16 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Acompañamiento de proyectos</title>
-    <link rel="stylesheet" href="/static/project_tracking/project_tracking.css">
+    <link rel="stylesheet" href="/static/project_tracking/project_tracking.css?v=3">
 </head>
 <body class="tracking-shell">
-    <header class="topbar">
-        <a class="brand" href="/tracking/" aria-label="Acompañamiento">
-            <span class="brand-mark">M</span>
-            <span>ProntoERP <small>ACOMPAÑAMIENTO</small></span>
-        </a>
-        <a class="top-link" href="/projects/dashboard">Volver a proyectos</a>
-    </header>
+    {% include 'aside.html' %}
 
     <main class="page-wrap">
         <div class="page-heading">
@@ -22,6 +16,7 @@
                 <h1>Acompañamiento de proyectos</h1>
                 <p class="muted">Etapas, actualizaciones y plazo en un enlace de consulta.</p>
             </div>
+            <a class="top-link" href="/projects/dashboard">Volver a proyectos</a>
         </div>
 
         {% if projects %}
@@ -137,7 +132,6 @@
     </main>
 
     {% include 'notification.html' %}
-    {% include 'aside.html' %}
     {% include 'loading.html' %}
     {% include 'http-error-modal.html' %}
 

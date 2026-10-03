@@ -5,17 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ project.name }} · Acompañamiento</title>
-    <link rel="stylesheet" href="/static/project_tracking/project_tracking.css">
+    <link rel="stylesheet" href="/static/project_tracking/project_tracking.css?v=3">
 </head>
 
 <body class="tracking-shell">
-    <header class="topbar">
-        <a class="brand" href="/tracking/">
-            <span class="brand-mark">M</span>
-            <span>ProntoERP <small>ACOMPAÑAMIENTO</small></span>
-        </a>
-        <a class="top-link" href="/tracking/">← Todos los proyectos</a>
-    </header>
+    {% include 'aside.html' %}
 
     <main class="page-wrap detail-wrap">
         <div class="detail-title-row">
@@ -25,15 +19,18 @@
                 <p class="muted">Configura etapas y registra novedades para el cliente y el arquitecto.</p>
             </div>
 
-            <form action="/tracking/{{ board.id }}/status" method="post" class="status-form">
-                <label for="project-status">Estado del proyecto</label>
-                <select id="project-status" name="status" onchange="this.form.submit()">
-                    <option value="executando" {% if board.status == 'executando' %}selected{% endif %}>En ejecución</option>
-                    <option value="espera" {% if board.status == 'espera' %}selected{% endif %}>En espera</option>
-                    <option value="terminada" {% if board.status == 'terminada' %}selected{% endif %} {% if summary.progress < 100 %}disabled{% endif %}>Terminada</option>
-                    <option value="cancelada" {% if board.status == 'cancelada' %}selected{% endif %}>Cancelada</option>
-                </select>
-            </form>
+            <div class="detail-actions">
+                <a class="button button-primary back-projects" href="/tracking/">← Todos los proyectos</a>
+                <form action="/tracking/{{ board.id }}/status" method="post" class="status-form">
+                    <label for="project-status">Estado del proyecto</label>
+                    <select id="project-status" name="status" onchange="this.form.submit()">
+                        <option value="executando" {% if board.status == 'executando' %}selected{% endif %}>En ejecución</option>
+                        <option value="espera" {% if board.status == 'espera' %}selected{% endif %}>En espera</option>
+                        <option value="terminada" {% if board.status == 'terminada' %}selected{% endif %} {% if summary.progress < 100 %}disabled{% endif %}>Terminada</option>
+                        <option value="cancelada" {% if board.status == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                    </select>
+                </form>
+            </div>
         </div>
 
         <section class="metric-grid">
@@ -307,7 +304,6 @@
     </script>
 
     {% include 'notification.html' %}
-    {% include 'aside.html' %}
     {% include 'loading.html' %}
     {% include 'http-error-modal.html' %}
 
