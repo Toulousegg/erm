@@ -34,11 +34,9 @@ base.metadata.create_all(bind=engine)
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 
 @app.get("/")
-def home(request: Request):
-    return templates.TemplateResponse(
-    "home/index.html",
-    {"request": request}
-    )
+def home():
+    return RedirectResponse(url="/home/login", status_code=303)
+
 
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request: Request, error: StarletteHTTPException):

@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="es">
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Acompañamiento de proyectos</title>
-    <link rel="stylesheet" href="/static/project_tracking/project_tracking.css?v=3">
+    <title>Acompanhamento de projetos</title>
+    <link rel="stylesheet" href="/static/project_tracking/dashboard.css?v=1">
 </head>
 <body class="tracking-shell">
     {% include 'aside.html' %}
@@ -12,26 +12,26 @@
     <main class="page-wrap">
         <div class="page-heading">
             <div>
-                <p class="eyebrow">SEGUIMIENTO DE PRODUCCIÓN</p>
-                <h1>Acompañamiento de proyectos</h1>
-                <p class="muted">Etapas, actualizaciones y plazo en un enlace de consulta.</p>
+                <p class="eyebrow">ACOMPANHAMENTO DA PRODUÇÃO</p>
+                <h1>Acompanhamento de projetos</h1>
+                <p class="muted">Etapas, atualizações e prazo em um link de consulta.</p>
             </div>
-            <a class="top-link" href="/projects/dashboard">Volver a proyectos</a>
+            <a class="top-link" href="/projects/dashboard">Voltar aos projetos</a>
         </div>
 
         {% if projects %}
         <section class="panel create-panel">
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">NUEVO SEGUIMIENTO</p>
-                    <h2>Vincular un proyecto</h2>
+                    <p class="eyebrow">NOVO ACOMPANHAMENTO</p>
+                    <h2>Vincular um projeto</h2>
                 </div>
-                <span class="step-chip">01 · Configurar plazo</span>
+                <span class="step-chip">01 · Configurar prazo</span>
             </div>
 
             <form class="form-grid" method="post" action="/tracking/boards">
                 <label class="field field-wide">
-                    Proyecto existente
+                    Projeto existente
                     <select name="project_id" required>
                         {% for project in projects %}
                         <option value="{{ project.id }}">
@@ -41,20 +41,20 @@
                     </select>
                 </label>
                 <label class="field">
-                    Plazo de responsabilidad (días)
+                    Prazo de responsabilidade (dias)
                     <input name="promised_days" type="number" min="1" max="3650" value="30" required>
                 </label>
                 <label class="field">
-                    Fecha de entrega prometida
+                    Data de entrega prometida
                     <input name="promised_delivery" type="date" required>
                 </label>
                 <div class="field-action">
-                    <button class="button button-primary" type="submit">Crear acompañamiento</button>
+                    <button class="button button-primary" type="submit">Criar acompanhamento</button>
                 </div>
             </form>
 
             <p class="form-hint">
-                Los atrasos externos se registran por separado y se suman a la previsión de entrega, sin reducir los días de responsabilidad.
+                Os atrasos externos são registrados separadamente e somados à previsão de entrega, sem reduzir os dias de responsabilidade.
             </p>
         </section>
         {% endif %}
@@ -62,8 +62,8 @@
         <section class="list-section">
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">VISTA GENERAL</p>
-                    <h2>Proyectos acompañados <span class="count-pill">{{ board_count }}</span></h2>
+                    <p class="eyebrow">VISÃO GERAL</p>
+                    <h2>Projetos acompanhados <span class="count-pill">{{ board_count }}</span></h2>
                 </div>
             </div>
 
@@ -75,19 +75,19 @@
                         <span class="status-dot status-{{ board.status }}" aria-hidden="true"></span>
                         <span class="status-label">
                             {% if board.status == 'executando' %}
-                                En ejecución
+                                Em execução
                             {% elif board.status == 'espera' %}
-                                En espera
+                                Aguardando
                             {% elif board.status == 'cancelada' %}
                                 Cancelada
                             {% else %}
-                                Terminada
+                                Concluída
                             {% endif %}
                         </span>
                     </div>
 
                     <h3>{{ board.project.name }}</h3>
-                    <p class="muted">{{ board.project.client_name or 'Cliente sin asignar' }}</p>
+                    <p class="muted">{{ board.project.client_name or 'Cliente não atribuído' }}</p>
 
                     <div class="card-progress">
                         <div class="progress-track">
@@ -97,15 +97,15 @@
                     </div>
 
                     <div class="card-meta">
-                        <span>ETAPA ACTUAL</span>
+                        <span>ETAPA ATUAL</span>
                         <b>
-                            {{ summaries[board.id].current_stage.name if summaries[board.id].current_stage else 'Etapas por configurar' }}
+                            {{ summaries[board.id].current_stage.name if summaries[board.id].current_stage else 'Etapas a configurar' }}
                         </b>
                     </div>
 
                     <div class="card-footer">
                         <span>Entrega <b>{{ summaries[board.id].adjusted_delivery.strftime('%d/%m/%Y') }}</b></span>
-                        <span>{{ summaries[board.id].lost_days }} días externos</span>
+                        <span>{{ summaries[board.id].lost_days }} dias de atraso externo</span>
                     </div>
                 </a>
                 {% endfor %}
@@ -116,16 +116,16 @@
             {% include 'pagination.html' %}
             {% elif projects %}
             <div class="empty-state">
-                <h3>Aún no hay acompañamientos</h3>
-                <p>Vincula un proyecto existente para crear sus etapas y compartir el progreso.</p>
+                <h3>Ainda não há acompanhamentos</h3>
+                <p>Vincule um projeto existente para criar suas etapas e compartilhar o progresso.</p>
             </div>
             {% endif %}
 
             {% if not projects and not board_count %}
             <div class="empty-state">
-                <h3>No hay proyectos disponibles</h3>
-                <p>Crea primero un proyecto en el módulo de proyectos.</p>
-                <a class="button button-secondary" href="/projects/add">Crear proyecto</a>
+                <h3>Não há projetos disponíveis</h3>
+                <p>Crie primeiro um projeto no módulo de projetos.</p>
+                <a class="button button-secondary" href="/projects/add">Criar projeto</a>
             </div>
             {% endif %}
         </section>
@@ -140,7 +140,7 @@
         showHttpError(
             {{ http_error.status | default(500) | tojson }},
             {
-                message: {{ http_error.message | default('Error interno.') | tojson }},
+                message: {{ http_error.message | default('Erro interno.') | tojson }},
                 detail: {{ http_error.detail | default('') | tojson }}
             }
         );

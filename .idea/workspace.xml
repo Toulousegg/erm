@@ -6,12 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="0f4b5e2d-e92f-4d18-b6c9-fddc0ccdb7c1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/static/project_tracking/project_tracking.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/static/project_tracking/project_tracking.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/templates/aside.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/aside.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/templates/notification.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/notification.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/static/project_tracking/project_tracking.css" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/templates/project_tracking/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/project_tracking/dashboard.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/templates/project_tracking/detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/project_tracking/detail.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/templates/project_tracking/public.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/project_tracking/public.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/projects/projects_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/projects/projects_dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notification/ws_route.py" beforeDir="false" afterPath="$PROJECT_DIR$/notification/ws_route.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,23 +24,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0" />
-      <entry key="S10" value="1.0" />
-      <entry key="S30" value="1.0" />
-      <entry key="S60" value="1.0" />
-      <entry key="M2" value="1.0" />
-      <entry key="M5" value="1.0" />
-      <entry key="M10" value="1.0" />
-      <entry key="M15" value="1.0" />
-      <entry key="M30" value="1.0" />
-      <entry key="H1" value="1.0" />
-      <entry key="H2" value="1.0" />
-      <entry key="H4" value="1.0" />
-      <entry key="D1" value="1.0" />
-      <entry key="W1" value="1.0" />
+      <entry key="MS100" value="1.0000000060938452" />
+      <entry key="MS500" value="1.0227498367031107" />
+      <entry key="S2" value="1.3883690159580797" />
+      <entry key="S5" value="1.6859435907654192" />
+      <entry key="S10" value="1.8886919956687445" />
+      <entry key="S30" value="2.9309460265351515" />
+      <entry key="S60" value="3.9609799458526513" />
+      <entry key="M2" value="4.807127597807378" />
+      <entry key="M5" value="5.473125579392085" />
+      <entry key="M10" value="5.727487798659773" />
+      <entry key="M15" value="5.816245721135412" />
+      <entry key="M30" value="5.907066958356025" />
+      <entry key="H1" value="5.9532664287939285" />
+      <entry key="H2" value="5.97656606352758" />
+      <entry key="H4" value="5.988266195265165" />
+      <entry key="D1" value="5.998042023323017" />
+      <entry key="W1" value="5.999720231623244" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -61,23 +62,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.4175439597141847" />
-      <entry key="MS500" value="0.8397314929441403" />
-      <entry key="S2" value="0.9572714581952976" />
-      <entry key="S5" value="0.9826843601234214" />
-      <entry key="S10" value="0.9913043730981023" />
-      <entry key="S30" value="0.9970930153280337" />
-      <entry key="S60" value="0.9985454498058832" />
-      <entry key="M2" value="0.9992724602458948" />
-      <entry key="M5" value="0.9997089205560088" />
-      <entry key="M10" value="0.9998544496855574" />
-      <entry key="M15" value="0.9999029641030088" />
-      <entry key="M30" value="0.9999514808744516" />
-      <entry key="H1" value="0.9999757401429555" />
-      <entry key="H2" value="0.9999878699979092" />
-      <entry key="H4" value="0.9999939349805624" />
-      <entry key="D1" value="0.9999989891608726" />
-      <entry key="W1" value="0.9999998555943478" />
+      <entry key="MS100" value="0.9012504673919643" />
+      <entry key="MS500" value="1.0010926564796045" />
+      <entry key="S2" value="1.3785014127030761" />
+      <entry key="S5" value="1.6805343079676087" />
+      <entry key="S10" value="1.8850972258553085" />
+      <entry key="S30" value="2.926807142815118" />
+      <entry key="S60" value="3.957356118664436" />
+      <entry key="M2" value="4.804669989710046" />
+      <entry key="M5" value="5.4719382733679245" />
+      <entry key="M10" value="5.7268550563962535" />
+      <entry key="M15" value="5.8158147935186735" />
+      <entry key="M30" value="5.906846837505906" />
+      <entry key="H1" value="5.953155183590177" />
+      <entry key="H2" value="5.9765101421310804" />
+      <entry key="H4" value="5.988238159541044" />
+      <entry key="D1" value="5.998037340254192" />
+      <entry key="W1" value="5.999719562357175" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -161,6 +162,7 @@
       <workItem from="1790204587842" duration="3592000" />
       <workItem from="1790903034233" duration="641000" />
       <workItem from="1790975059953" duration="3475000" />
+      <workItem from="1791163557422" duration="2703000" />
     </task>
     <servers />
   </component>
