@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="es">
+<html lang="pt-BR">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ project.name }} · Acompañamiento</title>
+    <title>{{ project.name }} · Acompanhamento</title>
     <link rel="stylesheet" href="/static/project_tracking/detail.css?v=1">
 </head>
 
@@ -14,20 +14,20 @@
     <main class="page-wrap detail-wrap">
         <div class="detail-title-row">
             <div>
-                <p class="eyebrow">{{ project.client_name or 'PROYECTO' }} · ACOMPAÑAMIENTO</p>
+                <p class="eyebrow">{{ project.client_name or 'PROJETO' }} · ACOMPANHAMENTO</p>
                 <h1>{{ project.name }}</h1>
-                <p class="muted">Configura etapas y registra novedades para el cliente y el arquitecto.</p>
+                <p class="muted">Configure etapas e registre atualizações para o cliente e o arquiteto.</p>
             </div>
 
             <div class="detail-actions">
-                <a class="button button-primary back-projects" href="/tracking/">← Todos los proyectos</a>
+                <a class="button button-primary back-projects" href="/tracking/">← Todos os projetos</a>
                 <form action="/tracking/{{ board.id }}/status" method="post" class="status-form">
-                    <label for="project-status">Estado del proyecto</label>
+                    <label for="project-status">Status do projeto</label>
                     <select id="project-status" name="status" onchange="this.form.submit()">
-                        <option value="executando" {% if board.status == 'executando' %}selected{% endif %}>En ejecución</option>
-                        <option value="espera" {% if board.status == 'espera' %}selected{% endif %}>En espera</option>
-                        <option value="terminada" {% if board.status == 'terminada' %}selected{% endif %} {% if summary.progress < 100 %}disabled{% endif %}>Terminada</option>
-                        <option value="cancelada" {% if board.status == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                        <option value="executando" {% if board.status == 'executando' %}selected{% endif %}>Em execução</option>
+                        <option value="espera" {% if board.status == 'espera' %}selected{% endif %}>Aguardando</option>
+                        <option value="terminada" {% if board.status == 'terminada' %}selected{% endif %} {% if summary.progress < 100 %}disabled{% endif %}>Concluído</option>
+                        <option value="cancelada" {% if board.status == 'cancelada' %}selected{% endif %}>Cancelado</option>
                     </select>
                 </form>
             </div>
@@ -36,23 +36,23 @@
         <section class="metric-grid">
             <article class="metric-card">
                 <div>
-                    <small>AVANCE DEL PROYECTO</small>
+                    <small>PROGRESSO DO PROJETO</small>
                     <strong>{{ summary.progress }}%</strong>
-                    <span>{{ summary.completed_stages }} de {{ summary.total_stages }} etapas completadas</span>
+                    <span>{{ summary.completed_stages }} de {{ summary.total_stages }} etapas concluídas</span>
                 </div>
             </article>
             <article class="metric-card">
                 <div>
-                    <small>PLAZO PROMETIDO</small>
-                    <strong>{{ board.promised_days }} días</strong>
-                    <span>Responsabilidad de la carpintería</span>
+                    <small>PRAZO PROMETIDO</small>
+                    <strong>{{ board.promised_days }} dias</strong>
+                    <span>Responsabilidade da marcenaria</span>
                 </div>
             </article>
             <article class="metric-card">
                 <div>
-                    <small>PREVISIÓN ACTUALIZADA</small>
+                    <small>PREVISÃO ATUALIZADA</small>
                     <strong>{{ summary.adjusted_delivery.strftime('%d/%m/%Y') }}</strong>
-                    <span>{{ summary.lost_days }} días registrados por causas externas</span>
+                    <span>{{ summary.lost_days }} dias registrados por causas externas</span>
                 </div>
             </article>
         </section>
@@ -61,15 +61,15 @@
             <div class="share-copy">
                 <span class="share-icon">↗</span>
                 <div>
-                    <strong>Enlace público de consulta</strong>
-                    <p>Quien tenga el enlace puede ver el avance. No permite editar.</p>
+                    <strong>Link público para consulta</strong>
+                    <p>Qualquer pessoa com o link pode acompanhar o progresso. Não é possível editar.</p>
                 </div>
             </div>
             <div class="share-actions">
                 <input id="share-link" readonly value="{{ share_url }}">
-                <button class="button button-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('share-link').value).then(()=>this.textContent='Copiado')">Copiar enlace</button>
-                <form action="/tracking/{{ board.id }}/share/renew" method="post" onsubmit="return confirm('El enlace anterior dejará de funcionar. ¿Generar otro?')">
-                    <button class="icon-button" type="submit" title="Cambiar enlace">↻</button>
+                <button class="button button-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('share-link').value).then(()=>this.textContent='Copiado')">Copiar link</button>
+                <form action="/tracking/{{ board.id }}/share/renew" method="post" onsubmit="return confirm('O link anterior deixará de funcionar. Gerar outro?')">
+                    <button class="icon-button" type="submit" title="Alterar link">↻</button>
                 </form>
             </div>
         </section>
@@ -78,8 +78,8 @@
             <section class="panel timeline-panel" id="stages">
                 <div class="section-heading">
                     <div>
-                        <p class="eyebrow">PRODUCCIÓN</p>
-                        <h2>Línea de tiempo</h2>
+                        <p class="eyebrow">PRODUÇÃO</p>
+                        <h2>Linha do tempo</h2>
                     </div>
                     <span class="step-chip">{{ board.stages|length }} etapas</span>
                 </div>
@@ -96,12 +96,12 @@
                                 <strong>{{ stage.name }}</strong>
                                 <small>
                                     {% if stage.completed %}
-                                        Etapa terminada
+                                        Etapa concluída
                                     {% elif summary.current_stage and summary.current_stage.id == stage.id %}
-                                        En ejecución
+                                        Em execução
                                     {% else %}
-                                        Pendiente
-                                    {% endif %} · {{ stage.duration_days }} días previstos
+                                        Pendente
+                                    {% endif %} · {{ stage.duration_days }} dias previstos
                                 </small>
                             </span>
                             <span class="timeline-chevron">⌄</span>
@@ -112,31 +112,31 @@
                                 <label>Etapa
                                     <input name="name" value="{{ stage.name }}" required maxlength="120">
                                 </label>
-                                <label>Días
+                                <label>Dias
                                     <input type="number" name="duration_days" min="0" value="{{ stage.duration_days }}" required>
                                 </label>
-                                <label>Contenido
+                                <label>Conteúdo
                                     <select name="content_kind">
                                         <option value="texto" {% if stage.content_kind == 'texto' %}selected{% endif %}>Texto</option>
                                         <option value="foto" {% if stage.content_kind == 'foto' %}selected{% endif %}>Foto</option>
-                                        <option value="video" {% if stage.content_kind == 'video' %}selected{% endif %}>Video</option>
+                                        <option value="video" {% if stage.content_kind == 'video' %}selected{% endif %}>Vídeo</option>
                                         <option value="pdf" {% if stage.content_kind == 'pdf' %}selected{% endif %}>PDF</option>
                                     </select>
                                 </label>
-                                <button class="button button-small" type="submit">Guardar etapa</button>
+                                <button class="button button-small" type="submit">Salvar etapa</button>
                             </form>
 
                             <div class="stage-order-actions">
                                 <form action="/tracking/{{ board.id }}/stages/{{ stage.id }}/move" method="post">
                                     <input type="hidden" name="direction" value="up">
-                                    <button class="icon-button" type="submit" title="Subir etapa" {% if loop.first %}disabled{% endif %}>↑</button>
+                                    <button class="icon-button" type="submit" title="Mover etapa para cima" {% if loop.first %}disabled{% endif %}>↑</button>
                                 </form>
                                 <form action="/tracking/{{ board.id }}/stages/{{ stage.id }}/move" method="post">
                                     <input type="hidden" name="direction" value="down">
-                                    <button class="icon-button" type="submit" title="Bajar etapa" {% if loop.last %}disabled{% endif %}>↓</button>
+                                    <button class="icon-button" type="submit" title="Mover etapa para baixo" {% if loop.last %}disabled{% endif %}>↓</button>
                                 </form>
-                                <form action="/tracking/{{ board.id }}/stages/{{ stage.id }}/delete" method="post" onsubmit="return confirm('¿Eliminar esta etapa y su contenido?')">
-                                    <button class="icon-button danger-icon" type="submit" title="Eliminar etapa">×</button>
+                                <form action="/tracking/{{ board.id }}/stages/{{ stage.id }}/delete" method="post" onsubmit="return confirm('Excluir esta etapa e seu conteúdo?')">
+                                    <button class="icon-button danger-icon" type="submit" title="Excluir etapa">×</button>
                                 </form>
                             </div>
 
@@ -145,21 +145,21 @@
                             {% endif %}
 
                             {% if stage.media_path %}
-                                <a class="media-link" href="{{ media_url(stage.media_path) }}" target="_blank">Abrir {{ stage.content_kind }} adjunto ↗</a>
+                                <a class="media-link" href="{{ media_url(stage.media_path) }}" target="_blank">Abrir {{ stage.content_kind }} anexado ↗</a>
                             {% endif %}
 
                             {% for asset in stage.media_assets %}
-                                <a class="media-link stage-asset-link" href="{{ media_url(asset.media_path) }}" target="_blank">Abrir {{ asset.media_kind }} · archivo {{ loop.index }} ↗</a>
+                                <a class="media-link stage-asset-link" href="{{ media_url(asset.media_path) }}" target="_blank">Abrir {{ asset.media_kind }} · arquivo {{ loop.index }} ↗</a>
                             {% endfor %}
 
                             <form class="inline-edit" action="/tracking/{{ board.id }}/stages/{{ stage.id }}/content" method="post" enctype="multipart/form-data">
-                                <label>Actualizar contenido
-                                    <textarea name="content_text" rows="3" placeholder="Describe el avance de esta etapa">{{ stage.content_text or '' }}</textarea>
+                                <label>Atualizar conteúdo
+                                    <textarea name="content_text" rows="3" placeholder="Descreva o progresso desta etapa">{{ stage.content_text or '' }}</textarea>
                                 </label>
                                 <div class="inline-edit-footer">
                                     {% if stage.content_kind != 'texto' %}
                                     <label class="file-label">
-                                        Adjuntar {{ stage.content_kind }}{% if stage.content_kind == 'foto' %}s{% endif %}
+                                        Anexar {{ stage.content_kind }}{% if stage.content_kind == 'foto' %}s{% endif %}
                                         <input type="file" name="media" multiple
                                             {% if stage.content_kind == 'foto' %}accept="image/*"
                                             {% elif stage.content_kind == 'video' %}accept="video/*"
@@ -167,7 +167,7 @@
                                             {% endif %}>
                                     </label>
                                     {% endif %}
-                                    <button class="button button-small" type="submit">Guardar actualización</button>
+                                    <button class="button button-small" type="submit">Salvar atualização</button>
                                 </div>
                             </form>
                         </div>
@@ -175,34 +175,34 @@
                     {% endfor %}
                 </div>
                 {% else %}
-                <div class="empty-inline">Añade las etapas que la carpintería usa para este proyecto.</div>
+                <div class="empty-inline">Adicione as etapas que a marcenaria usa neste projeto.</div>
                 {% endif %}
 
                 {% if board.status == 'executando' and summary.current_stage %}
                 <form action="/tracking/{{ board.id }}/advance" method="post" class="advance-form">
-                    <button class="button button-primary" type="submit">Marcar “{{ summary.current_stage.name }}” como terminada <span>→</span></button>
+                    <button class="button button-primary" type="submit">Marcar “{{ summary.current_stage.name }}” como concluída <span>→</span></button>
                 </form>
                 {% endif %}
 
                 <form class="add-stage-form" action="/tracking/{{ board.id }}/stages" method="post">
                     <h3>Personalizar etapas</h3>
                     <div class="form-grid compact">
-                        <label class="field field-wide">Nombre de la etapa
+                        <label class="field field-wide">Nome da etapa
                             <input name="name" placeholder="Ej. Corte y preparación" required maxlength="120">
                         </label>
-                        <label class="field">Duración prevista (días)
+                        <label class="field">Duração prevista (dias)
                             <input type="number" min="0" name="duration_days" value="3" required>
                         </label>
-                        <label class="field">Contenido de esta etapa
+                        <label class="field">Conteúdo desta etapa
                             <select name="content_kind">
                                 <option value="texto">Texto</option>
-                                <option value="foto">Fotografía</option>
-                                <option value="video">Video</option>
+                                <option value="foto">Fotografia</option>
+                                <option value="video">Vídeo</option>
                                 <option value="pdf">PDF</option>
                             </select>
                         </label>
                         <div class="field-action">
-                            <button class="button button-secondary" type="submit">+ Añadir etapa</button>
+                            <button class="button button-secondary" type="submit">+ Adicionar etapa</button>
                         </div>
                     </div>
                 </form>
@@ -212,39 +212,39 @@
                 <section class="panel delay-panel" id="delays">
                     <div class="section-heading">
                         <div>
-                            <p class="eyebrow">TRANSPARENCIA DEL PLAZO</p>
+                            <p class="eyebrow">TRANSPARÊNCIA DO PRAZO</p>
                             <h2>Atrasos externos</h2>
                         </div>
                     </div>
-                    <p class="muted">El tiempo registrado aquí se suma a la fecha prevista y no descuenta el plazo de la carpintería.</p>
+                    <p class="muted">O tempo registrado aqui é acrescentado à data prevista e não reduz o prazo da marcenaria.</p>
 
                     {% if board.delays %}
                     <div class="delay-list">
                         {% for delay in board.delays %}
                         <article class="delay-item">
                             <div>
-                                <b>{{ delay.lost_days }} días</b>
+                                <b>{{ delay.lost_days }} dias</b>
                                 <small>{{ delay.created_at.strftime('%d/%m/%Y') }}</small>
                             </div>
                             <p>{{ delay.reason }}</p>
                             {% if delay.evidence_path %}
-                                <a href="{{ media_url(delay.evidence_path) }}" target="_blank">Ver evidencia ↗</a>
+                                <a href="{{ media_url(delay.evidence_path) }}" target="_blank">Ver comprovante ↗</a>
                             {% endif %}
                         </article>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p class="empty-small">Todavía no se registraron atrasos.</p>
+                    <p class="empty-small">Ainda não há atrasos registrados.</p>
                     {% endif %}
 
                     <form class="stack-form" action="/tracking/{{ board.id }}/delays" method="post" enctype="multipart/form-data">
-                        <label class="field">Días perdidos
+                        <label class="field">Dias perdidos
                             <input type="number" name="lost_days" min="1" required placeholder="Ej. 4">
                         </label>
                         <label class="field">Motivo
-                            <textarea name="reason" rows="3" required placeholder="Qué impidió continuar y por qué"></textarea>
+                            <textarea name="reason" rows="3" required placeholder="O que impediu a continuidade e por quê"></textarea>
                         </label>
-                        <label class="file-label">Evidencia (imagen, video o PDF)
+                        <label class="file-label">Comprovante (imagem, vídeo ou PDF)
                             <input type="file" name="evidence" accept="image/*,video/*,application/pdf">
                         </label>
                         <button class="button button-secondary" type="submit">Registrar atraso</button>
@@ -254,11 +254,11 @@
                 <section class="panel furniture-panel" id="furniture">
                     <div class="section-heading">
                         <div>
-                            <p class="eyebrow">DETALLE POR PIEZA</p>
-                            <h2>Muebles y notas</h2>
+                            <p class="eyebrow">DETALHES POR PEÇA</p>
+                            <h2>Móveis e observações</h2>
                         </div>
                     </div>
-                    <p class="muted">Las notas son editables por la carpintería y visibles en el enlace.</p>
+                    <p class="muted">As observações podem ser editadas pela marcenaria e ficam visíveis no link.</p>
 
                     {% for item in board.furniture %}
                     <article class="furniture-item" id="furniture-{{ item.id }}">
@@ -271,24 +271,24 @@
                         <div class="furniture-main">
                             <strong>{{ item.name }}</strong>
                             <form action="/tracking/{{ board.id }}/furniture/{{ item.id }}/notes" method="post">
-                                <label class="sr-only" for="notes-{{ item.id }}">Notas de {{ item.name }}</label>
-                                <textarea id="notes-{{ item.id }}" name="notes" rows="4" placeholder="Agrega notas sobre este mueble">{{ item.notes or '' }}</textarea>
-                                <button class="button button-small" type="submit">Guardar notas</button>
+                                <label class="sr-only" for="notes-{{ item.id }}">Observações de {{ item.name }}</label>
+                                <textarea id="notes-{{ item.id }}" name="notes" rows="4" placeholder="Adicione observações sobre este móvel">{{ item.notes or '' }}</textarea>
+                                <button class="button button-small" type="submit">Salvar observações</button>
                             </form>
                         </div>
                     </article>
                     {% else %}
-                    <p class="empty-small">Añade una pieza para documentar detalles.</p>
+                    <p class="empty-small">Adicione uma peça para documentar os detalhes.</p>
                     {% endfor %}
 
                     <form class="stack-form add-furniture" action="/tracking/{{ board.id }}/furniture" method="post" enctype="multipart/form-data">
-                        <label class="field">Nombre del mueble
-                            <input name="name" required placeholder="Ej. Mueble del baño">
+                        <label class="field">Nome do móvel
+                            <input name="name" required placeholder="Ex.: gabinete do banheiro">
                         </label>
-                        <label class="file-label">Foto del mueble
+                        <label class="file-label">Foto do móvel
                             <input type="file" name="image" accept="image/*">
                         </label>
-                        <button class="button button-secondary" type="submit">+ Añadir mueble</button>
+                        <button class="button button-secondary" type="submit">+ Adicionar móvel</button>
                     </form>
                 </section>
             </aside>
@@ -312,7 +312,7 @@
         showHttpError(
             {{ http_error.status | default(500) | tojson }},
             {
-                message: {{ http_error.message | default('Error interno.') | tojson }},
+                message: {{ http_error.message | default('Erro interno.') | tojson }},
                 detail: {{ http_error.detail | default('') | tojson }}
             }
         );
