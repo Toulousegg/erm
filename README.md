@@ -7,21 +7,21 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.128.3-000000?style=for-the-badge&logo=fastapi )
 ![Python](https://img.shields.io/badge/python-3.11.9-000000?style=for-the-badge&logo=Python&logoColor=)
 ![Pydantic](https://img.shields.io/badge/Pydantic-2.12.5-000000?style=for-the-badge&logo=pydantic)
-![MercadoPago](https://img.shields.io/badge/MercadoPago-2.4.0-000000?style=for-the-badge&logo=mercadopago)
+![AbacatePay](https://img.shields.io/badge/AbacatePay-integrated-000000?style=for-the-badge)
 ![Jinja](https://img.shields.io/badge/Jinja2-3.1.6-000000?style=for-the-badge&logo=jinja)
-![Posgresql](https://img.shields.io/badge/Postgresql-9.9-000000?style=for-the-badge&logo=postgresql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-supported-000000?style=for-the-badge&logo=postgresql&logoColor=white)
 ![js](https://img.shields.io/badge/javascript-ES6+-000000?style=for-the-badge&logo=javascript)
 ![WebSocket](https://img.shields.io/badge/websocket-16.0-000000?style=for-the-badge&logo=websocket)
 ![Alembic](https://img.shields.io/badge/Alembic-1.18.0-000000?style=for-the-badge&logo=alembic)
 ![Html](https://img.shields.io/badge/html-000000?style=for-the-badge&logo=html5)
 ![Css](https://img.shields.io/badge/Css-000000?style=for-the-badge&logo=css)
-![Google Gemini](https://img.shields.io/badge/Gemini-000000?style=for-the-badge&logo=googlecloud)
+
 ![CloudFlare](https://img.shields.io/badge/CloudFlare-000000?style=for-the-badge&logo=Cloudflare)
 
 
 # ProntoERP
 
-Este sistema ERP multi-tenancy busca solucionar problemas comunes de fabricas y distribuidoras de muebles sueltos y sobre medida, tiene control de inventario, control de producción en fabrica, proyectos separados por ambiente y/o cliente, con la posibilidad de compartir un enlace para que el cliente pueda dar seguimiento a su pedido en tiempo real ofreciendo total transparencia al cliente y arquitectos, ayuda al seguimiento de las finanzas de la empresa donde se pueden ver distintos graficos y tablas para analizar los ingresos/gastos/lucros de una empresa y organizarlos por tipo, todo eso con ayuda de un agente IA que usa el motor de Gemini para ejecutar tareas y ayudar a los usuarios con sus dudas, la aplicacion cuenta con un sistema WebSocket para mostrar notificaciones en tiempo real y que toda los usuarios esten por dentro de las decisiones y actividades dentro de su trabajo
+ProntoERP es un ERP web para empresas de muebles y marcenarias. Organiza empresas y usuarios, inventario y salidas con códigos de barras, producción, clientes y contactos, finanzas, proyectos y seguimiento del trabajo. Incluye planificación semanal, registro y reportes de horas, notificaciones en tiempo real, suscripciones por módulos y enlaces públicos para compartir proyectos, cronogramas y avances. El backend está construido con FastAPI y PostgreSQL; las vistas se renderizan con Jinja2.
 
 ---
 
@@ -51,8 +51,7 @@ Este sistema ERP multi-tenancy busca solucionar problemas comunes de fabricas y 
 
 ## 🧠 Descripción
 
-Este sistema permite a pequeñas y medianas carpinterias y negocios del sector mobiliario gestionar stock, contactos, producción, finanzas y proyectos en un solo lugar, reduciendo errores humanos, mejorando trazabilidad, comunicación y dando la oportunidad a los carpinteros de poder concentrarse mas en su trabajo sin perder tiempo ni energia en logistica y burocracias al mantener el contacto con el cliente de una forma mas facíl y satisfactoria para el usuario
-
+Esta aplicación web está organizada en módulos que pueden habilitarse por empresa. Las rutas principales incluyen autenticación y creación de empresas; inventario con movimientos y códigos de barras; producción; contactos; ventas, cuentas por pagar y por cobrar e indicadores financieros; proyectos con archivos y comentarios; seguimiento de etapas, retrasos y muebles; cronogramas semanales compartibles; y registro de horas con filtros de reportes. Los clientes pueden consultar proyectos y avances mediante enlaces públicos. Las notificaciones se distribuyen por WebSocket. Las suscripciones y pagos se integran con AbacatePay; los archivos se guardan mediante almacenamiento compatible con S3/R2. No se encontró un agente de IA implementado en el código actual.
 
 
 ## ⚙️ Tecnologías usadas
@@ -136,38 +135,44 @@ Este sistema permite a pequeñas y medianas carpinterias y negocios del sector m
 ## 🏗️ Estructura del proyecto
 ```
 erm/
-├── .env.example
-├── .gitignore
-├── README.md
-├── ToDo.txt
-├── alembic.ini
-├── config.yaml
-├── errors_tracking.md
-├── requirements.txt
-├── Dockerfile
 ├── admin/
 │   ├── admin_router.py
 │   └── admin_services.py
 ├── alembic/
-│   └── versions/
+│   ├── versions/
+│   │   ├── 16203049f29e_no_recuerdo_el_cambio.py
+│   │   ├── 1a13d62b285c_users_code.py
+│   │   ├── 2d9220af34ba_barcode_inventory.py
+│   │   ├── 2e685db8364c_module_router_para_cargar_modulos_.py
+│   │   ├── 840effa772d3_module_icon.py
+│   │   ├── a1f875ae8c5c_moduls_5.py
+│   │   └── c38b54e0378a_icon_aside_url.py
+│   ├── env.py
+│   ├── README
+│   └── script.py.mako
 ├── contacts/
 │   ├── contacts_models.py
 │   ├── contacts_route.py
 │   ├── contacts_schema.py
 │   └── contacts_services.py
 ├── core/
+│   ├── config/
+│   │   ├── __init__.backup.py
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   ├── config_loader.py
+│   │   └── parsers.py
+│   ├── enum/
+│   │   └── enum.py
 │   ├── __init__.py
+│   ├── barcode_service.py
 │   ├── database.py
 │   ├── dependencies.py
 │   ├── email_service.py
+│   ├── exceptions.py
 │   ├── main.py
 │   ├── security.py
-│   ├── config/
-│   │   ├── __init__.py
-│   │   ├── config_loader.py
-│   │   └── parsers.py
-│   └── enum/
-│       └── enum.py
+│   └── templates_contex.py
 ├── cronograma/
 │   ├── cronograma_models.py
 │   ├── cronograma_router.py
@@ -182,33 +187,102 @@ erm/
 ├── frontend/
 │   ├── static/
 │   │   ├── contacts/
+│   │   │   └── contacts.css
+│   │   ├── cronograma/
+│   │   │   ├── cronograma.css
+│   │   │   └── share_cronograma.css
 │   │   ├── financery/
-│   │   ├── img/
+│   │   │   └── financery_dashboard.css
+│   │   ├── home/
+│   │   │   └── menu.css
 │   │   ├── inv/
+│   │   │   └── dashboard.css
 │   │   ├── js/
+│   │   │   └── refresh_token.js
 │   │   ├── production/
+│   │   │   └── production.css
+│   │   ├── project_tracking/
+│   │   │   ├── dashboard.css
+│   │   │   ├── detail.css
+│   │   │   └── public.css
 │   │   ├── projects/
+│   │   │   ├── client_exp.css
+│   │   │   ├── projects_add.css
+│   │   │   ├── projects_dashboard.css
+│   │   │   └── projects_detail.css
+│   │   ├── time_tracking/
+│   │   │   ├── time_tracking_add.css
+│   │   │   ├── time_tracking_reports.css
+│   │   │   └── time_tracking.css
 │   │   ├── home.css
 │   │   ├── login.css
+│   │   ├── moduls.css
 │   │   ├── plans.css
 │   │   ├── signup.css
 │   │   └── verify_email.css
 │   └── templates/
+│       ├── admin/
+│       │   └── admin.html
 │       ├── contacts/
+│       │   └── contacts.html
+│       ├── cronograma/
+│       │   ├── cronograma.html
+│       │   └── shared_schedule.html
 │       ├── financery/
+│       │   └── financery_dashboard.html
 │       ├── home/
+│       │   ├── barcode.html
+│       │   ├── create-company.html
+│       │   ├── forgot_password.html
+│       │   ├── home.html
+│       │   ├── index.html
+│       │   ├── login.html
+│       │   ├── signup.html
+│       │   └── verify_email.html
 │       ├── inv/
+│       │   ├── barcode_output.html
+│       │   └── dashboard.html
 │       ├── payments/
+│       │   ├── modules.html
+│       │   ├── pay_fail.html
+│       │   ├── pay_pending.html
+│       │   └── pay_sucess.html
+│       ├── plans/
+│       │   └── plans.html
 │       ├── production/
+│       │   └── production.html
+│       ├── project_tracking/
+│       │   ├── dashboard.html
+│       │   ├── detail.html
+│       │   └── public.html
 │       ├── projects/
+│       │   ├── client_exp.html
+│       │   ├── projects_add.html
+│       │   ├── projects_dashboard.html
+│       │   └── projects_details.html
+│       ├── responses/
+│       │   └── 404.html
+│       ├── time_tracking/
+│       │   ├── add.html
+│       │   ├── dashboard.html
+│       │   └── reports.html
 │       ├── aside.html
-│       └── notification.html
+│       ├── http-error-modal.html
+│       ├── http-errors.json
+│       ├── loading.html
+│       ├── notification.html
+│       └── pagination.html
 ├── inventory/
 │   ├── __init__.py
 │   ├── inventory_model.py
 │   ├── inventory_route.py
 │   ├── inventory_schema.py
 │   └── inventory_service.py
+├── moduls/
+│   ├── dependencies.py
+│   ├── moduls_models.py
+│   ├── moduls_router.py
+│   └── moduls_services.py
 ├── notification/
 │   ├── notification_model.py
 │   ├── notification_route.py
@@ -218,89 +292,100 @@ erm/
 ├── payments/
 │   ├── payments_models.py
 │   ├── payments_router.py
+│   ├── payments_schema.py
 │   ├── payments_services.py
+│   ├── provider.py
 │   ├── prueba.py
 │   └── webhook.py
 ├── production/
 │   ├── production_model.py
 │   ├── production_route.py
 │   └── production_schema.py
+├── project_tracking/
+│   ├── __init__.py
+│   ├── project_tracking_model.py
+│   ├── project_tracking_route.py
+│   ├── project_tracking_schema.py
+│   └── project_tracking_service.py
 ├── projects/
 │   ├── coisa.py
 │   ├── projects_model.py
 │   ├── projects_route.py
 │   ├── projects_schema.py
 │   └── projects_services.py
+├── time_tracking/
+│   ├── __init__.py
+│   ├── time_tracking_model.py
+│   ├── time_tracking_route.py
+│   ├── time_tracking_schema.py
+│   ├── time_tracking_services.py
+│   └── todo.txt
 ├── users/
 │   ├── __init__.py
 │   ├── users_model.py
 │   ├── users_route.py
 │   ├── users_schema.py
 │   └── users_service.py
-└── utilities/
-    ├── limiter/
-    ├── net/
-    │   └── autorouter.py
-    ├── responses/
-    └── storage/
-        └── storage_service.py
-
+├── utilities/
+│   ├── limiter/
+│   │   └── limiter.py
+│   └── storage/
+│       └── storage_service.py
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── alembic.ini
+├── config.yaml
+├── Dockerfile
+├── errors_tracking.md
+├── README.md
+└── requirements.txt
 ```
 
 ## 🚀 Instalación
 
-- Primero clonas el repositorio en tu maquina
+1. Clona el repositorio y entra en la carpeta del proyecto.
+2. Crea y activa un entorno virtual, e instala las dependencias:
 
 ```bash
-git clone https://github.com/Toulousegg/erm.git
-```
-- Creas un entorno virtual para poder trabajar comodamente y lo activas
-
-```bash
-#crear entorno virtual
 python -m venv venv
-
-#activarlo
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/Mac
-```
-
-- instalas las dependencias del sistema
-```bash
+# Windows
+venv\Scripts\activate
+# Linux/macOS
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-- rellenas los campos del archivo "config_example.yaml" con informacion coherente (#)
+3. Copia `.env.example` como `.env` y rellena `.env` con los valores correspondientes, usando `.env.example` como guía, incluidos PostgreSQL, JWT, SMTP, almacenamiento S3/R2 y AbacatePay. El cargador de configuración necesita resolver todos los valores declarados en `config.yaml`. `config.yaml` lee esos valores del entorno.
+4. Inicia la aplicación desde la raíz del repositorio:
 
-- Ejecutan el proyecto y abren en el navegador
 ```bash
-#ejecutar el proyecto
 uvicorn core.main:app --reload
-
-#CTRL + Click Derecho en
-http://127.0.0.1:8000
 ```
 
+Abre <http://127.0.0.1:8000>. Al iniciar, la aplicación crea las tablas declaradas por sus modelos; el proyecto también incluye historial de migraciones Alembic.
+
 ## 📌 Funcionalidades
-✔️ Autenticación de usuarios
 
-✔️ Inventario
+✔️ Registro, autenticación, verificación de correo y gestión de empresas
 
-✔️ Contactos
+✔️ Inventario, movimientos de stock y códigos de barras
 
-✔️ Financiero
+✔️ Producción, contactos y proyectos con fotos, PDFs y comentarios
 
-👨🏻‍💻 Agente de IA (En proceso)
+✔️ Panel financiero, ventas, pagos y cuentas por cobrar
 
-✔️ Projectos
+✔️ Seguimiento de proyectos con etapas, retrasos, archivos y enlaces públicos
 
-✔️ Gestión de empresas
+✔️ Cronogramas semanales compartibles
 
-✔️ WebSockets para notificaciones
+✔️ Registro de horas e informes
 
-❌ Exportación de reportes (pendiente)
+✔️ Notificaciones en tiempo real mediante WebSocket
 
-✔️ Compartir links para dar seguimiento a los proyectos con el cliente final
+✔️ Módulos por empresa y suscripciones con AbacatePay
+
+ℹ️ El código actual no incluye un agente de IA.
 
 ## 🤝 Contribución
 
@@ -419,20 +504,20 @@ git commit -m "refactor: improve service layer structure"
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.128.3-000000?style=for-the-badge&logo=fastapi )
 ![Python](https://img.shields.io/badge/python-3.11.9-000000?style=for-the-badge&logo=Python&logoColor=)
 ![Pydantic](https://img.shields.io/badge/Pydantic-2.12.5-000000?style=for-the-badge&logo=pydantic)
-![MercadoPago](https://img.shields.io/badge/MercadoPago-2.4.0-000000?style=for-the-badge&logo=mercadopago)
+![AbacatePay](https://img.shields.io/badge/AbacatePay-integrated-000000?style=for-the-badge)
 ![Jinja](https://img.shields.io/badge/Jinja2-3.1.6-000000?style=for-the-badge&logo=jinja)
-![Posgresql](https://img.shields.io/badge/Postgresql-9.9-000000?style=for-the-badge&logo=postgresql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-supported-000000?style=for-the-badge&logo=postgresql&logoColor=white)
 ![js](https://img.shields.io/badge/javascript-ES6+-000000?style=for-the-badge&logo=javascript)
 ![WebSocket](https://img.shields.io/badge/websocket-16.0-000000?style=for-the-badge&logo=websocket)
 ![Alembic](https://img.shields.io/badge/Alembic-1.18.0-000000?style=for-the-badge&logo=alembic)
 ![Html](https://img.shields.io/badge/html-000000?style=for-the-badge&logo=html5)
 ![Css](https://img.shields.io/badge/Css-000000?style=for-the-badge&logo=css)
-![Google Gemini](https://img.shields.io/badge/Gemini-000000?style=for-the-badge&logo=googlecloud)
+
 ![CloudFlare](https://img.shields.io/badge/CloudFlare-000000?style=for-the-badge&logo=Cloudflare)
 
 # ProntoERP
 
-This multi-tenancy ERP system aims to solve common problems for factories and distributors of loose and custom-made furniture. It features inventory control, factory production management, projects separated by environment and/or client, and the ability to share a link so clients can track their orders in real-time, offering total transparency to both clients and architects. It also assists in tracking company finances with various charts and tables to analyze income/expenses/profits organized by type. All this is supported by an AI agent using the Gemini engine to perform tasks and assist users with their questions. The application includes a WebSocket system for real-time notifications, ensuring all users stay informed about decisions and activities within their workspace.
+ProntoERP is a web ERP for furniture businesses and carpentry shops. It organizes companies and users, inventory and barcode-based stock output, production, clients and contacts, finances, projects, and work tracking. It includes weekly planning, time entry and reports, real-time notifications, module-based subscriptions, and public links for sharing projects, schedules, and progress. The backend uses FastAPI and PostgreSQL, with pages rendered through Jinja2.
 
 ---
 
@@ -462,10 +547,7 @@ This multi-tenancy ERP system aims to solve common problems for factories and di
 
 ## 🧠 Description
 
-This project aims to solve:
-
-This system allows small and medium-sized carpenter shops and furniture businesses to manage stock, contacts, production, finances, and projects in one place, reducing human errors, improving traceability and communication, and giving carpenters the opportunity to focus more on their work without wasting time or energy on logistics and bureaucracy by maintaining client contact in a easier and more satisfactory way for the user.
-
+This web application is organized into modules that can be enabled per company. Its main areas include authentication and company setup; inventory movements and barcodes; production; contacts; sales, payables, receivables, and financial indicators; projects with files and comments; stage, delay, and furniture tracking; shareable weekly schedules; and time entries with filtered reports. Clients can view projects and progress through public links. Notifications are delivered over WebSocket. Subscriptions and payments integrate with AbacatePay; files use S3/R2-compatible storage. No AI agent implementation was found in the current code.
 
 
 ## ⚙️ Technologies Used
@@ -548,38 +630,44 @@ This system allows small and medium-sized carpenter shops and furniture business
 ## 🏗️ Project Structure
 ```
 erm/
-├── .env.example
-├── .gitignore
-├── README.md
-├── ToDo.txt
-├── alembic.ini
-├── config.yaml
-├── errors_tracking.md
-├── requirements.txt
-├── Dockerfile
 ├── admin/
 │   ├── admin_router.py
 │   └── admin_services.py
 ├── alembic/
-│   └── versions/
+│   ├── versions/
+│   │   ├── 16203049f29e_no_recuerdo_el_cambio.py
+│   │   ├── 1a13d62b285c_users_code.py
+│   │   ├── 2d9220af34ba_barcode_inventory.py
+│   │   ├── 2e685db8364c_module_router_para_cargar_modulos_.py
+│   │   ├── 840effa772d3_module_icon.py
+│   │   ├── a1f875ae8c5c_moduls_5.py
+│   │   └── c38b54e0378a_icon_aside_url.py
+│   ├── env.py
+│   ├── README
+│   └── script.py.mako
 ├── contacts/
 │   ├── contacts_models.py
 │   ├── contacts_route.py
 │   ├── contacts_schema.py
 │   └── contacts_services.py
 ├── core/
+│   ├── config/
+│   │   ├── __init__.backup.py
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   ├── config_loader.py
+│   │   └── parsers.py
+│   ├── enum/
+│   │   └── enum.py
 │   ├── __init__.py
+│   ├── barcode_service.py
 │   ├── database.py
 │   ├── dependencies.py
 │   ├── email_service.py
+│   ├── exceptions.py
 │   ├── main.py
 │   ├── security.py
-│   ├── config/
-│   │   ├── __init__.py
-│   │   ├── config_loader.py
-│   │   └── parsers.py
-│   └── enum/
-│       └── enum.py
+│   └── templates_contex.py
 ├── cronograma/
 │   ├── cronograma_models.py
 │   ├── cronograma_router.py
@@ -594,33 +682,102 @@ erm/
 ├── frontend/
 │   ├── static/
 │   │   ├── contacts/
+│   │   │   └── contacts.css
+│   │   ├── cronograma/
+│   │   │   ├── cronograma.css
+│   │   │   └── share_cronograma.css
 │   │   ├── financery/
-│   │   ├── img/
+│   │   │   └── financery_dashboard.css
+│   │   ├── home/
+│   │   │   └── menu.css
 │   │   ├── inv/
+│   │   │   └── dashboard.css
 │   │   ├── js/
+│   │   │   └── refresh_token.js
 │   │   ├── production/
+│   │   │   └── production.css
+│   │   ├── project_tracking/
+│   │   │   ├── dashboard.css
+│   │   │   ├── detail.css
+│   │   │   └── public.css
 │   │   ├── projects/
+│   │   │   ├── client_exp.css
+│   │   │   ├── projects_add.css
+│   │   │   ├── projects_dashboard.css
+│   │   │   └── projects_detail.css
+│   │   ├── time_tracking/
+│   │   │   ├── time_tracking_add.css
+│   │   │   ├── time_tracking_reports.css
+│   │   │   └── time_tracking.css
 │   │   ├── home.css
 │   │   ├── login.css
+│   │   ├── moduls.css
 │   │   ├── plans.css
 │   │   ├── signup.css
 │   │   └── verify_email.css
 │   └── templates/
+│       ├── admin/
+│       │   └── admin.html
 │       ├── contacts/
+│       │   └── contacts.html
+│       ├── cronograma/
+│       │   ├── cronograma.html
+│       │   └── shared_schedule.html
 │       ├── financery/
+│       │   └── financery_dashboard.html
 │       ├── home/
+│       │   ├── barcode.html
+│       │   ├── create-company.html
+│       │   ├── forgot_password.html
+│       │   ├── home.html
+│       │   ├── index.html
+│       │   ├── login.html
+│       │   ├── signup.html
+│       │   └── verify_email.html
 │       ├── inv/
+│       │   ├── barcode_output.html
+│       │   └── dashboard.html
 │       ├── payments/
+│       │   ├── modules.html
+│       │   ├── pay_fail.html
+│       │   ├── pay_pending.html
+│       │   └── pay_sucess.html
+│       ├── plans/
+│       │   └── plans.html
 │       ├── production/
+│       │   └── production.html
+│       ├── project_tracking/
+│       │   ├── dashboard.html
+│       │   ├── detail.html
+│       │   └── public.html
 │       ├── projects/
+│       │   ├── client_exp.html
+│       │   ├── projects_add.html
+│       │   ├── projects_dashboard.html
+│       │   └── projects_details.html
+│       ├── responses/
+│       │   └── 404.html
+│       ├── time_tracking/
+│       │   ├── add.html
+│       │   ├── dashboard.html
+│       │   └── reports.html
 │       ├── aside.html
-│       └── notification.html
+│       ├── http-error-modal.html
+│       ├── http-errors.json
+│       ├── loading.html
+│       ├── notification.html
+│       └── pagination.html
 ├── inventory/
 │   ├── __init__.py
 │   ├── inventory_model.py
 │   ├── inventory_route.py
 │   ├── inventory_schema.py
 │   └── inventory_service.py
+├── moduls/
+│   ├── dependencies.py
+│   ├── moduls_models.py
+│   ├── moduls_router.py
+│   └── moduls_services.py
 ├── notification/
 │   ├── notification_model.py
 │   ├── notification_route.py
@@ -630,89 +787,100 @@ erm/
 ├── payments/
 │   ├── payments_models.py
 │   ├── payments_router.py
+│   ├── payments_schema.py
 │   ├── payments_services.py
+│   ├── provider.py
 │   ├── prueba.py
 │   └── webhook.py
 ├── production/
 │   ├── production_model.py
 │   ├── production_route.py
 │   └── production_schema.py
+├── project_tracking/
+│   ├── __init__.py
+│   ├── project_tracking_model.py
+│   ├── project_tracking_route.py
+│   ├── project_tracking_schema.py
+│   └── project_tracking_service.py
 ├── projects/
 │   ├── coisa.py
 │   ├── projects_model.py
 │   ├── projects_route.py
 │   ├── projects_schema.py
 │   └── projects_services.py
+├── time_tracking/
+│   ├── __init__.py
+│   ├── time_tracking_model.py
+│   ├── time_tracking_route.py
+│   ├── time_tracking_schema.py
+│   ├── time_tracking_services.py
+│   └── todo.txt
 ├── users/
 │   ├── __init__.py
 │   ├── users_model.py
 │   ├── users_route.py
 │   ├── users_schema.py
 │   └── users_service.py
-└── utilities/
-    ├── limiter/
-    ├── net/
-    │   └── autorouter.py
-    ├── responses/
-    └── storage/
-        └── storage_service.py
-
+├── utilities/
+│   ├── limiter/
+│   │   └── limiter.py
+│   └── storage/
+│       └── storage_service.py
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── alembic.ini
+├── config.yaml
+├── Dockerfile
+├── errors_tracking.md
+├── README.md
+└── requirements.txt
 ```
 
 ## 🚀 Installation
 
-- First, clone the repository to your machine
+1. Clone the repository and enter the project directory.
+2. Create and activate a virtual environment, then install dependencies:
 
 ```bash
-git clone https://github.com/Toulousegg/erm.git
-```
-- Create a virtual environment to work comfortably and activate it
-
-```bash
-# Create virtual environment
 python -m venv venv
-
-# Activate it
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/Mac
-```
-
-- Install system dependencies
-```bash
+# Windows
+venv\Scripts\activate
+# Linux/macOS
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-- Fill in the fields in the "config_example.yaml" file with consistent information (#)
+3. Copy `.env.example` to `.env` and edit `.env` with the corresponding values, using `.env.example` as a guide, including PostgreSQL, JWT, SMTP, S3/R2 storage, and AbacatePay. The configuration loader must resolve every value declared in `config.yaml`. `config.yaml` reads these values from the environment.
+4. Start the application from the repository root:
 
-- Run the project and open it in your browser
 ```bash
-# Run the project
 uvicorn core.main:app --reload
-
-# CTRL + Right Click on
-http://127.0.0.1:8000
 ```
 
+Open <http://127.0.0.1:8000>. On startup, the application creates tables declared by its models; the repository also includes Alembic migration history.
+
 ## 📌 Features
-✔️ User Authentication
 
-✔️ Inventory
+✔️ Signup, authentication, email verification, and company management
 
-✔️ Contacts
+✔️ Inventory, stock movements, and barcodes
 
-✔️ Financial
+✔️ Production, contacts, and projects with photos, PDFs, and comments
 
-👨🏻‍💻 AI Agent (In progress)
+✔️ Financial dashboard, sales, payments, and receivables
 
-✔️ Projects
+✔️ Project tracking with stages, delays, files, and public links
 
-✔️ Company Management
+✔️ Shareable weekly schedules
 
-✔️ WebSockets for notifications
+✔️ Time entry and reports
 
-❌ Report Export (Pending)
+✔️ Real-time WebSocket notifications
 
-✔️ Share links to track projects with the end client
+✔️ Company modules and AbacatePay subscriptions
+
+ℹ️ The current code does not include an AI agent.
 
 ## 🤝 Contribution
 
@@ -837,20 +1005,20 @@ git commit -m "refactor: improve service layer structure"
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.128.3-000000?style=for-the-badge&logo=fastapi )
 ![Python](https://img.shields.io/badge/python-3.11.9-000000?style=for-the-badge&logo=Python&logoColor=)
 ![Pydantic](https://img.shields.io/badge/Pydantic-2.12.5-000000?style=for-the-badge&logo=pydantic)
-![MercadoPago](https://img.shields.io/badge/MercadoPago-2.4.0-000000?style=for-the-badge&logo=mercadopago)
+![AbacatePay](https://img.shields.io/badge/AbacatePay-integrated-000000?style=for-the-badge)
 ![Jinja](https://img.shields.io/badge/Jinja2-3.1.6-000000?style=for-the-badge&logo=jinja)
-![Posgresql](https://img.shields.io/badge/Postgresql-9.9-000000?style=for-the-badge&logo=postgresql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-supported-000000?style=for-the-badge&logo=postgresql&logoColor=white)
 ![js](https://img.shields.io/badge/javascript-ES6+-000000?style=for-the-badge&logo=javascript)
 ![WebSocket](https://img.shields.io/badge/websocket-16.0-000000?style=for-the-badge&logo=websocket)
 ![Alembic](https://img.shields.io/badge/Alembic-1.18.0-000000?style=for-the-badge&logo=alembic)
 ![Html](https://img.shields.io/badge/html-000000?style=for-the-badge&logo=html5)
 ![Css](https://img.shields.io/badge/Css-000000?style=for-the-badge&logo=css)
-![Google Gemini](https://img.shields.io/badge/Gemini-000000?style=for-the-badge&logo=googlecloud)
+
 ![Cloudflare](https://img.shields.io/badge/CloudFlare-000000?style=for-the-badge&logo=Cloudflare)
 
 # ProntoERP
 
-Este sistema ERP multi-tenancy busca solucionar problemas comuns de fábricas e distribuidoras de móveis avulsos e sob medida. Possui controle de estoque, controle de produção na fábrica, projetos separados por ambiente e/ou cliente, com a possibilidade de compartilhar um link para que o cliente possa acompanhar seu pedido em tempo real, oferecendo total transparência ao cliente e arquitetos. Ajuda no acompanhamento das finanças da empresa, onde é possível visualizar diversos gráficos e tabelas para analisar as receitas/despesas/lucros de uma empresa e organizá-los por tipo. Tudo isso com a ajuda de um agente de IA que utiliza o motor do Gemini para executar tarefas e auxiliar os usuários com suas dúvidas. A aplicação conta com um sistema WebSocket para exibir notificações em tempo real, garantindo que todos os usuários estejam por dentro das decisiones e atividades em seu trabalho.
+ProntoERP é um ERP web para empresas de móveis e marcenarias. Organiza empresas e usuários, estoque e baixas com código de barras, produção, clientes e contatos, finanças, projetos e acompanhamento do trabalho. Inclui planejamento semanal, registro e relatórios de horas, notificações em tempo real, assinaturas por módulos e links públicos para compartilhar projetos, cronogramas e progresso. O backend usa FastAPI e PostgreSQL; as páginas são renderizadas com Jinja2.
 
 ---
 
@@ -880,10 +1048,7 @@ Este sistema ERP multi-tenancy busca solucionar problemas comuns de fábricas e 
 
 ## 🧠 Descrição
 
-Este projeto busca resolver:
-
-Este sistema permite que pequenas e médias marcenarias e negócios do setor moveleiro gerenciem estoque, contatos, produção, finanças e projetos em um só lugar, reduzindo erros humanos, melhorando a rastreabilidade e a comunicação, e dando a oportunidade aos marceneiros de se concentrarem mais em seu trabalho, sem perder tempo ou energia com logística e burocracias, mantendo o contato com o cliente de uma forma mais fácil e satisfatória para o usuário.
-
+Esta aplicação web é organizada em módulos que podem ser habilitados por empresa. As principais áreas incluem autenticação e cadastro de empresas; movimentações de estoque e códigos de barras; produção; contatos; vendas, contas a pagar e a receber e indicadores financeiros; projetos com arquivos e comentários; acompanhamento de etapas, atrasos e móveis; cronogramas semanais compartilháveis; e registros de horas com relatórios filtrados. Clientes podem consultar projetos e progresso por links públicos. As notificações são enviadas por WebSocket. As assinaturas e os pagamentos são integrados ao AbacatePay; os arquivos usam armazenamento compatível com S3/R2. Não foi encontrada implementação de agente de IA no código atual.
 
 
 ## ⚙️ Tecnologias Utilizadas
@@ -967,38 +1132,44 @@ Este sistema permite que pequenas e médias marcenarias e negócios do setor mov
 ## 🏗️ Estrutura do Projeto
 ```
 erm/
-├── .env.example
-├── .gitignore
-├── README.md
-├── ToDo.txt
-├── alembic.ini
-├── config.yaml
-├── errors_tracking.md
-├── requirements.txt
-├── Dockerfile
 ├── admin/
 │   ├── admin_router.py
 │   └── admin_services.py
 ├── alembic/
-│   └── versions/
+│   ├── versions/
+│   │   ├── 16203049f29e_no_recuerdo_el_cambio.py
+│   │   ├── 1a13d62b285c_users_code.py
+│   │   ├── 2d9220af34ba_barcode_inventory.py
+│   │   ├── 2e685db8364c_module_router_para_cargar_modulos_.py
+│   │   ├── 840effa772d3_module_icon.py
+│   │   ├── a1f875ae8c5c_moduls_5.py
+│   │   └── c38b54e0378a_icon_aside_url.py
+│   ├── env.py
+│   ├── README
+│   └── script.py.mako
 ├── contacts/
 │   ├── contacts_models.py
 │   ├── contacts_route.py
 │   ├── contacts_schema.py
 │   └── contacts_services.py
 ├── core/
+│   ├── config/
+│   │   ├── __init__.backup.py
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   ├── config_loader.py
+│   │   └── parsers.py
+│   ├── enum/
+│   │   └── enum.py
 │   ├── __init__.py
+│   ├── barcode_service.py
 │   ├── database.py
 │   ├── dependencies.py
 │   ├── email_service.py
+│   ├── exceptions.py
 │   ├── main.py
 │   ├── security.py
-│   ├── config/
-│   │   ├── __init__.py
-│   │   ├── config_loader.py
-│   │   └── parsers.py
-│   └── enum/
-│       └── enum.py
+│   └── templates_contex.py
 ├── cronograma/
 │   ├── cronograma_models.py
 │   ├── cronograma_router.py
@@ -1013,33 +1184,102 @@ erm/
 ├── frontend/
 │   ├── static/
 │   │   ├── contacts/
+│   │   │   └── contacts.css
+│   │   ├── cronograma/
+│   │   │   ├── cronograma.css
+│   │   │   └── share_cronograma.css
 │   │   ├── financery/
-│   │   ├── img/
+│   │   │   └── financery_dashboard.css
+│   │   ├── home/
+│   │   │   └── menu.css
 │   │   ├── inv/
+│   │   │   └── dashboard.css
 │   │   ├── js/
+│   │   │   └── refresh_token.js
 │   │   ├── production/
+│   │   │   └── production.css
+│   │   ├── project_tracking/
+│   │   │   ├── dashboard.css
+│   │   │   ├── detail.css
+│   │   │   └── public.css
 │   │   ├── projects/
+│   │   │   ├── client_exp.css
+│   │   │   ├── projects_add.css
+│   │   │   ├── projects_dashboard.css
+│   │   │   └── projects_detail.css
+│   │   ├── time_tracking/
+│   │   │   ├── time_tracking_add.css
+│   │   │   ├── time_tracking_reports.css
+│   │   │   └── time_tracking.css
 │   │   ├── home.css
 │   │   ├── login.css
+│   │   ├── moduls.css
 │   │   ├── plans.css
 │   │   ├── signup.css
 │   │   └── verify_email.css
 │   └── templates/
+│       ├── admin/
+│       │   └── admin.html
 │       ├── contacts/
+│       │   └── contacts.html
+│       ├── cronograma/
+│       │   ├── cronograma.html
+│       │   └── shared_schedule.html
 │       ├── financery/
+│       │   └── financery_dashboard.html
 │       ├── home/
+│       │   ├── barcode.html
+│       │   ├── create-company.html
+│       │   ├── forgot_password.html
+│       │   ├── home.html
+│       │   ├── index.html
+│       │   ├── login.html
+│       │   ├── signup.html
+│       │   └── verify_email.html
 │       ├── inv/
+│       │   ├── barcode_output.html
+│       │   └── dashboard.html
 │       ├── payments/
+│       │   ├── modules.html
+│       │   ├── pay_fail.html
+│       │   ├── pay_pending.html
+│       │   └── pay_sucess.html
+│       ├── plans/
+│       │   └── plans.html
 │       ├── production/
+│       │   └── production.html
+│       ├── project_tracking/
+│       │   ├── dashboard.html
+│       │   ├── detail.html
+│       │   └── public.html
 │       ├── projects/
+│       │   ├── client_exp.html
+│       │   ├── projects_add.html
+│       │   ├── projects_dashboard.html
+│       │   └── projects_details.html
+│       ├── responses/
+│       │   └── 404.html
+│       ├── time_tracking/
+│       │   ├── add.html
+│       │   ├── dashboard.html
+│       │   └── reports.html
 │       ├── aside.html
-│       └── notification.html
+│       ├── http-error-modal.html
+│       ├── http-errors.json
+│       ├── loading.html
+│       ├── notification.html
+│       └── pagination.html
 ├── inventory/
 │   ├── __init__.py
 │   ├── inventory_model.py
 │   ├── inventory_route.py
 │   ├── inventory_schema.py
 │   └── inventory_service.py
+├── moduls/
+│   ├── dependencies.py
+│   ├── moduls_models.py
+│   ├── moduls_router.py
+│   └── moduls_services.py
 ├── notification/
 │   ├── notification_model.py
 │   ├── notification_route.py
@@ -1049,118 +1289,129 @@ erm/
 ├── payments/
 │   ├── payments_models.py
 │   ├── payments_router.py
+│   ├── payments_schema.py
 │   ├── payments_services.py
+│   ├── provider.py
 │   ├── prueba.py
 │   └── webhook.py
 ├── production/
 │   ├── production_model.py
 │   ├── production_route.py
 │   └── production_schema.py
+├── project_tracking/
+│   ├── __init__.py
+│   ├── project_tracking_model.py
+│   ├── project_tracking_route.py
+│   ├── project_tracking_schema.py
+│   └── project_tracking_service.py
 ├── projects/
 │   ├── coisa.py
 │   ├── projects_model.py
 │   ├── projects_route.py
 │   ├── projects_schema.py
 │   └── projects_services.py
+├── time_tracking/
+│   ├── __init__.py
+│   ├── time_tracking_model.py
+│   ├── time_tracking_route.py
+│   ├── time_tracking_schema.py
+│   ├── time_tracking_services.py
+│   └── todo.txt
 ├── users/
 │   ├── __init__.py
 │   ├── users_model.py
 │   ├── users_route.py
 │   ├── users_schema.py
 │   └── users_service.py
-└── utilities/
-    ├── limiter/
-    ├── net/
-    │   └── autorouter.py
-    ├── responses/
-    └── storage/
-        └── storage_service.py
-
+├── utilities/
+│   ├── limiter/
+│   │   └── limiter.py
+│   └── storage/
+│       └── storage_service.py
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── alembic.ini
+├── config.yaml
+├── Dockerfile
+├── errors_tracking.md
+├── README.md
+└── requirements.txt
 ```
 
 ## 🚀 Instalação
 
-- Primeiro, clone o repositório em sua máquina
+1. Clone o repositório e acesse a pasta do projeto.
+2. Crie e ative um ambiente virtual e instale as dependências:
 
 ```bash
-git clone https://github.com/Toulousegg/erm.git
-```
-- Crie um ambiente virtual para trabalhar confortavelmente e ative-o
-
-```bash
-# Criar ambiente virtual
 python -m venv venv
-
-# Ativá-lo
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/Mac
-```
-
-- Instale as dependências do sistema
-```bash
+# Windows
+venv\Scripts\activate
+# Linux/macOS
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-- Preencha os campos do arquivo "config_example.yaml" con informações coerentes (#)
+3. Copie `.env.example` para `.env` e preencha `.env` usando `.env.example` como referência, incluindo PostgreSQL, JWT, SMTP, armazenamento S3/R2 e AbacatePay. O carregador de configuração precisa resolver todos os valores declarados em `config.yaml`. O `config.yaml` lê esses valores do ambiente.
+4. Inicie a aplicação na raiz do repositório:
 
-- Execute o projeto e abra no navegador
 ```bash
-# Executar o projeto
 uvicorn core.main:app --reload
-
-# CTRL + Clique Direito em
-http://127.0.0.1:8000
 ```
 
+Acesse <http://127.0.0.1:8000>. Na inicialização, a aplicação cria as tabelas declaradas pelos modelos; o projeto também inclui histórico de migrações Alembic.
+
 ## 📌 Funcionalidades
-✔️ Autenticação de usuários
 
-✔️ Inventário
+✔️ Cadastro, autenticação, verificação de e-mail e gestão de empresas
 
-✔️ Contatos
+✔️ Estoque, movimentações e códigos de barras
 
-✔️ Financeiro
+✔️ Produção, contatos e projetos com fotos, PDFs e comentários
 
-👨🏻‍💻 Agente de IA (Em andamento)
+✔️ Painel financeiro, vendas, pagamentos e contas a receber
 
-✔️ Projetos
+✔️ Acompanhamento de projetos com etapas, atrasos, arquivos e links públicos
 
-✔️ Gestão de empresas
+✔️ Cronogramas semanais compartilháveis
 
-✔️ WebSockets para notificações
+✔️ Registro de horas e relatórios
 
-❌ Exportação de relatórios (Pendente)
+✔️ Notificações em tempo real por WebSocket
 
-✔️ Compartilhar links para acompanhamento de projetos com o cliente final
+✔️ Módulos por empresa e assinaturas com AbacatePay
 
-## 🤝 Contribución
+ℹ️ O código atual não inclui um agente de IA.
 
-Todos são bem-vindos para ajudar e contribuir com este sistema e futuro SaaS.
+## 🤝 Contribuição
 
-***Para fazer isso, siga estes passos:***
+Todos são bem-vindos para contribuir com este sistema e com o futuro SaaS.
 
-1. Faça um **fork** del repositório  
-2. Crie um novo branch:
+***Para contribuir, siga estes passos:***
+
+1. Faça um **fork** do repositório
+2. Crie uma nova branch:
 
 ```bash
-# Muda e salva
+# Crie e alterne para a branch
 > git checkout -b feature/nova-funcionalidade
 
-# Adiciona as mudanças
+# Adicione as alterações
 > git add .
 
-# Faz o commit
-> git commit -m 'nova_funcionalidad'
+# Faça o commit
+> git commit -m 'nova_funcionalidade'
 
-# Sobe o branch
+# Envie a branch
 > git push origin feature/nova-funcionalidade
 
-# Vá ao GitHub e faça o Pull Request
+# Abra um Pull Request no GitHub
 ```
 
 ## 📏 Padrões do Projeto
 
-Este proyecto segue uma estrutura modular estrita para manter escalabilidade, ordem e manutenibilidade.
+Este projeto segue uma estrutura modular estrita para manter escalabilidade, ordem e manutenibilidade.
 
 ---
 
