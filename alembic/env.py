@@ -16,6 +16,7 @@ from projects.projects_model import *
 from payments.payments_models import *
 from cronograma.cronograma_models import *
 from moduls.moduls_models import *
+from project_tracking.project_tracking_model import *
 from core.config.config_loader import RAW_CONFIG
 
 # this is the Alembic Config object, which provides

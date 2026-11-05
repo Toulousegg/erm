@@ -56,6 +56,7 @@ def add_stage(session: Session, board: TrackingBoard, payload: TrackingStageCrea
         duration_days=payload.duration_days,
         content_kind=payload.content_kind,
         content_text=payload.content_text,
+        date=payload.date,
         position=max((item.position for item in board.stages), default=0) + 1,
     )
     if not board.stages:

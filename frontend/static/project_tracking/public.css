@@ -725,3 +725,44 @@ margin-left: 42px;
     padding: 11px;
 }
 }
+
+
+/* Título e data da etapa ficam visualmente separados. */
+.public-stage-title,
+.is-current .public-stage-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0;
+  width: 100%;
+  color: var(--text-primary);
+}
+
+.public-stage-title .stage-name {
+  min-width: 0;
+  color: var(--text-primary);
+}
+
+.public-stage-title .stage-date {
+  flex: 0 0 auto;
+  margin-left: clamp(24px, 4vw, 56px);
+  color: var(--text-primary);
+  font-size: .9em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .public-stage-title,
+  .is-current .public-stage-title {
+    align-items: baseline;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+  }
+
+  .public-stage-title .stage-date {
+    margin-left: 14px;
+    font-size: .88em;
+  }
+}

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date as DateType
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 class TrackingBoardCreate(BaseModel):
     project_id: int = Field(gt=0)
     promised_days: int = Field(default=30, ge=1, le=3650)
-    promised_delivery: date
+    promised_delivery: DateType
 
 
 class TrackingStageCreate(BaseModel):
@@ -14,6 +14,7 @@ class TrackingStageCreate(BaseModel):
     duration_days: int = Field(default=1, ge=0, le=3650)
     content_kind: str = Field(default="texto", pattern="^(texto|foto|video|pdf)$")
     content_text: str | None = Field(default=None, max_length=10000)
+    date: DateType | None = None
 
     @field_validator("name")
     @classmethod

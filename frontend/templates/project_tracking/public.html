@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ project.name }} · Status da produção</title>
-    <link rel="stylesheet" href="/static/project_tracking/public.css?v=1">
+    <link rel="stylesheet" href="/static/project_tracking/public.css?v=3">
 </head>
 
 <body class="public-shell" data-updated-at="{{ board.updated_at.isoformat() }}">
@@ -53,9 +53,13 @@
             {% if board.stages %}<div class="timeline public-timeline">{% for stage in board.stages %}<article
                     class="timeline-item {% if stage.completed %}is-done{% elif summary.current_stage and summary.current_stage.id == stage.id %}is-current{% else %}is-pending{% endif %}">
                     <button class="timeline-trigger public-stage-trigger" type="button" aria-expanded="false"
-                        onclick="togglePublicStage(this)"><span class="timeline-marker">{% if stage.completed %}✓{% else
-                            %}{{ loop.index }}{% endif %}</span><span class="timeline-label"><strong>{{ stage.name
-                                }}</strong><small>{% if stage.completed %}Etapa concluída{% elif summary.current_stage
+                        onclick="togglePublicStage(this)">
+                        <span class="timeline-marker">{% if stage.completed %}✓{% else
+                            %}{{ loop.index }}{% endif %}
+                        </span>
+                        <span class="timeline-label">
+                            <strong class="public-stage-title"><span class="stage-name">{{ stage.name }}</span>{% if stage.date %}<span class="stage-date">{{ stage.date.strftime('%d/%m/%Y') }}</span>{% endif %}</strong>
+                            <small>{% if stage.completed %}Etapa concluída{% elif summary.current_stage
                                 and summary.current_stage.id == stage.id %}Etapa atual{% else %}Próxima etapa{% endif
                                 %} · {{ stage.duration_days }} dias previstos</small></span><span
                             class="timeline-chevron">⌄</span></button>

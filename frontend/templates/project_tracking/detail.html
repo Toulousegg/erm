@@ -44,7 +44,7 @@
             <article class="metric-card">
                 <div>
                     <small>PRAZO PROMETIDO</small>
-                    <strong>{{ board.promised_days }} dias</strong>
+                    <strong>{{ board.promised_days }} dias úteis</strong>
                     <span>Responsabilidade da marcenaria</span>
                 </div>
             </article>
@@ -189,6 +189,9 @@
                     <div class="form-grid compact">
                         <label class="field field-wide">Nome da etapa
                             <input name="name" placeholder="Ej. Corte y preparación" required maxlength="120">
+                        </label>
+                        <label class="field">Data de realização
+                            <input type="date" name="date">
                         </label>
                         <label class="field">Duração prevista (dias)
                             <input type="number" min="0" name="duration_days" value="3" required>

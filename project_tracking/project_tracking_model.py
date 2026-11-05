@@ -37,6 +37,7 @@ class TrackingStage(base):
     board_id = Column(Integer, ForeignKey("project_tracking_boards.id", ondelete="CASCADE"), nullable=False, index=True)
     name = Column(String(120), nullable=False)
     duration_days = Column(Integer, nullable=False, default=1)
+    date = Column(Date, nullable=True)
     position = Column(Integer, nullable=False)
     content_kind = Column(String(20), nullable=False, default="texto")
     content_text = Column(Text, nullable=True)

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date as date_type
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import RedirectResponse
@@ -143,7 +143,7 @@ def tracking_dashboard(
 def create_tracking_board(
     project_id: int = Form(...),
     promised_days: int = Form(...),
-    promised_delivery: date = Form(...),
+    promised_delivery: date_type = Form(...),
     session: Session = Depends(CreateSession),
     user: User = Depends(verify_token),
 ):
@@ -184,6 +184,7 @@ def create_tracking_stage(
     duration_days: int = Form(1),
     content_kind: str = Form("texto"),
     content_text: str = Form(""),
+    date: str = Form(""),
     session: Session = Depends(CreateSession),
     user: User = Depends(verify_token),
 ):
@@ -193,6 +194,7 @@ def create_tracking_stage(
         duration_days=duration_days,
         content_kind=content_kind,
         content_text=content_text,
+        date=date_type.fromisoformat(date) if date else None,
     )
     add_stage(session, board, payload)
 
