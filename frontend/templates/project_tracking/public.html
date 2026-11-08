@@ -50,7 +50,7 @@
                     <h2>Etapas do projeto</h2>
                 </div><span class="step-chip">{{ board.stages|length }} etapas</span>
             </div>
-            {% if board.stages %}<div class="timeline public-timeline">{% for stage in board.stages %}<article
+            {% if board.stages %}<div class="public-timeline-viewport"><div class="timeline public-timeline">{% for stage in board.stages %}<article
                     class="timeline-item {% if stage.completed %}is-done{% elif summary.current_stage and summary.current_stage.id == stage.id %}is-current{% else %}is-pending{% endif %}">
                     <button class="timeline-trigger public-stage-trigger" type="button" aria-expanded="false"
                         onclick="togglePublicStage(this)">
@@ -79,7 +79,7 @@
                             <source src="{{ asset }}">
                         </video>{% else %}<a class="media-link" href="{{ asset }}" target="_blank">Abrir documento PDF
                             ↗</a>{% endif %}{% endfor %}</div>
-                </article>{% endfor %}</div>{% else %}<div class="empty-inline">As etapas ainda estão sendo configuradas
+                </article>{% endfor %}</div></div><div class="public-stage-details" aria-live="polite"></div>{% else %}<div class="empty-inline">As etapas ainda estão sendo configuradas
                 pela marcenaria.</div>{% endif %}
         </section>
         {% if board.delays %}<section class="panel public-delays">
@@ -117,7 +117,24 @@
                 Somente para consulta</span><span>Atualização automática a cada 15 segundos</span></footer>
     </main>
     <script>
-        function togglePublicStage(button) { const content = button.nextElementSibling; const collapsed = content.classList.toggle('is-collapsed'); button.setAttribute('aria-expanded', String(!collapsed)); }
+        function togglePublicStage(button) {
+            const details = document.querySelector('.public-stage-details');
+            const content = button.nextElementSibling;
+            const wasOpen = button.getAttribute('aria-expanded') === 'true';
+            document.querySelectorAll('.public-stage-trigger').forEach(trigger => {
+                trigger.setAttribute('aria-expanded', 'false');
+                trigger.nextElementSibling.classList.add('is-collapsed');
+            });
+            details.replaceChildren();
+            if (!wasOpen) {
+                button.setAttribute('aria-expanded', 'true');
+                content.classList.remove('is-collapsed');
+                details.append(content);
+                button.closest('.timeline-item').scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            } else {
+                button.after(content);
+            }
+        }
         const publicToken = {{ board.share_token| tojson }};
         const renderedVersion = document.body.dataset.updatedAt;
         window.setInterval(async () => {

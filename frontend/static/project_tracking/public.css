@@ -766,3 +766,210 @@ margin-left: 42px;
     font-size: .88em;
   }
 }
+
+/* Linha do tempo horizontal da página pública. */
+.public-timeline-viewport {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #c7c9d3 transparent;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.public-timeline-viewport::-webkit-scrollbar { height: 6px; }
+.public-timeline-viewport::-webkit-scrollbar-thumb { background: #c7c9d3; border-radius: 99px; }
+
+.public-timeline {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: max-content;
+  max-width: none;
+  min-width: 100%;
+  padding: 2px 3px 12px;
+}
+
+.public-timeline::before {
+  left: 20px;
+  right: 20px;
+  top: 20px;
+  bottom: auto;
+  width: auto;
+  height: 2px;
+}
+
+.public-timeline .timeline-item {
+  flex: 0 0 250px;
+  min-width: 0;
+}
+
+.public-timeline .timeline-trigger {
+  height: 100%;
+  min-height: 92px;
+  align-items: flex-start;
+  padding: 4px 12px 12px 2px;
+  gap: 9px;
+}
+
+.public-timeline .timeline-marker { position: relative; z-index: 1; }
+.public-timeline .timeline-label { padding-top: 3px; }
+.public-timeline .timeline-chevron { margin: 6px 0 0 auto; }
+.public-timeline .public-stage-title { flex-wrap: wrap; gap: 2px 8px; }
+.public-timeline .public-stage-title .stage-date { margin-left: 0; }
+
+@media (min-width: 701px) {
+  .public-timeline { padding-top: 4px; }
+  .public-timeline::before {
+    left: 19px;
+    right: 0;
+    top: 20px;
+    height: 4px;
+    background: #dbeafe;
+  }
+  .public-timeline .timeline-item { overflow: visible; }
+  .public-timeline .timeline-marker {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border-color: #bfdbfe;
+    color: var(--primary-color);
+  }
+  .public-timeline .timeline-trigger {
+    position: relative;
+    min-height: 96px;
+    padding-bottom: 20px;
+  }
+  .public-timeline .timeline-chevron {
+    position: absolute;
+    left: 50%;
+    bottom: 1px;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+  .public-timeline .timeline-trigger[aria-expanded="true"] .timeline-chevron {
+    transform: translateX(-50%) rotate(180deg);
+  }
+  .public-timeline .is-done .timeline-marker {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    background: #fff;
+    box-shadow: none;
+  }
+  .public-timeline .timeline-label {
+    position: relative;
+    z-index: 1;
+    padding: 4px 5px;
+    border-radius: 4px;
+    text-align: center;
+    background: linear-gradient(90deg, rgba(255,255,255,0), #fff 14%, #fff 86%, rgba(255,255,255,0));
+  }
+  .public-timeline .public-stage-title {
+    justify-content: center;
+    text-align: center;
+  }
+  .public-timeline .public-stage-title .stage-date {
+    margin-left: 0;
+  }
+  .public-timeline .timeline-item::after {
+    position: absolute;
+    z-index: 0;
+    content: "";
+    height: 4px;
+    left: 20px;
+    top: 20px;
+    width: calc(100% - 20px);
+    background: #dbeafe;
+    pointer-events: none;
+  }
+  .public-timeline .timeline-item.is-done::after { background: var(--primary-color); }
+  .public-timeline .timeline-item:not(.is-done)::after {
+    background: linear-gradient(90deg, var(--primary-color) 0 28%, #bfdbfe 48%, var(--primary-color) 68%, #bfdbfe 88%);
+    background-size: 220% 100%;
+    animation: public-timeline-flow 1.8s linear infinite;
+  }
+  .public-timeline .timeline-item:last-child::after { display: none; }
+}
+
+.public-stage-details:empty { display: none; }
+.public-stage-details:not(:empty) {
+  margin-top: 14px;
+  padding: 1px;
+  border-top: 1px solid var(--border-color);
+}
+.public-stage-details .stage-content {
+  margin: 14px 0 0;
+}
+
+@media (max-width: 700px) {
+  .public-timeline-viewport {
+    margin-right: -18px;
+    padding-right: 18px;
+    mask-image: linear-gradient(to right, #000 0%, #000 70%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, #000 0%, #000 70%, transparent 100%);
+  }
+  .public-timeline { min-width: max-content; }
+  .public-timeline .timeline-item { flex-basis: max(138px, calc((100vw - 92px) / 2)); }
+  .public-timeline .timeline-trigger {
+    min-height: 126px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 1px 10px 12px 2px;
+  }
+  .public-timeline .timeline-label { width: 100%; padding: 0 3px 0 2px; }
+  .public-timeline .public-stage-title { display: block; line-height: 1.3; }
+  .public-timeline .public-stage-title .stage-name,
+  .public-timeline .public-stage-title .stage-date { display: block; margin: 0; }
+  .public-timeline .public-stage-title .stage-date { font-size: .88em; }
+  .public-timeline .timeline-label small { display: block; line-height: 1.35; }
+  .public-timeline .timeline-chevron { display: none; }
+  .public-stage-details { margin-right: 0; }
+  .public-stage-details .stage-content { margin-left: 0; padding: 14px; }
+
+  .public-timeline::before {
+    left: 18px;
+    right: 0;
+    top: 18px;
+    height: 3px;
+    background: #dbeafe;
+  }
+  .public-timeline .timeline-item { overflow: visible; }
+  .public-timeline .timeline-marker {
+    background: #fff;
+    border-color: #bfdbfe;
+    color: var(--primary-color);
+  }
+  .public-timeline .is-done .timeline-marker {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    background: #fff;
+    box-shadow: none;
+  }
+  .public-timeline .timeline-item::after {
+    position: absolute;
+    z-index: 0;
+    content: "";
+    height: 3px;
+    left: 19px;
+    top: 17px;
+    width: calc(100% - 19px);
+    background: #dbeafe;
+    pointer-events: none;
+  }
+  .public-timeline .timeline-item.is-done::after {
+    background: var(--primary-color);
+  }
+  .public-timeline .timeline-item:not(.is-done)::after {
+    background: linear-gradient(90deg, var(--primary-color) 0 28%, #bfdbfe 48%, var(--primary-color) 68%, #bfdbfe 88%);
+    background-size: 220% 100%;
+    animation: public-timeline-flow 1.8s linear infinite;
+  }
+  .public-timeline .timeline-item:last-child::after { display: none; }
+  @keyframes public-timeline-flow {
+    from { background-position: 100% 0; }
+    to { background-position: -120% 0; }
+  }
+}
