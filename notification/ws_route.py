@@ -9,8 +9,6 @@ ws_route = APIRouter()
 
 @ws_route.websocket("/ws")
 async def websocket_notifications(websocket: WebSocket):
-    print('entro al ws')
-
     session = SessionLocal()
 
     try:

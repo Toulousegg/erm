@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ project.name }} · Status da produção</title>
+    <link rel="stylesheet" href="/static/project_tracking/public.css?v=3">
+</head>
+
+<body class="public-shell" data-updated-at="{{ board.updated_at.isoformat() }}">
+    <header class="public-topbar">
+        <div class="public-brand"><span>{{ project.company.name if project.company else
+                'Acompanhamento' }}<small>ACOMPANHAMENTO DO PROJETO</small></span></div><span
+            class="live-indicator"><i></i> Atualizado ao vivo</span>
+    </header>
+    <main class="public-wrap">
+        <section class="public-hero">
+            <div class="hero-copy">
+                <p class="eyebrow">PROJETO · {{ project.client_name or 'CLIENTE' }}</p>
+                <h1>{{ project.name }}</h1>
+                <p class="muted">Um espaço para acompanhar cada etapa da fabricação.</p>
+                <div class="current-stage"><span class="current-stage-icon">⌁</span>
+                    <div><small>ETAPA ATUAL</small><strong>{{ summary.current_stage.name if summary.current_stage else
+                            ('Projeto concluído' if board.status == 'terminada' else 'Etapas a configurar')
+                            }}</strong></div>
+                </div>
+            </div>
+            <div class="progress-card">
+                <div class="progress-card-top"><span>Progresso geral</span><strong>{{ summary.progress }}%</strong></div>
+                <div class="progress-track large"><span style="width: {{ summary.progress }}%"></span></div>
+                <div class="progress-card-bottom"><span>{{ summary.completed_stages }} de {{ summary.total_stages }}
+                        etapas concluídas</span><span class="public-status status-{{ board.status }}">{% if board.status
+                        == 'executando' %}● Em execução{% elif board.status == 'espera' %}● Aguardando{% elif
+                        board.status == 'cancelada' %}● Cancelado{% else %}● Concluído{% endif %}</span></div>
+            </div>
+        </section>
+        <section class="public-metrics">
+            <article><small>DATA PROMETIDA</small><strong>{{ board.promised_delivery.strftime('%d/%m/%Y')
+                    }}</strong><span>{{ board.promised_days }} dias de responsabilidade</span></article>
+            <article><small>PREVISÃO ATUAL</small><strong>{{ summary.adjusted_delivery.strftime('%d/%m/%Y')
+                    }}</strong><span>Atualizada conforme as ocorrências</span></article>
+            <article><small>ATRASO EXTERNO REGISTRADO</small><strong>{{ summary.lost_days }} dias</strong><span>Não
+                    reduz o prazo da marcenaria</span></article>
+        </section>
+        <section class="panel public-timeline-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">ACOMPANHAMENTO</p>
+                    <h2>Etapas do projeto</h2>
+                </div><span class="step-chip">{{ board.stages|length }} etapas</span>
+            </div>
+            {% if board.stages %}<div class="public-timeline-viewport"><div class="timeline public-timeline">{% for stage in board.stages %}<article
+                    class="timeline-item {% if stage.completed %}is-done{% elif summary.current_stage and summary.current_stage.id == stage.id %}is-current{% else %}is-pending{% endif %}">
+                    <button class="timeline-trigger public-stage-trigger" type="button" aria-expanded="false"
+                        onclick="togglePublicStage(this)">
+                        <span class="timeline-marker">{% if stage.completed %}✓{% else
+                            %}{{ loop.index }}{% endif %}
+                        </span>
+                        <span class="timeline-label">
+                            <strong class="public-stage-title"><span class="stage-name">{{ stage.name }}</span>{% if stage.date %}<span class="stage-date">{{ stage.date.strftime('%d/%m/%Y') }}</span>{% endif %}</strong>
+                            <small>{% if stage.completed %}Etapa concluída{% elif summary.current_stage
+                                and summary.current_stage.id == stage.id %}Etapa atual{% else %}Próxima etapa{% endif
+                                %} · {{ stage.duration_days }} dias previstos</small></span><span
+                            class="timeline-chevron">⌄</span></button>
+                    <div class="stage-content is-collapsed">{% if stage.content_text %}<p class="stage-description">{{
+                            stage.content_text }}</p>{% endif %}{% if stage.media_path %}{% set asset =
+                        media_url(stage.media_path) %}{% if stage.content_kind == 'foto' %}<a href="{{ asset }}"
+                            target="_blank"><img class="stage-media-image" src="{{ asset }}"
+                                alt="Atualização de {{ stage.name }}"></a>{% elif stage.content_kind == 'video' %}<video
+                            class="stage-video" controls preload="metadata">
+                            <source src="{{ asset }}">
+                        </video>{% else %}<a class="media-link" href="{{ asset }}" target="_blank">Abrir documento PDF
+                            ↗</a>{% endif %}{% endif %}{% for item in stage.media_assets %}{% set asset =
+                        media_url(item.media_path) %}{% if item.media_kind == 'foto' %}<a href="{{ asset }}"
+                            target="_blank"><img class="stage-media-image stage-gallery-image" src="{{ asset }}"
+                                alt="Atualização de {{ stage.name }}"></a>{% elif item.media_kind == 'video' %}<video
+                            class="stage-video" controls preload="metadata">
+                            <source src="{{ asset }}">
+                        </video>{% else %}<a class="media-link" href="{{ asset }}" target="_blank">Abrir documento PDF
+                            ↗</a>{% endif %}{% endfor %}</div>
+                </article>{% endfor %}</div></div><div class="public-stage-details" aria-live="polite"></div>{% else %}<div class="empty-inline">As etapas ainda estão sendo configuradas
+                pela marcenaria.</div>{% endif %}
+        </section>
+        {% if board.delays %}<section class="panel public-delays">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">REGISTRO DE OCORRÊNCIAS</p>
+                    <h2>Atrasos por fatores externos</h2>
+                </div>
+            </div>
+            <p class="muted">Estes dias são registrados separadamente e somados à previsão atual.</p>
+            <div class="delay-list">{% for delay in board.delays %}<article class="delay-item">
+                    <div><b>{{ delay.lost_days }} dias</b><small>{{ delay.created_at.strftime('%d/%m/%Y') }}</small>
+                    </div>
+                    <p>{{ delay.reason }}</p>{% if delay.evidence_path %}<a href="{{ media_url(delay.evidence_path) }}"
+                        target="_blank">Ver comprovante ↗</a>{% endif %}
+                </article>{% endfor %}</div>
+        </section>{% endif %}
+        {% if board.furniture %}<section class="public-furniture-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">DETALHES POR PEÇA</p>
+                    <h2>Observações dos móveis</h2>
+                </div>
+            </div>
+            <div class="public-furniture-grid">{% for item in board.furniture %}<article
+                    class="panel public-furniture-card">{% if item.image_path %}<img class="public-furniture-image"
+                        src="{{ media_url(item.image_path) }}" alt="{{ item.name }}">{% else %}<div
+                        class="public-furniture-placeholder">▧</div>{% endif %}<div class="public-furniture-copy">
+                        <h3>{{ item.name }}</h3>
+                        <div class="notebook-notes">{{ item.notes or 'Nenhuma observação registrada.' }}</div>
+                    </div>
+                </article>{% endfor %}</div>
+        </section>{% endif %}
+        <footer class="public-footer"><span>Informações compartilhadas pela marcenaria ·
+                Somente para consulta</span><span>Atualização automática a cada 15 segundos</span></footer>
+    </main>
+    <script>
+        function togglePublicStage(button) {
+            const details = document.querySelector('.public-stage-details');
+            const content = button.nextElementSibling;
+            const wasOpen = button.getAttribute('aria-expanded') === 'true';
+            document.querySelectorAll('.public-stage-trigger').forEach(trigger => {
+                trigger.setAttribute('aria-expanded', 'false');
+                trigger.nextElementSibling.classList.add('is-collapsed');
+            });
+            details.replaceChildren();
+            if (!wasOpen) {
+                button.setAttribute('aria-expanded', 'true');
+                content.classList.remove('is-collapsed');
+                details.append(content);
+                button.closest('.timeline-item').scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            } else {
+                button.after(content);
+            }
+        }
+        const publicToken = {{ board.share_token| tojson }};
+        const renderedVersion = document.body.dataset.updatedAt;
+        window.setInterval(async () => {
+            try {
+                const response = await fetch(`/tracking/api/public/${encodeURIComponent(publicToken)}`, { cache: 'no-store' });
+                if (!response.ok) return;
+                const latest = await response.json();
+                if (latest.updated_at && latest.updated_at !== renderedVersion) window.location.reload();
+            } catch (_) { /* Mantém a página disponível durante uma falha temporária de conexão. */ }
+        }, 15000);
+    </script>
+</body>
+
+</html>

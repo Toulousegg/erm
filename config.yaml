@@ -3,7 +3,7 @@ jwt:
   algorithm: HS256
 
   expiration:
-    access_token: 30 # Minutes
+    access_token: 600 # Minutes
     refresh_token: 1440 # Minutes
   
 email_verification:
